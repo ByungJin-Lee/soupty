@@ -139,23 +139,28 @@ pub async fn analyze_chat(
     let array_2d = array
         .into_dimensionality::<Ix2>()
         .map_err(|e| format!("ndarray 2D 변환 실패: {}", e))?;
+        // 이 부분은 로짓만으로도 is_positive를 판단할 수 있지만, softmax를 통해 명시적으로 계산하는 것이 더 안전하고 명확합니다.
     let probabilities = softmax(&CowArray::from(&array_2d));
+    let is_positive = probabilities[1] > probabilities[0];
 
-    let (max_idx, max_prob) =
-        probabilities
-            .iter()
-            .enumerate()
-            .fold((0, 0.0f32), |(idx_max, val_max), (idx, &val)| {
-                if val > val_max {
-                    (idx, val)
-                } else {
-                    (idx_max, val_max)
-                }
-            });
+
+    // 4-2. 로짓 값을 직접 사용하여 점수(-2.0 ~ +2.0) 계산
+    // array_2d는 [[부정 로짓, 긍정 로짓]] 형태의 2D 배열임
+    let neg_logit = array_2d[[0, 0]];
+    let pos_logit = array_2d[[0, 1]];
+
+    // 로짓 값의 차이를 계산
+    let logit_diff = pos_logit - neg_logit;
+
+    // tanh 함수를 사용하여 값을 -1.0 ~ +1.0 사이로 압축하고, 2를 곱해 -2.0 ~ +2.0 범위로 스케일링
+    let score = logit_diff.tanh() * 2.0;
+
+    // 소수점 첫째 자리까지 반올림
+    let final_score = (score * 100.0).round() / 100.0;
 
     let result = AnalysisResult {
-        is_positive: max_idx == 1,
-        score: max_prob,
+        is_positive,
+        score: final_score,
     };
 
     Ok(result)
