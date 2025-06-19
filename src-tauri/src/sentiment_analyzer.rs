@@ -8,11 +8,20 @@ use std::sync::Mutex;
 use tauri::State;
 use tokenizers::Tokenizer;
 
+const SENTIMENT_THRESHOLD: f32 = 1.7;
+
 /// 분석 결과를 프론트엔드로 전달하기 위한 구조체입니다.
 #[derive(serde::Serialize)]
 pub struct AnalysisResult {
-    pub is_positive: bool,
+    pub sentiment: Sentiment,
     pub score: f32,
+}
+
+#[derive(serde::Serialize, Clone, Copy, Debug)]
+pub enum Sentiment {
+    Positive,
+    Negative,
+    Neutral,
 }
 
 /// ONNX 모델의 출력(logits)을 0과 1 사이의 확률 값으로 변환하는 소프트맥스 함수입니다.
@@ -44,7 +53,7 @@ impl OnnxSession {
         let session = Session::builder()?
             // .with_optimization_level(GraphOptimizationLevel::Level3)?
             .with_execution_providers([CPUExecutionProvider::default().into()])?
-            .commit_from_file(model_dir.join("koelectra_sentiment.onnx"))?;
+            .commit_from_file(model_dir.join("model.onnx"))?;
 
         let tokenizer = Tokenizer::from_file(model_dir.join("tokenizer.json"))
             .map_err(|e| anyhow::anyhow!("Tokenizer 로딩 실패: {}", e))?;
@@ -64,8 +73,6 @@ pub async fn analyze_chat(
     text: String,
     state: State<'_, OnnxSession>,
 ) -> std::result::Result<AnalysisResult, String> {
-    println!("{}", text);
-
     // 이 부분은 이전의 안정성이 강화된 코드와 동일합니다.
     let tokenizer = state
         .tokenizer
@@ -139,10 +146,9 @@ pub async fn analyze_chat(
     let array_2d = array
         .into_dimensionality::<Ix2>()
         .map_err(|e| format!("ndarray 2D 변환 실패: {}", e))?;
-        // 이 부분은 로짓만으로도 is_positive를 판단할 수 있지만, softmax를 통해 명시적으로 계산하는 것이 더 안전하고 명확합니다.
+    // 이 부분은 로짓만으로도 is_positive를 판단할 수 있지만, softmax를 통해 명시적으로 계산하는 것이 더 안전하고 명확합니다.
     let probabilities = softmax(&CowArray::from(&array_2d));
     let is_positive = probabilities[1] > probabilities[0];
-
 
     // 4-2. 로짓 값을 직접 사용하여 점수(-2.0 ~ +2.0) 계산
     // array_2d는 [[부정 로짓, 긍정 로짓]] 형태의 2D 배열임
@@ -158,8 +164,18 @@ pub async fn analyze_chat(
     // 소수점 첫째 자리까지 반올림
     let final_score = (score * 100.0).round() / 100.0;
 
+    let sentiment: Sentiment; // 타입을 Sentiment Enum으로 변경
+
+    if final_score >= SENTIMENT_THRESHOLD {
+        sentiment = Sentiment::Positive; // 강력한 긍정
+    } else if final_score <= -SENTIMENT_THRESHOLD {
+        sentiment = Sentiment::Negative; // 강력한 부정
+    } else {
+        sentiment = Sentiment::Neutral; // 애매하거나 중립적인 감정
+    }
+
     let result = AnalysisResult {
-        is_positive,
+        sentiment,
         score: final_score,
     };
 
