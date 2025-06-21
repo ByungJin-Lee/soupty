@@ -25,12 +25,12 @@ pub enum Sentiment {
 }
 
 /// ONNX 모델의 출력(logits)을 0과 1 사이의 확률 값으로 변환하는 소프트맥스 함수입니다.
-fn softmax(array: &CowArray<'_, f32, Ix2>) -> Vec<f32> {
-    let max_val = array.iter().fold(f32::NEG_INFINITY, |a, &b| a.max(b));
-    let exps: Vec<f32> = array.iter().map(|&x| (x - max_val).exp()).collect();
-    let sum_exps: f32 = exps.iter().sum();
-    exps.into_iter().map(|x| x / sum_exps).collect()
-}
+// fn softmax(array: &CowArray<'_, f32, Ix2>) -> Vec<f32> {
+//     let max_val = array.iter().fold(f32::NEG_INFINITY, |a, &b| a.max(b));
+//     let exps: Vec<f32> = array.iter().map(|&x| (x - max_val).exp()).collect();
+//     let sum_exps: f32 = exps.iter().sum();
+//     exps.into_iter().map(|x| x / sum_exps).collect()
+// }
 
 /// ONNX 세션과 토크나이저를 함께 보관할 상태(State) 구조체입니다.
 pub struct OnnxSession {
@@ -89,16 +89,6 @@ pub async fn analyze_chat(
     let token_type_ids = encoding.get_type_ids();
     let seq_len = input_ids.len();
 
-    // let array_input_ids = Array::from_shape_vec((1, input_len), input_ids)
-    //     .map_err(|e| format!("input_ids 배열 생성 실패: {}", e))?;
-    // let array_attention_mask = Array::from_shape_vec((1, input_len), attention_mask)
-    //     .map_err(|e| format!("attention_mask 배열 생성 실패: {}", e))?;
-
-    // let inputs = ort::inputs! {
-    //     "input_ids" => Value::from_array(array_input_ids).map_err(|e| format!("input_ids 값 생성 실패: {}", e))?,
-    //     "attention_mask" => Value::from_array(array_attention_mask).map_err(|e| format!("attention_mask 값 생성 실패: {}", e))?,
-    // };
-
     let ids_array = Array::from_vec(input_ids.iter().map(|&x| x as i64).collect())
         .into_shape_with_order((1, seq_len))
         .map_err(|e| e.to_string())?;
@@ -147,8 +137,6 @@ pub async fn analyze_chat(
         .into_dimensionality::<Ix2>()
         .map_err(|e| format!("ndarray 2D 변환 실패: {}", e))?;
     // 이 부분은 로짓만으로도 is_positive를 판단할 수 있지만, softmax를 통해 명시적으로 계산하는 것이 더 안전하고 명확합니다.
-    let probabilities = softmax(&CowArray::from(&array_2d));
-    let is_positive = probabilities[1] > probabilities[0];
 
     // 4-2. 로짓 값을 직접 사용하여 점수(-2.0 ~ +2.0) 계산
     // array_2d는 [[부정 로짓, 긍정 로짓]] 형태의 2D 배열임

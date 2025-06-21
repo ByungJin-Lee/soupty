@@ -1,0 +1,38 @@
+import { ipcClient } from "./base";
+import { IpcRequestWithPayload } from "./types";
+
+/**
+ * @description Streamer의 현재 Live 정보를 불러옵니다.
+ */
+const getStreamerLive = (streamerId: string) => {
+  return ipcClient(IpcRequestWithPayload.GetStreamerLive, {
+    streamerId,
+  });
+};
+
+/**
+ * @description Streamer의 현재 Station 정보를 불러옵니다.
+ */
+const getStreamerStation = (streamerId: string) => {
+  return ipcClient(IpcRequestWithPayload.GetStreamerStation, {
+    streamerId,
+  });
+};
+
+/**
+ * @description Streamer의 현재 Emoticon 정보를 불러옵니다.
+ */
+const getStreamerEmoticon = (streamerId: string) => {
+  return ipcClient(IpcRequestWithPayload.GetStreamerEmoticon, {
+    streamerId,
+  });
+};
+
+/**
+ * @description soop ipc 관리 객체
+ */
+export const soop = Object.freeze({
+  getStreamerLive,
+  getStreamerEmoticon,
+  getStreamerStation,
+});

@@ -1,7 +1,11 @@
 use tauri::generate_handler;
 
-use crate::sentiment_analyzer::{analyze_chat, OnnxSession};
+use crate::{
+    invokes::soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station},
+    sentiment_analyzer::{analyze_chat, OnnxSession},
+};
 
+mod invokes;
 mod sentiment_analyzer;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -21,7 +25,12 @@ pub fn run() {
             Ok(())
         })
         .manage(onnx_session)
-        .invoke_handler(generate_handler![analyze_chat])
+        .invoke_handler(generate_handler![
+            analyze_chat,
+            fetch_streamer_live,
+            fetch_streamer_station,
+            fetch_streamer_emoticon
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
