@@ -28,3 +28,6 @@ ndarray = "0.16.1"
 tokenizers = "0.21.1"
 anyhow = "1.0.98"
 soup-sdk = "0.1.2"
+rusqlite = { version = "0.36.0", features = ["bundled", "functions"] }
+tokio = "1.45.1"
+hangul = "0.1.3"

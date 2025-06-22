@@ -1,15 +1,21 @@
 use tauri::generate_handler;
 
 use crate::{
-    invokes::soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station},
+    commands::soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station},
     sentiment_analyzer::{analyze_chat, OnnxSession},
+    setup::setup,
 };
 
-mod invokes;
+mod commands;
 mod sentiment_analyzer;
+mod services;
+mod setup;
+mod state;
+mod util;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // ai models onnx 설정
     let onnx_session =
         OnnxSession::new().expect("Failed to initialize the sentiment analysis model.");
 
@@ -22,6 +28,7 @@ pub fn run() {
                         .build(),
                 )?;
             }
+            setup(app)?;
             Ok(())
         })
         .manage(onnx_session)
