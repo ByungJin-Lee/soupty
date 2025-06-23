@@ -1,12 +1,17 @@
 use tauri::generate_handler;
 
 use crate::{
-    commands::soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station},
+    commands::{
+        main_controller::{start_main_controller, stop_main_controller},
+        soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station},
+    },
     sentiment_analyzer::{analyze_chat, OnnxSession},
     setup::setup,
 };
 
 mod commands;
+mod controllers;
+mod models;
 mod sentiment_analyzer;
 mod services;
 mod setup;
@@ -36,7 +41,9 @@ pub fn run() {
             analyze_chat,
             fetch_streamer_live,
             fetch_streamer_station,
-            fetch_streamer_emoticon
+            fetch_streamer_emoticon,
+            start_main_controller,
+            stop_main_controller
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

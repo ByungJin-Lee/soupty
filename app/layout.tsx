@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GlobalNavigationBar } from "~/common/ui/global-navigation-bar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,7 +14,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`antialiased`}>{children}</body>
+      <body className={``}>
+        <GlobalNavigationBar />
+        {children}
+      </body>
     </html>
   );
 }

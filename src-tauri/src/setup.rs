@@ -1,9 +1,11 @@
+use crate::controllers::main_controller::MainController;
 use crate::services::db::service::DBService;
 use crate::state::AppState;
 use anyhow::{Context, Result};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{App, Manager};
+use tokio::sync::Mutex;
 
 pub fn setup(app: &mut App) -> Result<()> {
     let app_state = initialize_core_services(app)?;
@@ -23,7 +25,7 @@ pub fn initialize_core_services(app: &App) -> Result<AppState> {
     // 3. AppState 생성
     let app_state = AppState {
         db: Arc::new(db_service),
-        // main_controller: Mutex::new(MainController::new()), // 추후 추가
+        main_controller: Mutex::new(MainController::new()), // 추후 추가
     };
 
     Ok(app_state)
