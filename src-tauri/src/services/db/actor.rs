@@ -62,32 +62,9 @@ impl DBActor {
     // --- 세부 구현 ---
 
     fn run_migrations(&self) -> rusqlite::Result<()> {
-        self.conn.execute_batch(
-            "
-            CREATE TABLE IF NOT EXISTS channels (...);
-            CREATE TABLE IF NOT EXISTS users (...);
-            CREATE TABLE IF NOT EXISTS broadcasts (...);
-            CREATE TABLE IF NOT EXISTS chat_logs (
-                id INTEGER PRIMARY KEY,
-                broadcast_id INTEGER NOT NULL,
-                user_id TEXT NOT NULL,
-                message_type TEXT NOT NULL,
-                message TEXT NOT NULL,
-                metadata TEXT,
-                timestamp DATETIME NOT NULL,
-                FOREIGN KEY(broadcast_id) REFERENCES broadcasts(id),
-                FOREIGN KEY(user_id) REFERENCES users(user_id)
-            );
-            CREATE TABLE IF NOT EXISTS event_logs (...);
-            CREATE TABLE IF NOT EXISTS reports (...);
-            CREATE VIRTUAL TABLE IF NOT EXISTS chat_logs_fts USING fts5(
-                message_morph,
-                message_jamo,
-                chat_log_id UNINDEXED,
-                tokenize = 'unicode61' -- 초기에는 기본 토크나이저 사용. lindera는 나중에 연동
-            );
-            ",
-        )?;
+        let scheme = include_str!("../../../migrations/schema.sql");
+
+        self.conn.execute_batch(scheme)?;
         Ok(())
     }
 
