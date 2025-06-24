@@ -20,9 +20,6 @@ mod util;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    // ai models onnx 설정
-    let onnx_session =
-        OnnxSession::new().expect("Failed to initialize the sentiment analysis model.");
 
     tauri::Builder::default()
         .setup(|app| {
@@ -36,7 +33,6 @@ pub fn run() {
             setup(app)?;
             Ok(())
         })
-        .manage(onnx_session)
         .invoke_handler(generate_handler![
             analyze_chat,
             fetch_streamer_live,

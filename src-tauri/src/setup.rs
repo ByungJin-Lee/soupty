@@ -1,7 +1,9 @@
-use crate::controllers::main_controller::MainController;
+use crate::{controllers::main_controller::MainController, sentiment_analyzer::OnnxSession};
 use crate::services::db::service::DBService;
 use crate::state::AppState;
 use anyhow::{Context, Result};
+use tauri::path::BaseDirectory;
+use tauri::utils::acl::resolved;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{App, Manager};
@@ -27,6 +29,17 @@ pub fn initialize_core_services(app: &App) -> Result<AppState> {
         db: Arc::new(db_service),
         main_controller: Mutex::new(MainController::new()), // 추후 추가
     };
+
+    // ort 관련 설정
+    let resource_path = app.path().resolve("lib/onnxruntime.dll", BaseDirectory::Resource)?;
+
+    ort::init_from(resource_path.to_string_lossy()).commit()?;
+
+    // ai models onnx 설정
+    let onnx_session =
+        OnnxSession::new().expect("Failed to initialize the sentiment analysis model.");
+
+    app.manage(onnx_session);
 
     Ok(app_state)
 }
