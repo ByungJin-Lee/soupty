@@ -20,13 +20,11 @@ impl DBService {
             actor.run();
         });
 
-        sender.send(DBCommand::Initialize);
+        // 초기화 명령을 보냅니다.
+        let _ = sender
+            .blocking_send(DBCommand::Initialize)
+            .map_err(|_| eprintln!("Initialization error!"));
 
         Self { sender }
-    }
-
-    // 공개 API 예시
-    pub async fn command(&self) {
-        self.sender.send(DBCommand::Initialize).await.ok();
     }
 }

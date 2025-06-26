@@ -30,9 +30,11 @@ pub fn initialize_core_services(app: &App) -> Result<AppState> {
         main_controller: Mutex::new(MainController::new()), // 추후 추가
     };
 
+    let model_dir = app.path().resolve("ai", BaseDirectory::Resource)?;
+
     // ai models onnx 설정
     let onnx_session =
-        OnnxSession::new().expect("Failed to initialize the sentiment analysis model.");
+        OnnxSession::new(model_dir).expect("Failed to initialize the sentiment analysis model.");
 
     app.manage(onnx_session);
 
@@ -63,8 +65,11 @@ pub fn initialize_core_services(app: &App) -> Result<AppState> {
     ort::init_from(resource_path.to_string_lossy()).commit()?;
 
     // ai models onnx 설정
+
+    let model_dir = app.path().resolve("ai", BaseDirectory::Resource)?;
+
     let onnx_session =
-        OnnxSession::new().expect("Failed to initialize the sentiment analysis model.");
+        OnnxSession::new(model_dir).expect("Failed to initialize the sentiment analysis model.");
 
     app.manage(onnx_session);
 

@@ -5,7 +5,7 @@ use crate::{
         main_controller::{start_main_controller, stop_main_controller},
         soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station},
     },
-    sentiment_analyzer::{analyze_chat, OnnxSession},
+    sentiment_analyzer::analyze_chat,
     setup::setup,
 };
 

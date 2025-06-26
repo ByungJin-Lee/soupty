@@ -3,7 +3,10 @@ use tauri::Emitter;
 
 use crate::{
     models::events::ChatEvent,
-    services::addons::interface::{Addon, AddonContext},
+    services::{
+        addons::interface::{Addon, AddonContext},
+        event_name,
+    },
 };
 
 pub struct DefaultUIAddon {}
@@ -21,7 +24,6 @@ impl Addon for DefaultUIAddon {
     }
 
     async fn on_chat(&self, ctx: &AddonContext, event: &ChatEvent) {
-        ctx.app_handle.emit("log:chat", event);
-        return;
+        let _ = ctx.app_handle.emit(event_name::LOG_CHAT, event);
     }
 }

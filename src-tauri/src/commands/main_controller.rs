@@ -10,10 +10,10 @@ pub async fn start_main_controller(
 ) -> Result<(), String> {
     let mut controller = state.main_controller.lock().await;
 
-    controller
+    let _ = controller
         .start(&channel_id, app_handle, state.db.clone())
         .await
-        .map_err(|e| e.to_string());
+        .map_err(|e| e.to_string())?;
 
     Ok(())
 }

@@ -1,14 +1,14 @@
 use anyhow::Result;
-use ndarray::{Array, CowArray, Ix2};
+use ndarray::{Array, Ix2};
 use ort::execution_providers::CPUExecutionProvider;
 use ort::session::Session;
 use ort::value::Value;
-use std::path::Path;
+use std::path::PathBuf;
 use std::sync::Mutex;
 use tauri::State;
 use tokenizers::Tokenizer;
 
-const SENTIMENT_THRESHOLD: f32 = 1.7;
+pub const SENTIMENT_THRESHOLD: f32 = 1.7;
 
 /// 분석 결과를 프론트엔드로 전달하기 위한 구조체입니다.
 #[derive(serde::Serialize)]
@@ -24,14 +24,6 @@ pub enum Sentiment {
     Neutral,
 }
 
-/// ONNX 모델의 출력(logits)을 0과 1 사이의 확률 값으로 변환하는 소프트맥스 함수입니다.
-// fn softmax(array: &CowArray<'_, f32, Ix2>) -> Vec<f32> {
-//     let max_val = array.iter().fold(f32::NEG_INFINITY, |a, &b| a.max(b));
-//     let exps: Vec<f32> = array.iter().map(|&x| (x - max_val).exp()).collect();
-//     let sum_exps: f32 = exps.iter().sum();
-//     exps.into_iter().map(|x| x / sum_exps).collect()
-// }
-
 /// ONNX 세션과 토크나이저를 함께 보관할 상태(State) 구조체입니다.
 pub struct OnnxSession {
     pub session: Mutex<Session>,
@@ -40,9 +32,7 @@ pub struct OnnxSession {
 
 impl OnnxSession {
     /// 모델과 토크나이저를 로드하여 새로운 OnnxSession 인스턴스를 생성합니다.
-    pub fn new() -> Result<Self> {
-        let model_dir = Path::new("ai-models/sentiment");
-
+    pub fn new(model_dir: PathBuf) -> Result<Self> {
         println!(
             "Loading ONNX model and tokenizer from '{}'...",
             model_dir.display()
@@ -56,7 +46,7 @@ impl OnnxSession {
             .commit_from_file(model_dir.join("model.onnx"))?;
 
         let tokenizer = Tokenizer::from_file(model_dir.join("tokenizer.json"))
-            .map_err(|e| anyhow::anyhow!("Tokenizer 로딩 실패: {}", e))?;
+            .map_err(|e| anyhow::anyhow!("Failed to load tokenizer: {}", e))?;
 
         println!("Model and tokenizer loaded successfully.");
 
@@ -77,13 +67,15 @@ pub async fn analyze_chat(
     let tokenizer = state
         .tokenizer
         .lock()
-        .map_err(|e| format!("Tokenizer 잠금 실패: {}", e))?;
+        .map_err(|e| format!("Failed to lock tokenizer: {}", e))?;
     let mut session = state
         .session
         .lock()
-        .map_err(|e| format!("Session 잠금 실패: {}", e))?;
+        .map_err(|e| format!("Failed to lock session: {}", e))?;
 
-    let encoding = tokenizer.encode(text, true).unwrap();
+    let encoding = tokenizer
+        .encode(text, true)
+        .map_err(|e| format!("Failed to encode text: {}", e))?;
     let input_ids = encoding.get_ids();
     let attention_mask = encoding.get_attention_mask();
     let token_type_ids = encoding.get_type_ids();
@@ -117,12 +109,12 @@ pub async fn analyze_chat(
     // 모델 추론 실행
     let outputs = session
         .run(inputs)
-        .map_err(|e| format!("모델 추론 실패: {}", e))?;
+        .map_err(|e| format!("Model inference failed: {}", e))?;
 
     // 1. `try_extract_tensor`를 호출하여 `Result<(&Shape, &[f32])>`를 받습니다.
     let logits_tensor = outputs["logits"]
         .try_extract_tensor::<f32>()
-        .map_err(|e| format!("'logits' 텐서 추출 실패: {}", e))?;
+        .map_err(|e| format!("Failed to extract 'logits' tensor: {}", e))?;
 
     // 2. 튜플을 모양(shape)과 데이터 슬라이스(&[f32])로 분해합니다.
     let (shape, data) = logits_tensor;
@@ -130,12 +122,12 @@ pub async fn analyze_chat(
     // 3. 모양과 데이터를 사용하여 `ndarray::Array`를 생성합니다.
     let shape_usize: Vec<usize> = shape.iter().map(|&d| d as usize).collect();
     let array = Array::from_shape_vec(shape_usize.as_slice(), data.to_vec())
-        .map_err(|e| format!("텐서 데이터로 ndarray 생성 실패: {}", e))?;
+        .map_err(|e| format!("Failed to create ndarray from tensor data: {}", e))?;
 
     // 4. 생성된 `ndarray`를 `CowArray`로 변환하여 softmax 함수에 전달합니다.
     let array_2d = array
         .into_dimensionality::<Ix2>()
-        .map_err(|e| format!("ndarray 2D 변환 실패: {}", e))?;
+        .map_err(|e| format!("Failed to convert ndarray to 2D: {}", e))?;
     // 이 부분은 로짓만으로도 is_positive를 판단할 수 있지만, softmax를 통해 명시적으로 계산하는 것이 더 안전하고 명확합니다.
 
     // 4-2. 로짓 값을 직접 사용하여 점수(-2.0 ~ +2.0) 계산

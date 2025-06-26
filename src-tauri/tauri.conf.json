@@ -33,6 +33,6 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": ["lib/onnxruntime.dll"]
+    "resources": ["lib/onnxruntime.dll", "ai/model.onnx", "ai/tokenizer.json"]
   }
 }
