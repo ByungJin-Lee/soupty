@@ -22,10 +22,12 @@ const getStreamerStation = (streamerId: string) => {
 /**
  * @description Streamer의 현재 Emoticon 정보를 불러옵니다.
  */
-const getStreamerEmoticon = (streamerId: string) => {
-  return ipcClient(IpcRequestWithPayload.GetStreamerEmoticon, {
+const getStreamerEmoji = async (streamerId: string) => {
+  const resp = await ipcClient(IpcRequestWithPayload.GetStreamerEmoji, {
     streamerId,
   });
+
+  return [...resp.tier1, ...resp.tier2];
 };
 
 /**
@@ -33,6 +35,6 @@ const getStreamerEmoticon = (streamerId: string) => {
  */
 export const soop = Object.freeze({
   getStreamerLive,
-  getStreamerEmoticon,
+  getStreamerEmoji,
   getStreamerStation,
 });

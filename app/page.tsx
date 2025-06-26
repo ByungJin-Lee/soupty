@@ -1,12 +1,8 @@
 "use client";
 
 import { invoke } from "@tauri-apps/api/core";
-import { listen } from "@tauri-apps/api/event";
 import { useState } from "react";
-
-listen("log:chat", (e) => {
-  console.log(e);
-});
+import { useChatLogListener } from "~/features/chat/hooks/chat-log-listener";
 
 export default function Home() {
   const [txt, setText] = useState("");
@@ -16,13 +12,15 @@ export default function Home() {
     // console.log(resp);
 
     await invoke("start_main_controller", {
-      channelId: "yangdoki",
+      channelId: "rkalalsgud",
     });
   };
 
   const handleStop = async () => {
     await invoke("stop_main_controller");
   };
+
+  useChatLogListener();
 
   return (
     <div>

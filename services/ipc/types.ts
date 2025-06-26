@@ -1,16 +1,18 @@
-import { Emoticon } from "~/types";
+import { Emoji } from "~/types";
 
 // 요청 Payload가 없는 request 객체입니다
 export enum IpcRequestWithoutPayload {
   None = "none",
+  DisconnectChannel = "stop_main_controller",
 }
 
 // 요청 Payload가 있는 request 객체입니다.
 export enum IpcRequestWithPayload {
+  ConnectChannel = "start_main_controller",
   AnalyzeEmotion = "analyze_chat",
   GetStreamerLive = "fetch_streamer_live",
   GetStreamerStation = "fetch_streamer_station",
-  GetStreamerEmoticon = "fetch_streamer_emoticon",
+  GetStreamerEmoji = "fetch_streamer_emoticon",
 }
 
 export type IpcRequest = IpcRequestWithPayload | IpcRequestWithoutPayload;
@@ -25,11 +27,14 @@ export interface IpcPayloadMap {
   [IpcRequestWithPayload.GetStreamerLive]: {
     streamerId: string;
   };
-  [IpcRequestWithPayload.GetStreamerEmoticon]: {
+  [IpcRequestWithPayload.GetStreamerEmoji]: {
     streamerId: string;
   };
   [IpcRequestWithPayload.GetStreamerStation]: {
     streamerId: string;
+  };
+  [IpcRequestWithPayload.ConnectChannel]: {
+    channelId: string;
   };
 }
 
@@ -38,11 +43,13 @@ export interface IpcPayloadMap {
  */
 export interface IpcResponseMap {
   [IpcRequestWithoutPayload.None]: unknown;
+  [IpcRequestWithoutPayload.DisconnectChannel]: void;
   /// 라이브가 아닌 경우 null이 반환됩니다.
   [IpcRequestWithPayload.GetStreamerLive]: StreamerLive | null;
-  [IpcRequestWithPayload.GetStreamerEmoticon]: StreamerEmoticon;
+  [IpcRequestWithPayload.GetStreamerEmoji]: StreamerEmoji;
   [IpcRequestWithPayload.GetStreamerStation]: StreamerStation;
   [IpcRequestWithPayload.AnalyzeEmotion]: unknown;
+  [IpcRequestWithPayload.ConnectChannel]: void;
 }
 
 export interface StreamerLive {
@@ -59,7 +66,7 @@ export interface StreamerStation {
   title: string;
 }
 
-export interface StreamerEmoticon {
-  tier1: Emoticon[];
-  tier2: Emoticon[];
+export interface StreamerEmoji {
+  tier1: Emoji[];
+  tier2: Emoji[];
 }

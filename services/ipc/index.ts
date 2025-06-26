@@ -1,3 +1,4 @@
+import { channel } from "./channel";
 import { soop } from "./soop";
 
 /**
@@ -5,6 +6,7 @@ import { soop } from "./soop";
  */
 export const ipcService = Object.freeze({
   soop,
+  channel,
 });
 
 export default ipcService;

@@ -8,6 +8,7 @@ pub enum DomainEvent {
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ChatEvent {
     pub timestamp: DateTime<Utc>,
     pub comment: String,
