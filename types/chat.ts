@@ -1,4 +1,4 @@
-import { Emoticon, OGQ } from "./soop";
+import { Emoji, OGQ } from "./soop";
 
 export enum ChatType {
   /**
@@ -29,5 +29,5 @@ export enum MessageType {
  */
 export type MessagePart =
   | { type: MessageType.Text; value: string }
-  | { type: MessageType.Emoticon; value: Emoticon }
+  | { type: MessageType.Emoticon; value: Emoji }
   | { type: MessageType.OGQ; value: OGQ };

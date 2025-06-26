@@ -1,8 +1,12 @@
-export interface Emoticon {
+export interface Emoji {
   title: string;
   pc_img: string;
   mobile_img: string;
 }
+/**
+ * @description key: title, value: imageUrl
+ */
+export type EmojiStatic = Record<string, string>;
 
 export interface OGQ {
   id: string;
