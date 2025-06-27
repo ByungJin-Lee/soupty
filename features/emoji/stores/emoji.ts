@@ -3,27 +3,19 @@ import { EmojiStatic } from "~/types";
 import { makeEmojiRegex } from "../converter";
 
 interface EmojiState {
-  regex: RegExp | null;
-  emojiStatic: EmojiStatic | null;
+  regex: RegExp;
+  emojiStatic: EmojiStatic;
   update(emojiStatic: EmojiStatic): void;
-  match(message: string): RegExpMatchArray | null;
 }
 
-export const useEmoji = create<EmojiState>((set, get) => ({
-  regex: null,
-  emojiStatic: null,
+export const useEmoji = create<EmojiState>((set) => ({
+  regex: new RegExp(""),
+  emojiStatic: {},
   update(emojiStatic) {
     const regex = makeEmojiRegex(emojiStatic);
     set({
       regex,
       emojiStatic,
     });
-  },
-  match(message) {
-    const regex = get().regex;
-    if (regex) {
-      return message.match(regex);
-    }
-    return null;
   },
 }));

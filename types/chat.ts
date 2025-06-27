@@ -1,4 +1,4 @@
-import { Emoji, OGQ } from "./soop";
+import { OGQ } from "./soop";
 
 export enum ChatType {
   /**
@@ -20,8 +20,13 @@ export enum ChatType {
  */
 export enum MessageType {
   Text,
-  Emoticon,
+  Emoji,
   OGQ,
+}
+
+export interface MessageEmoji {
+  title: string;
+  imageUrl: string;
 }
 
 /**
@@ -29,5 +34,5 @@ export enum MessageType {
  */
 export type MessagePart =
   | { type: MessageType.Text; value: string }
-  | { type: MessageType.Emoticon; value: Emoji }
+  | { type: MessageType.Emoji; value: MessageEmoji }
   | { type: MessageType.OGQ; value: OGQ };
