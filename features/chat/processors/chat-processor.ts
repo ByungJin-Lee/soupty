@@ -29,10 +29,11 @@ export class ChatProcessor {
     let parts: MessagePart[] = [];
 
     if (raw.ogq) {
+      const p = raw.ogq;
       parts = [
         {
           type: MessageType.OGQ,
-          value: raw.ogq,
+          value: `https://ogq-sticker-global-cdn-z01.sooplive.co.kr/sticker/${p.id}/${p.number}_80.${p.ext}?ver=${p.version}`,
         },
       ];
     } else {

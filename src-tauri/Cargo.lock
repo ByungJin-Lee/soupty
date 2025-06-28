@@ -4195,9 +4195,9 @@ dependencies = [
 
 [[package]]
 name = "soup-sdk"
-version = "0.1.6"
+version = "0.1.71"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd70dc253db45e095ef3aebd1b87df101c200bbe1150602363e5b06547eeda7e"
+checksum = "cd9285abad1dba292f4b3969a3364dfa4e61755b7517dcb62742313debe9156a"
 dependencies = [
  "anyhow",
  "chrono",

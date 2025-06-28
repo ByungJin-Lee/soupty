@@ -1,5 +1,3 @@
-import { OGQ } from "./soop";
-
 export enum ChatType {
   /**
    * @description 일반 채팅을 말합니다. (단, OGQ가 아닌 이모티콘 채팅을 포함)
@@ -35,4 +33,4 @@ export interface MessageEmoji {
 export type MessagePart =
   | { type: MessageType.Text; value: string }
   | { type: MessageType.Emoji; value: MessageEmoji }
-  | { type: MessageType.OGQ; value: OGQ };
+  | { type: MessageType.OGQ; value: string };

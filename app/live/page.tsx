@@ -5,7 +5,7 @@ import { useSOOPConnection } from "~/features/soop/hooks/soop-connection";
 
 export default function LivePage() {
   const { connect, disconnect } = useSOOPConnection({
-    id: "htvv2i",
+    id: "alice427",
     label: "test",
   });
 

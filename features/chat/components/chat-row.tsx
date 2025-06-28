@@ -22,7 +22,7 @@ type HeaderProps = {
 
 const Header: React.FC<HeaderProps> = ({ data }) => {
   return (
-    <div className="w-[100px] flex">
+    <div className="min-w-[120px] max-w-[120px] flex">
       {data.badges.map((b) => (
         <ChatBadge key={b} badge={b} />
       ))}
@@ -53,6 +53,7 @@ const ChatMessage: React.FC<MessageProps> = ({ parts }) => {
           case MessageType.Emoji:
             content = (
               <img
+                className="inline-block mr-1"
                 title={p.value.title}
                 src={p.value.imageUrl}
                 referrerPolicy="no-referrer"
@@ -60,6 +61,14 @@ const ChatMessage: React.FC<MessageProps> = ({ parts }) => {
             );
             break;
           case MessageType.OGQ:
+            content = (
+              <img
+                className="inline-block mr-1"
+                title="OGQ"
+                src={p.value}
+                referrerPolicy="no-referrer"
+              />
+            );
             break;
         }
 
