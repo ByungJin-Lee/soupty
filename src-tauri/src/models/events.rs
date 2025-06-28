@@ -10,6 +10,7 @@ pub enum DomainEvent {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatEvent {
+    pub id: uuid::Uuid,
     pub timestamp: DateTime<Utc>,
     pub comment: String,
     pub chat_type: ChatType,

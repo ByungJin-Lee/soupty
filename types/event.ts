@@ -1,7 +1,12 @@
+import { Badge } from "./badge";
 import { ChatType, MessagePart } from "./chat";
 import { OGQ, User } from "./soop";
 
 export interface BaseEvent {
+  /**
+   * @description uuid
+   */
+  id: string;
   /**
    * @description 이벤트가 발생한 UTC 시간입니다. 인터넷 환경에 따라 차이가 있습니다.
    */
@@ -37,4 +42,12 @@ export interface ChatEvent extends RawChatEvent {
    * @description 이모티콘, text 가 파싱되어 part 구조에 담깁니다.
    */
   parts: MessagePart[];
+  /**
+   * @description header에 랜더링될, 뱃지입니다.
+   */
+  badges: Badge[];
+  /**
+   * @description 채팅에 표시될 닉네임 색상
+   */
+  color: string;
 }

@@ -3,5 +3,5 @@ export default function LiveLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <>{children}</>;
+  return <div className="h-svh max-h-svh grid grid-cols-3">{children}</div>;
 }

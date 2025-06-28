@@ -1,6 +1,7 @@
 import { Fragment } from "react";
 import { MessagePart, MessageType } from "~/types/chat";
 import { ChatEvent } from "~/types/event";
+import { ChatBadge } from "./chat-badge";
 
 type Props = {
   data: ChatEvent;
@@ -8,9 +9,29 @@ type Props = {
 
 export const ChatRow: React.FC<Props> = ({ data }) => {
   return (
-    <div className="">
-      <span>{data.user.label}</span>
+    <div className="flex gap-x-1 mt-3">
+      <Header data={data} />
       <ChatMessage parts={data.parts} />
+    </div>
+  );
+};
+
+type HeaderProps = {
+  data: ChatEvent;
+};
+
+const Header: React.FC<HeaderProps> = ({ data }) => {
+  return (
+    <div className="w-[100px] flex">
+      {data.badges.map((b) => (
+        <ChatBadge key={b} badge={b} />
+      ))}
+      <span
+        className="break-all font-medium ml-1"
+        style={{ color: data.color }}
+      >
+        {data.user.label}
+      </span>
     </div>
   );
 };
@@ -19,9 +40,9 @@ type MessageProps = {
   parts: MessagePart[];
 };
 
-export const ChatMessage: React.FC<MessageProps> = ({ parts }) => {
+const ChatMessage: React.FC<MessageProps> = ({ parts }) => {
   return (
-    <>
+    <div className="break-all">
       {parts.map((p, i) => {
         let content: React.ReactNode = null;
 
@@ -44,6 +65,6 @@ export const ChatMessage: React.FC<MessageProps> = ({ parts }) => {
 
         return <Fragment key={i}>{content}</Fragment>;
       })}
-    </>
+    </div>
   );
 };

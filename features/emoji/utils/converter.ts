@@ -8,7 +8,7 @@ export const transformStreamerEmojis = (
   return Object.fromEntries(
     emojis.map((v) => [
       v.title,
-      `https://static.file.sooplive.co.kr/signature_emoticon/${streamerId}/${v.pc_img}`,
+      `https://static.file.sooplive.co.kr/signature_emoticon/${streamerId}/${v.pcImg}`,
     ])
   );
 };

@@ -7,9 +7,9 @@ export const makeBroadcastState = (
 ): BroadcastState => {
   return {
     title: live.title,
-    isPassword: station.is_password,
+    isPassword: station.isPassword,
     start: station.broad_start,
-    viewerCount: station.viewer_count,
+    viewerCount: station.viewerCount,
     categories: live.categories,
   };
 };

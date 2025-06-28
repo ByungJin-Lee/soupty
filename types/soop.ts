@@ -1,7 +1,7 @@
 export interface Emoji {
   title: string;
-  pc_img: string;
-  mobile_img: string;
+  pcImg: string;
+  mobileImg: string;
 }
 /**
  * @description key: title, value: imageUrl

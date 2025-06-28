@@ -10,16 +10,14 @@ export default function LivePage() {
   });
 
   return (
-    <div className="grid grid-cols-3">
-      <div className="max-h-[300px] overflow-y-scroll">
-        <Chats />
-      </div>
+    <>
+      <Chats />
       <div>
         <button onClick={connect}>연결</button>
         <br />
         <button onClick={disconnect}>연결 종료</button>
       </div>
       <div>3</div>
-    </div>
+    </>
   );
 }

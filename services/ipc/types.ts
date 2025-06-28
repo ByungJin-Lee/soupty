@@ -54,15 +54,15 @@ export interface IpcResponseMap {
 
 export interface StreamerLive {
   categories: string[];
-  is_live: boolean;
-  streamer_nick: string;
+  isLive: boolean;
+  streamerNick: string;
   title: string;
 }
 
 export interface StreamerStation {
   broad_start: string;
-  is_password: boolean;
-  viewer_count: number;
+  isPassword: boolean;
+  viewerCount: number;
   title: string;
 }
 

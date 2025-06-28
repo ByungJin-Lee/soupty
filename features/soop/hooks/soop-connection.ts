@@ -48,7 +48,8 @@ export const useSOOPConnection = (channel: Channel) => {
 };
 
 const validateStreamerLive = (streamerLive: StreamerLive | null) => {
-  if (!streamerLive || !streamerLive.is_live) {
+  console.log(streamerLive);
+  if (!streamerLive || !streamerLive.isLive) {
     throw Error("방송 중이 아닙니다. 연결할 수 없습니다.");
   }
 };

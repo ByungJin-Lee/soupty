@@ -110,6 +110,7 @@ dependencies = [
  "tauri-plugin-log",
  "tokenizers",
  "tokio",
+ "uuid",
 ]
 
 [[package]]
@@ -4194,9 +4195,9 @@ dependencies = [
 
 [[package]]
 name = "soup-sdk"
-version = "0.1.5"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "237eda21b161a5f899d5717373fb7a4441d1f50ade6279452ee8c8c950fe757b"
+checksum = "fd70dc253db45e095ef3aebd1b87df101c200bbe1150602363e5b06547eeda7e"
 dependencies = [
  "anyhow",
  "chrono",

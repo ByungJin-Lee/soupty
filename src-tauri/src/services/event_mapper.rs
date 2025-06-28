@@ -1,4 +1,5 @@
 use soup_sdk::chat::Event as SdkEvent;
+use uuid::Uuid;
 
 use crate::models::events::{ChatEvent, DomainEvent}; // SDK 이벤트를 별칭으로 가져옴
 
@@ -9,6 +10,7 @@ pub fn map_sdk_to_domain(sdk_event: &SdkEvent) -> Option<DomainEvent> {
         SdkEvent::Chat(sdk_chat) => {
             // SDK의 복잡한 구조에서 우리에게 필요한 데이터만 추출하고 정제합니다.
             Some(DomainEvent::Chat(ChatEvent {
+                id: Uuid::new_v4(), // 관리를 위해 ID를 부여합니다.
                 timestamp: sdk_chat.meta.received_time,
                 comment: sdk_chat.comment.clone(),
                 chat_type: sdk_chat.chat_type.clone(),
