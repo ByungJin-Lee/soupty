@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { EmojiStatic } from "~/types";
-import { makeEmojiRegex } from "../converter";
+import { makeEmojiRegex } from "../utils/converter";
 
 interface EmojiState {
   regex: RegExp;

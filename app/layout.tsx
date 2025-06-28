@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GlobalEventProvider } from "~/common/components/global-event-provider";
 import { GlobalNavigationBar } from "~/common/ui/global-navigation-bar";
 import "./globals.css";
 
@@ -15,6 +16,7 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={``}>
+        <GlobalEventProvider />
         <GlobalNavigationBar />
         {children}
       </body>

@@ -1,16 +1,14 @@
 "use client";
 
 import { Chats } from "~/features/chat/components/chats";
-import { useChatLogListener } from "~/features/chat/hooks/chat-log-listener";
 import { useSOOPConnection } from "~/features/soop/hooks/soop-connection";
 
 export default function LivePage() {
   const { connect, disconnect } = useSOOPConnection({
-    id: "khm11903",
+    id: "htvv2i",
     label: "test",
   });
 
-  useChatLogListener();
   return (
     <div className="grid grid-cols-3">
       <div className="max-h-[300px] overflow-y-scroll">

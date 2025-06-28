@@ -1,15 +1,16 @@
 "use client";
 
-import { useChatLog } from "../stores/chat-log";
+import { useChatEventStore } from "~/common/stores/chat-event-store";
 import { ChatRow } from "./chat-row";
 
 export const Chats = () => {
-  const chats = useChatLog((s) => s.chats);
+  const chatQueue = useChatEventStore((s) => s.chatQueue);
+  const lastChatUpdate = useChatEventStore((s) => s.lastChatUpdate);
 
   return (
     <div className="">
-      {chats.map((v, i) => (
-        <ChatRow key={i} data={v} />
+      {chatQueue.getAll().map((v, i) => (
+        <ChatRow key={`${v.timestamp || i}-${lastChatUpdate}`} data={v} />
       ))}
     </div>
   );

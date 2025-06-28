@@ -1,14 +1,14 @@
 "use client";
 
-import { useLiveChannel } from "~/common/stores/live-channel";
+import { useChannel } from "~/features/soop/stores/channel";
 
 export const LiveStatus = () => {
-  const channelState = useLiveChannel();
+  const { channel } = useChannel();
 
   return (
     <div className="">
-      <span>채널: {channelState.channel?.label}</span>
-      <span>{channelState.connected ? "연결됨" : "연결안됨"}</span>
+      <span>채널: {channel?.label}</span>
+      <span>연결됨</span>
     </div>
   );
 };

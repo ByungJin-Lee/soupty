@@ -1,8 +1,6 @@
-import {
-  mergeWithDefault,
-  transformStreamerEmojis,
-} from "~/features/emoji/converter";
+import { mergeWithDefault } from "~/features/emoji";
 import { useEmoji } from "~/features/emoji/stores/emoji";
+import { transformStreamerEmojis } from "~/features/emoji/utils";
 import ipcService from "~/services/ipc";
 import { StreamerLive } from "~/services/ipc/types";
 import { Channel } from "~/types";
