@@ -13,7 +13,7 @@ use tauri::{
 use crate::{
     controllers::addon_manager::AddonManager,
     services::{
-        addons::{default_ui::DefaultUIAddon, interface::AddonContext},
+        addons::{db_logger::DBLoggerAddon, default_ui::DefaultUIAddon, interface::AddonContext},
         db::service::DBService,
         event_mapper::map_sdk_to_domain,
     },
@@ -60,27 +60,31 @@ impl MainController {
                 streamer_id: streamer_id.to_string(),
             },
         )?;
-        let mut event_bus = chat_conn.subscribe();
-        chat_conn.start().await?;
-        // 작업 완료
 
+        // 작업 완료
         let ctx = AddonContext { app_handle, db };
 
         // addon 등록
         self.addon_manager.register(Arc::new(DefaultUIAddon::new()));
+        self.addon_manager.register(Arc::new(DBLoggerAddon::new()));
         // addon 등록 끝
-
+        let channel_id = streamer_id.to_string();
         let manager = self.addon_manager.clone();
+
+        chat_conn.start().await?;
+
         let task_handle = spawn(async move {
+            let mut event_bus = chat_conn.subscribe();
             loop {
                 // 이벤트를 받으면
                 match event_bus.recv().await {
                     Ok(e) => {
-                        if let Some(de) = map_sdk_to_domain(&e) {
+                        if let Some(de) = map_sdk_to_domain(&channel_id, &e) {
                             manager.dispatch(&ctx, &de).await
                         }
                     }
-                    Err(_) => {
+                    Err(e) => {
+                        println!("{:?}", e);
                         break;
                     }
                 }

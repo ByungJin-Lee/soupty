@@ -1,8 +1,11 @@
+use chrono::{DateTime, Utc};
 use std::path::Path;
+use tokio::sync::{mpsc, oneshot};
 
-use tokio::sync::mpsc;
-
-use crate::services::db::{actor::DBActor, commands::DBCommand};
+use crate::services::db::{
+    actor::DBActor,
+    commands::{ChannelData, ChatLogData, DBCommand, EventLogData, UserData},
+};
 
 #[derive(Clone)]
 pub struct DBService {
@@ -26,5 +29,95 @@ impl DBService {
             .map_err(|_| eprintln!("Initialization error!"));
 
         Self { sender }
+    }
+
+    pub async fn create_broadcast_session(
+        &self,
+        channel_id: String,
+        title: String,
+        started_at: DateTime<Utc>,
+    ) -> Result<i64, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::CreateBroadcastSession {
+                channel_id,
+                title,
+                started_at,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn end_broadcast_session(
+        &self,
+        broadcast_id: i64,
+        ended_at: DateTime<Utc>,
+    ) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::EndBroadcastSession {
+                broadcast_id,
+                ended_at,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn upsert_users(&self, users: Vec<UserData>) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::UpsertUsers {
+                users,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn upsert_channels(&self, channels: Vec<ChannelData>) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::UpsertChannels {
+                channels,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn insert_chat_logs(&self, logs: Vec<ChatLogData>) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::InsertChatLogs { logs, reply_to: tx })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn insert_event_logs(&self, logs: Vec<EventLogData>) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::InsertEventLogs { logs, reply_to: tx })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
     }
 }

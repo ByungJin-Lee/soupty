@@ -30,14 +30,11 @@ export default class GlobalEventManger {
       return;
     }
     try {
-      const chatUnlistenPromise = listen<RawChatEvent>(
-        ipcEvents.log.chat,
-        (e) => {
-          this.callbacks?.chat(e.payload);
-        }
-      );
-      const otherUnlistenPromise = listen(ipcEvents.log.event, (e) => {
-        this.callbacks?.other(e.payload);
+      listen<RawChatEvent>(ipcEvents.log.chat, (e) => {
+        this.callbacks?.chat(e.payload);
+      });
+      listen(ipcEvents.log.event, (e) => {
+        this.callbacks?.other(e);
       });
       // remove listener 등록
       this.isListening = true;

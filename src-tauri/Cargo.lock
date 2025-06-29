@@ -4195,9 +4195,9 @@ dependencies = [
 
 [[package]]
 name = "soup-sdk"
-version = "0.1.71"
+version = "0.1.81"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd9285abad1dba292f4b3969a3364dfa4e61755b7517dcb62742313debe9156a"
+checksum = "846a4c5436d642d4b600c37886f3f82f1edd38eaf3b59131ffb631493b1c1d5d"
 dependencies = [
  "anyhow",
  "chrono",
@@ -5745,9 +5745,9 @@ dependencies = [
 
 [[package]]
 name = "windows-registry"
-version = "0.5.2"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b3bab093bdd303a1240bb99b8aba8ea8a69ee19d34c9e2ef9594e708a4878820"
+checksum = "5b8a9ed28765efc97bbc954883f4e6796c33a06546ebafacbabee9696967499e"
 dependencies = [
  "windows-link",
  "windows-result",

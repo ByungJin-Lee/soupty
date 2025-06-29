@@ -2,6 +2,11 @@ import { Badge } from "./badge";
 import { ChatType, MessagePart } from "./chat";
 import { OGQ, User } from "./soop";
 
+export interface DomainEvent<T> {
+  type: string;
+  payload: T;
+}
+
 export interface BaseEvent {
   /**
    * @description uuid

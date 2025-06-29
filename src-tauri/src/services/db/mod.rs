@@ -1,3 +1,3 @@
-mod actor;
-mod commands;
+pub mod actor;
+pub mod commands;
 pub mod service;

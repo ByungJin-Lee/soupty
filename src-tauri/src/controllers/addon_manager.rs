@@ -37,8 +37,32 @@ impl AddonManager {
         let addons_clone = self.addons.lock().unwrap().clone();
         for addon in addons_clone.values() {
             match event {
+                // 생명 주기 이벤트
+                DomainEvent::Connected => addon.on_connected(context).await,
+                DomainEvent::Disconnected => addon.on_disconnected(context).await,
+
+                // 채팅 관련 이벤트
+                DomainEvent::BJStateChange => addon.on_bj_state_change(context).await,
                 DomainEvent::Chat(e) => addon.on_chat(context, e).await,
-                // ... 다른 이벤트 타입에 대한 분배 로직 ...
+                DomainEvent::Donation(e) => addon.on_donation(context, e).await,
+                DomainEvent::Subscribe(e) => addon.on_subscribe(context, e).await,
+
+                // DomainEvent::Kick(e) => addon.on_kick(context, e).await,
+                DomainEvent::KickCancel(e) => addon.on_kick_cancel(context, e).await,
+                DomainEvent::Mute(e) => addon.on_mute(context, e).await,
+                DomainEvent::Black(e) => addon.on_black(context, e).await,
+                DomainEvent::Freeze(e) => addon.on_freeze(context, e).await,
+                DomainEvent::Notification(e) => addon.on_notification(context, e).await,
+
+                DomainEvent::MissionDonation(e) => addon.on_mission_donation(context, e).await,
+                DomainEvent::MissionTotal(e) => addon.on_mission_total(context, e).await,
+                DomainEvent::BattleMissionResult(e) => {
+                    addon.on_battle_mission_result(context, e).await
+                }
+                DomainEvent::ChallengeMissionResult(e) => {
+                    addon.on_challenge_mission_result(context, e).await
+                }
+                DomainEvent::Slow(e) => addon.on_slow(context, e).await,
             }
         }
     }

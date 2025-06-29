@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{models::events::ChatEvent, services::db::service::DBService};
+use crate::{models::events::*, services::db::service::DBService};
 use async_trait::async_trait;
 use tauri::AppHandle;
 
@@ -13,19 +13,34 @@ pub struct AddonContext {
 pub trait Addon: Send + Sync {
     fn name(&self) -> &'static str;
 
-    // 이벤트 핸들러
+    // 생명 주기 이벤트
+    async fn on_connected(&self, _ctx: &AddonContext) {}
+    async fn on_disconnected(&self, _ctx: &AddonContext) {}
+
+    // 채팅 관련 이벤트 핸들러
+    async fn on_bj_state_change(&self, _ctx: &AddonContext) {}
     async fn on_chat(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_donation(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_subscribe(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    // async fn on_enter(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    // async fn on_exit(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_kick(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_kick_cancel(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_mute(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_black(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_freeze(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_notification(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    // async fn on_join(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_mission(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
-    async fn on_slow(&self, _ctx: &AddonContext, _event: &ChatEvent) {}
+    async fn on_donation(&self, _ctx: &AddonContext, _event: &DonationEvent) {}
+    async fn on_subscribe(&self, _ctx: &AddonContext, _event: &SubscribeEvent) {}
+    // async fn on_kick(&self, _ctx: &AddonContext, _event: &UserEvent) {}
+    async fn on_kick_cancel(&self, _ctx: &AddonContext, _event: &SimplifiedUserEvent) {}
+    async fn on_mute(&self, _ctx: &AddonContext, _event: &MuteEvent) {}
+    async fn on_black(&self, _ctx: &AddonContext, _event: &SimplifiedUserEvent) {}
+    async fn on_freeze(&self, _ctx: &AddonContext, _event: &FreezeEvent) {}
+    async fn on_notification(&self, _ctx: &AddonContext, _event: &NotificationEvent) {}
+    async fn on_mission_donation(&self, _ctx: &AddonContext, _event: &MissionEvent) {}
+    async fn on_mission_total(&self, _ctx: &AddonContext, _event: &MissionTotalEvent) {}
+    async fn on_battle_mission_result(
+        &self,
+        _ctx: &AddonContext,
+        _event: &BattleMissionResultEvent,
+    ) {
+    }
+    async fn on_challenge_mission_result(
+        &self,
+        _ctx: &AddonContext,
+        _event: &ChallengeMissionResultEvent,
+    ) {
+    }
+    async fn on_slow(&self, _ctx: &AddonContext, _event: &SlowEvent) {}
 }

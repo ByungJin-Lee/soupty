@@ -23,10 +23,10 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 --------------------------------------------------------------------
--- Table: broadcasts
+-- Table: broadcast_sessions
 -- 역할: 개별 방송 세션을 식별하고 관리합니다.
 --------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS broadcasts (
+CREATE TABLE IF NOT EXISTS broadcast_sessions (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     channel_id      TEXT NOT NULL,
     title           TEXT NOT NULL,
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS chat_logs (
     message         TEXT NOT NULL, -- 타입에 따른 본문 (텍스트, 이모티콘 ID 등)
     metadata        TEXT,          -- 추가 정보 (JSON)
     timestamp       DATETIME NOT NULL,
-    FOREIGN KEY(broadcast_id) REFERENCES broadcasts(id) ON DELETE CASCADE,
+    FOREIGN KEY(broadcast_id) REFERENCES broadcast_sessions(id) ON DELETE CASCADE,
     FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
 
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS event_logs (
     event_type      TEXT NOT NULL, -- 'DONATION', 'SUBSCRIBE' 등
     payload         TEXT NOT NULL, -- 이벤트 고유 데이터 (JSON)
     timestamp       DATETIME NOT NULL,
-    FOREIGN KEY(broadcast_id) REFERENCES broadcasts(id) ON DELETE CASCADE,
+    FOREIGN KEY(broadcast_id) REFERENCES broadcast_sessions(id) ON DELETE CASCADE,
     FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
 
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS reports (
     report_data     TEXT NOT NULL, -- 리포트 결과 (JSON)
     version         INTEGER NOT NULL, -- 리포트 구조 버전
     generated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY(broadcast_id) REFERENCES broadcasts(id) ON DELETE CASCADE
+    FOREIGN KEY(broadcast_id) REFERENCES broadcast_sessions(id) ON DELETE CASCADE
 );
 
 --------------------------------------------------------------------

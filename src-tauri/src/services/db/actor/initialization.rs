@@ -1,38 +1,17 @@
-use std::path::PathBuf;
-
 use rusqlite::{functions::FunctionFlags, Connection};
-use tokio::sync::mpsc;
+use crate::util::hangul::decompose_hangul_to_string;
 
-use crate::{services::db::commands::DBCommand, util::hangul::decompose_hangul_to_string};
-
-// --- 3. 일꾼: DbActor (모듈 외부로 노출되지 않음) ---
-pub struct DBActor {
-    conn: Connection,
-    receiver: mpsc::Receiver<DBCommand>,
+pub struct DBInitializer<'a> {
+    conn: &'a Connection,
 }
 
-impl DBActor {
-    pub fn new(path: PathBuf, receiver: mpsc::Receiver<DBCommand>) -> anyhow::Result<Self> {
-        let conn = Connection::open(path)?;
-        Ok(Self { conn, receiver })
-    }
-
-    /// 메시지 루프 실행
-    pub fn run(&mut self) {
-        // run이 호출된 직후 초기화 로직 실행
-        if let Err(e) = self.initialize_db() {
-            eprintln!("DB 초기화 실패: {}", e);
-            // 초기화 실패 시 스레드 종료
-            return;
-        }
-
-        while let Some(cmd) = self.receiver.blocking_recv() {
-            self.handle_command(cmd);
-        }
+impl<'a> DBInitializer<'a> {
+    pub fn new(conn: &'a Connection) -> Self {
+        Self { conn }
     }
 
     /// DB 초기화: 마이그레이션, 커스텀 함수 등록 등
-    fn initialize_db(&mut self) -> anyhow::Result<()> {
+    pub fn initialize(&self) -> anyhow::Result<()> {
         // 성능 최적화 PRAGMA
         self.conn.execute_batch("PRAGMA journal_mode = WAL;")?;
 
@@ -49,21 +28,8 @@ impl DBActor {
         Ok(())
     }
 
-    fn handle_command(&mut self, cmd: DBCommand) {
-        match cmd {
-            DBCommand::Initialize => {
-                // 이미 new() -> run() -> initialize_db() 흐름에서 처리되었으므로
-                // 이 커맨드는 사실상 초기화가 잘 되었는지 확인하는 용도로 사용될 수 있습니다.
-                println!("DBCommand::Initialize 수신됨. 이미 초기화 완료됨.");
-            } // 다른 커맨드 핸들러를 여기에 추가...
-        }
-    }
-
-    // --- 세부 구현 ---
-
     fn run_migrations(&self) -> rusqlite::Result<()> {
-        let scheme = include_str!("../../../migrations/schema.sql");
-
+        let scheme = include_str!("../../../../migrations/schema.sql");
         self.conn.execute_batch(scheme)?;
         Ok(())
     }

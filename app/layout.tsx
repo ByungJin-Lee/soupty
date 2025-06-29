@@ -15,10 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={``}>
+      <body className="">
         <GlobalEventProvider />
         <GlobalNavigationBar />
-        {children}
+        <main className="">{children}</main>
       </body>
     </html>
   );
