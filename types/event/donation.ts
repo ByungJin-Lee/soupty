@@ -1,0 +1,37 @@
+import { BaseEvent } from "./base";
+
+export enum DonationType {
+  Balloon = "Balloon",
+  ADBalloon = "AdBallon",
+}
+
+export interface DonationEvent extends BaseEvent {
+  /**
+   * @description 수량
+   */
+  amount: number;
+  /**
+   * @deprecated 해당 선물로 열혈이 되었는지 여부
+   */
+  becomeTopFan: boolean;
+  /**
+   * 채널 이름
+   */
+  channelId: string;
+  /**
+   * @description 별풍선 종류
+   */
+  donationType: DonationType;
+  /**
+   * @description 팬클럽이 되는 경우 숫자가 부여됩니다. 기존 팬클럽: 0
+   */
+  fanClubOrdinal: number;
+  /**
+   * @description 별풍선을 제공한 사람의 아이디
+   */
+  from: string;
+  /**
+   * @description 별풍선을 제공한 사람의 닉네임
+   */
+  fromLabel: string;
+}

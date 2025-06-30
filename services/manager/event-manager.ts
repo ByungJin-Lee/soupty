@@ -34,7 +34,7 @@ export default class GlobalEventManger {
         this.callbacks?.chat(e.payload);
       });
       listen(ipcEvents.log.event, (e) => {
-        this.callbacks?.other(e);
+        this.callbacks?.other(e.payload);
       });
       // remove listener 등록
       this.isListening = true;

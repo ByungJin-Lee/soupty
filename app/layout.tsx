@@ -15,10 +15,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className="">
+      <head>
+        <meta charSet="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
+      <body className="flex flex-col h-screen overflow-hidden">
         <GlobalEventProvider />
         <GlobalNavigationBar />
-        <main className="">{children}</main>
+        <main className="flex-grow overflow-hidden">{children}</main>
       </body>
     </html>
   );

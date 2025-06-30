@@ -8,7 +8,7 @@ import CircularQueue from "../utils/circular-queue";
 
 interface ChatEventState {
   chatQueue: CircularQueue<ChatEvent>;
-  lastChatUpdate: number;
+  lastUpdate: number;
   chatProcessor: ChatProcessor;
 }
 
@@ -24,11 +24,11 @@ interface ChatEventActions {
 
 export const useChatEventStore = create<ChatEventState & ChatEventActions>()(
   subscribeWithSelector((set, get) => {
-    const forceUpdate = () => set({ lastChatUpdate: Date.now() });
+    const forceUpdate = () => set({ lastUpdate: Date.now() });
 
     return {
       chatQueue: new CircularQueue<ChatEvent>(MAX_QUEUE_CAPACITY),
-      lastChatUpdate: Date.now(),
+      lastUpdate: Date.now(),
       chatProcessor: new ChatProcessor(),
 
       handleChatEvent(e) {
