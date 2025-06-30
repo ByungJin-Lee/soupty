@@ -4,6 +4,7 @@ use crate::{models::events::*, services::db::service::DBService};
 use async_trait::async_trait;
 use tauri::AppHandle;
 
+#[derive(Clone)]
 pub struct AddonContext {
     pub app_handle: AppHandle,
     pub db: Arc<DBService>,

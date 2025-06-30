@@ -34,4 +34,8 @@ export interface DonationEvent extends BaseEvent {
    * @description 별풍선을 제공한 사람의 닉네임
    */
   fromLabel: string;
+  /**
+   * @description 후원 메세지입니다. 없을 수 도 있습니다.
+   */
+  message: string | null;
 }

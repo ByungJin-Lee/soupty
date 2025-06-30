@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Result;
 use soup_sdk::{
@@ -9,13 +10,14 @@ use tauri::{
     async_runtime::{spawn, JoinHandle},
     AppHandle,
 };
+use tokio::sync::Mutex;
 
 use crate::{
     controllers::addon_manager::AddonManager,
     services::{
         addons::{db_logger::DBLoggerAddon, default_ui::DefaultUIAddon, interface::AddonContext},
         db::service::DBService,
-        event_mapper::map_sdk_to_domain,
+        event_mapper::{EventMapper, DONATION_FLUSH_INTERVAL_MS},
     },
 };
 
@@ -27,6 +29,7 @@ pub enum SystemStatus {
 
 pub struct MainController {
     listener_task: Option<JoinHandle<()>>,
+    timer_task: Option<JoinHandle<()>>,
     addon_manager: AddonManager,
     pub status: SystemStatus,
 }
@@ -37,6 +40,7 @@ impl MainController {
             addon_manager: AddonManager::new(),
             status: SystemStatus::Idle,
             listener_task: None,
+            timer_task: None,
         }
     }
 
@@ -46,14 +50,28 @@ impl MainController {
         app_handle: AppHandle,
         db: Arc<DBService>,
     ) -> Result<()> {
-        // 이미 실행중인 경우, 무시
+        self.validate_not_running()?;
+        let (chat_conn, ctx, event_mapper, manager) = self.initialize_dependencies(streamer_id, app_handle, db).await?;
+        let (event_task, timer_task) = self.start_processing_tasks(chat_conn, event_mapper, manager, ctx, streamer_id).await?;
+        self.finalize_startup(event_task, timer_task);
+        Ok(())
+    }
+
+    fn validate_not_running(&self) -> Result<()> {
         if self.status == SystemStatus::Running {
             return Err(anyhow::anyhow!("이미 실행 중입니다."));
         }
+        Ok(())
+    }
 
-        // chat conn 관련 사전 작업
+    async fn initialize_dependencies(
+        &mut self,
+        streamer_id: &str,
+        app_handle: AppHandle,
+        db: Arc<DBService>,
+    ) -> Result<(SoopChatConnection, AddonContext, Arc<Mutex<EventMapper>>, AddonManager)> {
+        // Chat connection 설정
         let soop_client = SoopHttpClient::new();
-
         let chat_conn = SoopChatConnection::new(
             Arc::new(soop_client),
             SoopChatOptions {
@@ -61,40 +79,85 @@ impl MainController {
             },
         )?;
 
-        // 작업 완료
+        // 컨텍스트 생성
         let ctx = AddonContext { app_handle, db };
 
-        // addon 등록
+        // Addon 등록
         self.addon_manager.register(Arc::new(DefaultUIAddon::new()));
         self.addon_manager.register(Arc::new(DBLoggerAddon::new()));
-        // addon 등록 끝
-        let channel_id = streamer_id.to_string();
+
+        // 매니저와 매퍼 준비
         let manager = self.addon_manager.clone();
+        let event_mapper = Arc::new(Mutex::new(EventMapper::new()));
 
         chat_conn.start().await?;
 
-        let task_handle = spawn(async move {
+        Ok((chat_conn, ctx, event_mapper, manager))
+    }
+
+    async fn start_processing_tasks(
+        &self,
+        chat_conn: SoopChatConnection,
+        event_mapper: Arc<Mutex<EventMapper>>,
+        manager: AddonManager,
+        ctx: AddonContext,
+        streamer_id: &str,
+    ) -> Result<(JoinHandle<()>, JoinHandle<()>)> {
+        let channel_id = streamer_id.to_string();
+
+        // 이벤트 처리 태스크
+        let event_task_mapper = event_mapper.clone();
+        let event_task_manager = manager.clone();
+        let event_task_ctx = ctx.clone();
+        let event_task_channel_id = channel_id.clone();
+        let event_task = spawn(async move {
             let mut event_bus = chat_conn.subscribe();
             loop {
-                // 이벤트를 받으면
                 match event_bus.recv().await {
                     Ok(e) => {
-                        if let Some(de) = map_sdk_to_domain(&channel_id, &e) {
-                            manager.dispatch(&ctx, &de).await
+                        let event = {
+                            let mut mapper = event_task_mapper.lock().await;
+                            mapper.process_event(&event_task_channel_id, &e)
+                        };
+                        
+                        if let Some(domain_event) = event {
+                            event_task_manager.dispatch(&event_task_ctx, &domain_event).await;
                         }
                     }
                     Err(e) => {
-                        println!("{:?}", e);
+                        log::error!("Event bus error: {:?}", e);
                         break;
                     }
                 }
-                // 이벤트를 domain event로 파싱한 후
             }
         });
 
-        self.listener_task = Some(task_handle);
+        // 타이머 태스크 (donation 처리)
+        let timer_task_mapper = event_mapper;
+        let timer_task_manager = manager;
+        let timer_task_ctx = ctx;
+        let timer_task = spawn(async move {
+            let mut interval = tokio::time::interval(Duration::from_millis(DONATION_FLUSH_INTERVAL_MS));
+            loop {
+                interval.tick().await;
+                let expired_donations = {
+                    let mut mapper = timer_task_mapper.lock().await;
+                    mapper.flush_expired_donations()
+                };
+                
+                for donation_event in expired_donations {
+                    timer_task_manager.dispatch(&timer_task_ctx, &donation_event).await;
+                }
+            }
+        });
+
+        Ok((event_task, timer_task))
+    }
+
+    fn finalize_startup(&mut self, event_task: JoinHandle<()>, timer_task: JoinHandle<()>) {
+        self.listener_task = Some(event_task);
+        self.timer_task = Some(timer_task);
         self.status = SystemStatus::Running;
-        Ok(())
     }
 
     pub fn stop(&mut self) {
@@ -105,7 +168,10 @@ impl MainController {
         // 처리
         if let Some(task) = self.listener_task.take() {
             task.abort();
-            self.status = SystemStatus::Idle;
         }
+        if let Some(timer) = self.timer_task.take() {
+            timer.abort();
+        }
+        self.status = SystemStatus::Idle;
     }
 }

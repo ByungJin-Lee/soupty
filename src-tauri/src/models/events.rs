@@ -71,6 +71,7 @@ pub struct DonationEvent {
     pub fan_club_ordinal: u32,
     pub become_top_fan: bool,
     pub donation_type: DonationType,
+    pub message: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
