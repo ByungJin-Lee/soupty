@@ -15,7 +15,7 @@ export const ChatViewer: React.FC<Props> = ({ className = "" }) => {
   const { containerRef, scrollAnchorRef, checkIfAtBottom } = useAutoScroll(
     lastChatUpdate,
     {
-      threshold: 50,
+      threshold: 100,
       behavior: "smooth",
     }
   );

@@ -2,12 +2,21 @@ use std::sync::Arc;
 
 use crate::{models::events::*, services::db::service::DBService};
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 use tauri::AppHandle;
+
+#[derive(Clone)]
+pub struct BroadcastMetadata {
+    pub channel_id: String,
+    pub title: String,
+    pub started_at: DateTime<Utc>,
+}
 
 #[derive(Clone)]
 pub struct AddonContext {
     pub app_handle: AppHandle,
     pub db: Arc<DBService>,
+    pub broadcast_metadata: Option<BroadcastMetadata>,
 }
 
 #[async_trait]

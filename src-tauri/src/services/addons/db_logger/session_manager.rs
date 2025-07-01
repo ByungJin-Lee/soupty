@@ -28,14 +28,21 @@ impl SessionManager {
             }
         }
 
-        // 새 방송 세션 생성
-        let now = chrono::Utc::now();
+        // broadcast_metadata에서 실제 방송 시작 시간과 제목 사용
+        let (title, started_at) = if let Some(metadata) = &ctx.broadcast_metadata {
+            (metadata.title.clone(), metadata.started_at)
+        } else {
+            // fallback: 현재 시간 사용
+            let now = chrono::Utc::now();
+            (format!("Live Stream - {}", now.format("%Y-%m-%d %H:%M:%S")), now)
+        };
+
         let broadcast_id = ctx
             .db
             .create_broadcast_session(
                 channel_id.to_string(),
-                format!("Live Stream - {}", now.format("%Y-%m-%d %H:%M:%S")),
-                now,
+                title,
+                started_at,
             )
             .await
             .map_err(|e| {
@@ -51,8 +58,8 @@ impl SessionManager {
         }
 
         println!(
-            "[SessionManager] New broadcast session created: {}",
-            broadcast_id
+            "[SessionManager] Broadcast session created/retrieved: {} (started: {})",
+            broadcast_id, started_at
         );
 
         Ok(broadcast_id)

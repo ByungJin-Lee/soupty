@@ -1,1 +1,1 @@
-export const MAX_QUEUE_CAPACITY = 1000;
+export const MAX_QUEUE_CAPACITY = 128;

@@ -24,6 +24,7 @@ impl<'a> CommandHandlers<'a> {
         started_at: DateTime<Utc>,
         reply_to: oneshot::Sender<Result<i64, String>>,
     ) {
+        // First try to insert new session
         let result = self.conn.prepare_cached(
             "INSERT INTO broadcast_sessions (channel_id, title, started_at) VALUES (?1, ?2, ?3) RETURNING id"
         )
@@ -31,10 +32,28 @@ impl<'a> CommandHandlers<'a> {
             stmt.query_row([&channel_id, &title, &started_at.to_rfc3339()], |row| {
                 row.get::<_, i64>(0)
             })
-        })
-        .map_err(|e| e.to_string());
+        });
 
-        let _ = reply_to.send(result);
+        // If insert fails due to unique constraint, find existing session
+        let final_result = match result {
+            Ok(id) => Ok(id),
+            Err(rusqlite::Error::SqliteFailure(error, _)) 
+                if error.code == rusqlite::ErrorCode::ConstraintViolation => {
+                // Find existing session with same channel_id and started_at
+                self.conn.prepare_cached(
+                    "SELECT id FROM broadcast_sessions WHERE channel_id = ?1 AND started_at = ?2"
+                )
+                .and_then(|mut stmt| {
+                    stmt.query_row([&channel_id, &started_at.to_rfc3339()], |row| {
+                        row.get::<_, i64>(0)
+                    })
+                })
+                .map_err(|e| e.to_string())
+            },
+            Err(e) => Err(e.to_string()),
+        };
+
+        let _ = reply_to.send(final_result);
     }
 
     pub fn handle_end_broadcast_session(

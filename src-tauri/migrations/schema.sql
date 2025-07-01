@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS broadcast_sessions (
     title           TEXT NOT NULL,
     started_at      DATETIME NOT NULL,
     ended_at        DATETIME, -- 방송 종료 시 기록
+    UNIQUE(channel_id, started_at), -- 중복 세션 방지
     FOREIGN KEY(channel_id) REFERENCES channels(channel_id) ON DELETE CASCADE
 );
 
