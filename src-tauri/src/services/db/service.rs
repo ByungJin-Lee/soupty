@@ -71,6 +71,19 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
+    pub async fn get_channels(&self) -> Result<Vec<ChannelData>, String> {
+        let (tx, rx) = oneshot::channel::<Result<Vec<ChannelData>, String>>();
+        self.sender
+            .send(DBCommand::GetChannels {
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
     pub async fn upsert_users(&self, users: Vec<UserData>) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();
         self.sender
@@ -90,6 +103,20 @@ impl DBService {
         self.sender
             .send(DBCommand::UpsertChannels {
                 channels,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn delete_channel(&self, channel_id: &str) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::DeleteChannel {
+                channel_id: channel_id.to_string(),
                 reply_to: tx,
             })
             .await

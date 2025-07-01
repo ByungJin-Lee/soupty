@@ -60,12 +60,14 @@ impl DBActor {
             DBCommand::UpsertChannels { channels, reply_to } => {
                 handlers.handle_upsert_channels(channels, reply_to)
             }
+            DBCommand::DeleteChannel { channel_id, reply_to } => handlers.handle_delete_channel(channel_id, reply_to),
             DBCommand::InsertChatLogs { logs, reply_to } => {
                 handlers.handle_insert_chat_logs(logs, reply_to)
             }
             DBCommand::InsertEventLogs { logs, reply_to } => {
                 handlers.handle_insert_event_logs(logs, reply_to)
             }
+            DBCommand::GetChannels { reply_to } => handlers.handle_get_channels(reply_to),
         }
     }
 }

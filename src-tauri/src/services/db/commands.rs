@@ -1,3 +1,4 @@
+use serde::Serialize;
 use tokio::sync::oneshot;
 use chrono::{DateTime, Utc};
 
@@ -17,6 +18,10 @@ pub enum DBCommand {
         ended_at: DateTime<Utc>,
         reply_to: oneshot::Sender<Result<(), String>>,
     },
+
+    GetChannels {
+        reply_to: oneshot::Sender<Result<Vec<ChannelData>, String>>, 
+    },
     
     // 사용자 및 채널 정보
     UpsertUsers {
@@ -28,6 +33,11 @@ pub enum DBCommand {
         reply_to: oneshot::Sender<Result<(), String>>,
     },
     
+    DeleteChannel {
+        channel_id: String,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
+
     // 로그 배치 저장
     InsertChatLogs {
         logs: Vec<ChatLogData>,
@@ -46,7 +56,8 @@ pub struct UserData {
     pub last_seen: DateTime<Utc>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ChannelData {
     pub channel_id: String,
     pub channel_name: String,

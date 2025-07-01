@@ -4,10 +4,13 @@ import { Emoji } from "~/types";
 export enum IpcRequestWithoutPayload {
   None = "none",
   DisconnectChannel = "stop_main_controller",
+  GetChannels = "get_channels",
 }
 
 // 요청 Payload가 있는 request 객체입니다.
 export enum IpcRequestWithPayload {
+  DeleteChannel = "delete_channel",
+  UpsertChannel = "upsert_channel",
   ConnectChannel = "start_main_controller",
   AnalyzeEmotion = "analyze_chat",
   GetStreamerLive = "fetch_streamer_live",
@@ -36,6 +39,13 @@ export interface IpcPayloadMap {
   [IpcRequestWithPayload.ConnectChannel]: {
     channelId: string;
   };
+  [IpcRequestWithPayload.UpsertChannel]: {
+    channelId: string;
+    channelName: string;
+  };
+  [IpcRequestWithPayload.DeleteChannel]: {
+    channelId: string;
+  };
 }
 
 /**
@@ -44,12 +54,19 @@ export interface IpcPayloadMap {
 export interface IpcResponseMap {
   [IpcRequestWithoutPayload.None]: unknown;
   [IpcRequestWithoutPayload.DisconnectChannel]: void;
+  [IpcRequestWithoutPayload.GetChannels]: {
+    channelId: string;
+    channelName: string;
+    lastUpdated: number;
+  }[];
   /// 라이브가 아닌 경우 null이 반환됩니다.
   [IpcRequestWithPayload.GetStreamerLive]: StreamerLive | null;
   [IpcRequestWithPayload.GetStreamerEmoji]: StreamerEmoji;
   [IpcRequestWithPayload.GetStreamerStation]: StreamerStation;
   [IpcRequestWithPayload.AnalyzeEmotion]: unknown;
   [IpcRequestWithPayload.ConnectChannel]: void;
+  [IpcRequestWithPayload.DeleteChannel]: void;
+  [IpcRequestWithPayload.UpsertChannel]: void;
 }
 
 export interface StreamerLive {
