@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use rusqlite::Connection;
+use rusqlite::{fallible_streaming_iterator::FallibleStreamingIterator, Connection};
 use tokio::sync::oneshot;
 
 use crate::services::db::commands::{ChannelData, ChatLogData, EventLogData, UserData};
@@ -93,6 +93,53 @@ impl<'a> CommandHandlers<'a> {
                 Ok(())
             })
             .map_err(|e| e.to_string());
+
+        let _ = reply_to.send(result);
+    }
+
+    
+    pub fn handle_delete_channel(
+        &self,
+        channel_id: String,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self
+            .conn
+            .prepare_cached(
+                "DELETE FROM channels where channel_id = ?1",
+            )
+            .and_then(|mut stmt| {
+                stmt.execute([channel_id])?;
+                Ok(())
+            })
+            .map_err(|e| e.to_string());
+
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_get_channels(
+        &self,
+        reply_to: oneshot::Sender<Result<Vec<ChannelData>, String>>,
+    ) {
+        let result = (|| {
+            let mut stmt = self.conn.prepare("SELECT channel_id, channel_name, last_updated FROM channels")
+                .map_err(|_| "구문 오류".to_string())?;
+            let mut rows = stmt.query([])
+                .map_err(|_| "Transaction 오류".to_string())?;
+
+            let mut channels: Vec<ChannelData> = Vec::new();
+
+            while let Some(row) = rows.next().map_err(|_| "파싱 에러".to_string())? {
+                let channel_id: String = row.get(0).unwrap_or_default();
+                let channel_name: String = row.get(1).unwrap_or_default();
+                let last_updated_str: String = row.get(2).unwrap_or_default();
+                let last_updated = DateTime::parse_from_rfc3339(&last_updated_str)
+                    .map(|dt| dt.with_timezone(&Utc))
+                    .unwrap_or_else(|_| Utc::now());
+                channels.push(ChannelData { channel_id, channel_name, last_updated });
+            }
+            Ok(channels)
+        })();
 
         let _ = reply_to.send(result);
     }
