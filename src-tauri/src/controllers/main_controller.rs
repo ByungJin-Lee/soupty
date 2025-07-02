@@ -1,5 +1,4 @@
 use std::sync::Arc;
-use std::time::Duration;
 
 use anyhow::Result;
 use soup_sdk::{
@@ -13,11 +12,20 @@ use tauri::{
 use tokio::sync::Mutex;
 
 use crate::{
-    controllers::addon_manager::AddonManager,
+    controllers::{
+        addon_manager::AddonManager,
+        metadata_manager::MetadataManager,
+        timer_manager::TimerManager,
+    },
     services::{
-        addons::{db_logger::DBLoggerAddon, default_ui::DefaultUIAddon, interface::{AddonContext, BroadcastMetadata}},
+        addons::{
+            data_enrichment::DataEnrichmentAddon,
+            db_logger::DBLoggerAddon, 
+            default_ui::DefaultUIAddon, 
+            interface::AddonContext
+        },
         db::service::DBService,
-        event_mapper::{EventMapper, DONATION_FLUSH_INTERVAL_MS},
+        event_mapper::EventMapper,
     },
 };
 
@@ -80,7 +88,7 @@ impl MainController {
         )?;
 
         // 방송 메타데이터 가져오기
-        let broadcast_metadata = self.fetch_broadcast_metadata(streamer_id).await?;
+        let broadcast_metadata = MetadataManager::fetch_initial_metadata(streamer_id).await?;
 
         // 컨텍스트 생성
         let ctx = AddonContext { 
@@ -92,6 +100,7 @@ impl MainController {
         // Addon 등록
         self.addon_manager.register(Arc::new(DefaultUIAddon::new()));
         self.addon_manager.register(Arc::new(DBLoggerAddon::new()));
+        self.addon_manager.register(Arc::new(DataEnrichmentAddon::new()));
 
         // 매니저와 매퍼 준비
         let manager = self.addon_manager.clone();
@@ -139,24 +148,13 @@ impl MainController {
             }
         });
 
-        // 타이머 태스크 (donation 처리)
-        let timer_task_mapper = event_mapper;
-        let timer_task_manager = manager;
-        let timer_task_ctx = ctx;
-        let timer_task = spawn(async move {
-            let mut interval = tokio::time::interval(Duration::from_millis(DONATION_FLUSH_INTERVAL_MS));
-            loop {
-                interval.tick().await;
-                let expired_donations = {
-                    let mut mapper = timer_task_mapper.lock().await;
-                    mapper.flush_expired_donations()
-                };
-                
-                for donation_event in expired_donations {
-                    timer_task_manager.dispatch(&timer_task_ctx, &donation_event).await;
-                }
-            }
-        });
+        // 통합 타이머 태스크 (donation 처리 + 메타데이터 업데이트)
+        let timer_task = TimerManager::start_unified_timer(
+            event_mapper,
+            manager,
+            ctx,
+            channel_id.clone(),
+        );
 
         Ok((event_task, timer_task))
     }
@@ -182,24 +180,4 @@ impl MainController {
         self.status = SystemStatus::Idle;
     }
 
-    async fn fetch_broadcast_metadata(&self, streamer_id: &str) -> Result<BroadcastMetadata> {
-        let soop_client = SoopHttpClient::new();
-        
-        // Station 데이터에서 broad_start 가져오기
-        let station = soop_client.get_station(streamer_id).await?;
-        
-        // Live 데이터에서 title 가져오기
-        let (_, live) = soop_client.get_live_detail_state(streamer_id).await?;
-        
-        // broad_start를 DateTime<Utc>로 파싱 (YYYY-MM-DD HH:MM:SS 형식)
-        let started_at = chrono::NaiveDateTime::parse_from_str(&station.broad_start, "%Y-%m-%d %H:%M:%S")
-            .map_err(|e| anyhow::anyhow!("Failed to parse broad_start: {}", e))?
-            .and_utc();
-        
-        Ok(BroadcastMetadata {
-            channel_id: streamer_id.to_string(),
-            title: live.unwrap().title,
-            started_at,
-        })
-    }
 }

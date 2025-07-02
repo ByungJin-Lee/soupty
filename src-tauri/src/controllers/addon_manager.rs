@@ -66,4 +66,12 @@ impl AddonManager {
             }
         }
     }
+
+    // 메타데이터 업데이트를 모든 애드온에게 알림
+    pub async fn notify_metadata_update(&self, context: &AddonContext) {
+        let addons_clone = self.addons.lock().unwrap().clone();
+        for addon in addons_clone.values() {
+            addon.on_metadata_update(context).await;
+        }
+    }
 }
