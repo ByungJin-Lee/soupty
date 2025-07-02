@@ -138,3 +138,9 @@ pub struct RealTimeStats {
     pub last_updated: DateTime<Utc>,
     pub time_window_minutes: u32,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StatsEvent {
+    pub name: String,
+    pub value: f32,
+}

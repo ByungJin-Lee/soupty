@@ -5,6 +5,7 @@ import { RawChatEvent } from "~/types/event";
 type Callbacks = {
   chat: (e: RawChatEvent) => void;
   other: (e: unknown) => void;
+  stats: (e: unknown) => void;
 };
 
 export default class GlobalEventManger {
@@ -35,6 +36,10 @@ export default class GlobalEventManger {
       });
       listen(ipcEvents.log.event, (e) => {
         this.callbacks?.other(e.payload);
+      });
+      listen(ipcEvents.log.stats, (e) => {
+        console.log(e.payload);
+        this.callbacks?.stats(e.payload);
       });
       // remove listener 등록
       this.isListening = true;

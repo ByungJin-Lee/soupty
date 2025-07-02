@@ -90,17 +90,17 @@ impl MainController {
         // 방송 메타데이터 가져오기
         let broadcast_metadata = MetadataManager::fetch_initial_metadata(streamer_id).await?;
 
+        // Addon 등록
+        self.addon_manager.register(Arc::new(DefaultUIAddon::new()));
+        self.addon_manager.register(Arc::new(DBLoggerAddon::new()));
+        self.addon_manager.register(Arc::new(DataEnrichmentAddon::new(app_handle.clone())));
+
         // 컨텍스트 생성
         let ctx = AddonContext { 
             app_handle, 
             db,
             broadcast_metadata: Some(broadcast_metadata),
         };
-
-        // Addon 등록
-        self.addon_manager.register(Arc::new(DefaultUIAddon::new()));
-        self.addon_manager.register(Arc::new(DBLoggerAddon::new()));
-        self.addon_manager.register(Arc::new(DataEnrichmentAddon::new()));
 
         // 매니저와 매퍼 준비
         let manager = self.addon_manager.clone();
