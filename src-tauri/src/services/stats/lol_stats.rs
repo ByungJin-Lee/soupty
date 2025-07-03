@@ -3,23 +3,23 @@ use chrono::{Duration, Utc};
 use std::sync::Arc;
 use tokio::sync::RwLock;
 
-use crate::services::stats::matrix::chat_per_minute::calculate_chat_per_minute;
+use crate::services::stats::matrix::lol::calculate_lol;
 
 use super::models::*;
 use super::stats_trait::Stats;
 
-pub struct ChatPerMinuteStats;
+pub struct LOLStats;
 
-impl ChatPerMinuteStats {
+impl LOLStats {
     pub fn new() -> Self {
         Self
     }
 }
 
 #[async_trait]
-impl Stats for ChatPerMinuteStats {
+impl Stats for LOLStats {
     fn name(&self) -> &'static str {
-        "chat_per_minute"
+        "lol"
     }
 
     fn interval(&self) -> u64 {
@@ -32,8 +32,8 @@ impl Stats for ChatPerMinuteStats {
         _donation_data: &Arc<RwLock<Vec<EnrichedDonationData>>>,
     ) -> f32 {
         let chat_data_guard = chat_data.read().await;
-        // 최근 1분간의 채팅 수 계산
-        let cpm = calculate_chat_per_minute(chat_data_guard, Utc::now());
-        cpm as f32
+        // 최근 30초간
+        let lol = calculate_lol(chat_data_guard, Utc::now());
+        lol as f32
     }
 }

@@ -4,6 +4,8 @@ use tokio::sync::RwLock;
 use tokio::time::{interval, Duration as TokioDuration};
 
 use crate::services::event_name;
+use crate::services::stats::active_viewer_stats::ActiveViewerStats;
+use crate::services::stats::lol_stats::LOLStats;
 
 use super::chat_per_minute_stats::ChatPerMinuteStats;
 use super::models::*;
@@ -29,6 +31,8 @@ impl CoreStatsService {
         };
 
         service.add_stats_processor(Box::new(ChatPerMinuteStats::new()));
+        service.add_stats_processor(Box::new(LOLStats::new()));
+        service.add_stats_processor(Box::new(ActiveViewerStats::new()));
         service
     }
 

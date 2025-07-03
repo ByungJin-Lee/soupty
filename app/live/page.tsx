@@ -7,7 +7,7 @@ import ipcService from "~/services/ipc";
 
 export default function LivePage() {
   const { connect, disconnect } = useSOOPConnection({
-    id: "mygomiee",
+    id: "phonics1",
     label: "test",
   });
 

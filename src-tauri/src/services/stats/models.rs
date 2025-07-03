@@ -13,10 +13,7 @@ pub struct EnrichedChatData {
     pub tokens: Vec<String>,
     pub word_count: usize,
     pub character_count: usize,
-    pub is_question: bool,
-    pub contains_url: bool,
-    pub contains_emoji: bool,
-    pub language: String,
+    pub is_lol: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -28,9 +25,7 @@ pub struct EnrichedDonationData {
     pub amount: u32,
     pub message: Option<String>,
     pub timestamp: DateTime<Utc>,
-    pub message_tokens: Vec<String>,
-    pub amount_tier: String,
-    pub is_milestone: bool,
+    pub message_tokens: Vec<String>
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
