@@ -1,10 +1,7 @@
-use async_trait::async_trait;
-use chrono::{Duration, Utc};
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use std::collections::VecDeque;
 
+use crate::services::stats::interface::StatsMatrix;
 use crate::services::stats::matrix::active_viewer::calculate_active_viewer;
-use crate::services::stats::matrix::chat_per_minute::calculate_chat_per_minute;
 
 use super::models::*;
 use super::stats_trait::Stats;
@@ -17,7 +14,6 @@ impl ActiveViewerStats {
     }
 }
 
-#[async_trait]
 impl Stats for ActiveViewerStats {
     fn name(&self) -> &'static str {
         "active_viewer"
@@ -27,16 +23,12 @@ impl Stats for ActiveViewerStats {
         2500 // 2.5 계산 (밀리초)
     }
 
-    async fn evaluate(
+    fn evaluate(
         &self,
-        chat_data: &Arc<RwLock<Vec<EnrichedChatData>>>,
-        donation_data: &Arc<RwLock<Vec<EnrichedDonationData>>>,
-    ) -> f32 {
-        let chat_data_guard = chat_data.read().await;
-        let donation_data_guard = donation_data.read().await;
-
-        // 최근 1분간의 채팅 수 계산
-        let active_viewer_count = calculate_active_viewer(chat_data_guard, donation_data_guard);
-        active_viewer_count as f32
+        chat_data: &VecDeque<EnrichedChatData>,
+        donation_data: &VecDeque<EnrichedDonationData>,
+    ) -> StatsMatrix {
+        let active_viewer_data = calculate_active_viewer(chat_data, donation_data);
+        StatsMatrix::ActiveViewer(active_viewer_data)
     }
 }

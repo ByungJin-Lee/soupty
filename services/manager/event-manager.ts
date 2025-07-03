@@ -1,10 +1,10 @@
 import { listen } from "@tauri-apps/api/event";
 import { ipcEvents } from "~/constants/ipc-events";
-import { RawChatEvent } from "~/types/event";
+import { RawChatEvent, RawDomainEvent } from "~/types/event";
 
 type Callbacks = {
   chat: (e: RawChatEvent) => void;
-  other: (e: unknown) => void;
+  other: (e: RawDomainEvent) => void;
   stats: (e: unknown) => void;
 };
 
@@ -34,11 +34,10 @@ export default class GlobalEventManger {
       listen<RawChatEvent>(ipcEvents.log.chat, (e) => {
         this.callbacks?.chat(e.payload);
       });
-      listen(ipcEvents.log.event, (e) => {
+      listen<RawDomainEvent>(ipcEvents.log.event, (e) => {
         this.callbacks?.other(e.payload);
       });
       listen(ipcEvents.log.stats, (e) => {
-        console.log(e.payload);
         this.callbacks?.stats(e.payload);
       });
       // remove listener 등록

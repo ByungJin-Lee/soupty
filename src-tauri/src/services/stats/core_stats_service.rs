@@ -1,10 +1,12 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{Duration, Utc};
+use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::time::{interval, Duration as TokioDuration};
 
 use crate::services::event_name;
 use crate::services::stats::active_viewer_stats::ActiveViewerStats;
+use crate::services::stats::interface::StatsMatrix;
 use crate::services::stats::lol_stats::LOLStats;
 
 use super::chat_per_minute_stats::ChatPerMinuteStats;
@@ -13,21 +15,25 @@ use super::stats_trait::Stats;
 use tauri::{AppHandle, Emitter};
 
 pub struct CoreStatsService {
-    chat_data: Arc<RwLock<Vec<EnrichedChatData>>>,
-    donation_data: Arc<RwLock<Vec<EnrichedDonationData>>>,
+    chat_data: Arc<RwLock<VecDeque<EnrichedChatData>>>,
+    donation_data: Arc<RwLock<VecDeque<EnrichedDonationData>>>,
     time_window_minutes: u32,
     stats_processors: Vec<Box<dyn Stats>>,
     app_handle: AppHandle,
+    max_buffer_size: usize,
 }
 
 impl CoreStatsService {
+    const DEFAULT_MAX_BUFFER_SIZE: usize = 50000; // 기본 최대 버퍼 크기
+
     pub fn new(time_window_minutes: u32, app_handle: AppHandle) -> Self {
         let mut service = Self {
-            chat_data: Arc::new(RwLock::new(Vec::new())),
-            donation_data: Arc::new(RwLock::new(Vec::new())),
+            chat_data: Arc::new(RwLock::new(VecDeque::with_capacity(1000))),
+            donation_data: Arc::new(RwLock::new(VecDeque::with_capacity(100))),
             time_window_minutes,
             stats_processors: Vec::new(),
             app_handle,
+            max_buffer_size: Self::DEFAULT_MAX_BUFFER_SIZE,
         };
 
         service.add_stats_processor(Box::new(ChatPerMinuteStats::new()));
@@ -42,73 +48,92 @@ impl CoreStatsService {
 
     pub async fn record_chat_data(&self, data: EnrichedChatData) {
         let mut chat_data = self.chat_data.write().await;
-        self.cleanup_old_data(&mut chat_data, data.timestamp).await;
-        chat_data.push(data);
+        chat_data.push_back(data);
+
+        // 메모리 제한 - 최대 크기 초과 시 오래된 데이터 제거
+        if chat_data.len() > self.max_buffer_size {
+            chat_data.pop_front();
+        }
     }
 
     pub async fn record_donation_data(&self, data: EnrichedDonationData) {
         let mut donation_data = self.donation_data.write().await;
-        self.cleanup_old_data(&mut donation_data, data.timestamp)
-            .await;
-        donation_data.push(data);
-    }
+        donation_data.push_back(data);
 
-    pub fn start_stats_scheduler(self: Arc<Self>) {
-        for processor in &self.stats_processors {
-            let processor_interval = processor.interval();
-            let service_clone = Arc::clone(&self);
-            let processor_name = processor.name().to_string();
-
-            tokio::spawn(async move {
-                let mut timer = interval(TokioDuration::from_millis(processor_interval));
-
-                loop {
-                    timer.tick().await;
-
-                    if let Some(processor) = service_clone
-                        .stats_processors
-                        .iter()
-                        .find(|p| p.name() == processor_name)
-                    {
-                        let value = processor
-                            .evaluate(&service_clone.chat_data, &service_clone.donation_data)
-                            .await;
-
-                        let stats_event = StatsEvent {
-                            name: processor_name.clone(),
-                            value,
-                        };
-
-                        let _ = service_clone
-                            .app_handle
-                            .emit(event_name::LOG_STATS, &stats_event);
-                    }
-                }
-            });
+        // 도네이션은 일반적으로 적으므로 채팅의 1/10 크기로 제한
+        let max_donation_size = self.max_buffer_size / 10;
+        if donation_data.len() > max_donation_size {
+            donation_data.pop_front();
         }
     }
 
-    async fn cleanup_old_data<T>(&self, data: &mut Vec<T>, current_time: DateTime<Utc>)
-    where
-        T: HasTimestamp,
-    {
+    pub fn start_stats_scheduler(self: Arc<Self>) {
+        // 데이터 정리 작업을 1초마다 실행
+        let cleanup_service = Arc::clone(&self);
+        tokio::spawn(async move {
+            let mut cleanup_timer = interval(TokioDuration::from_secs(1));
+
+            loop {
+                cleanup_timer.tick().await;
+                cleanup_service.cleanup_old_data_periodic().await;
+            }
+        });
+
+        // 배치 처리 스케줄러 - 모든 통계를 2.5초마다 한 번에 계산
+        let batch_service = Arc::clone(&self);
+        tokio::spawn(async move {
+            let mut batch_timer = interval(TokioDuration::from_millis(2500));
+
+            loop {
+                batch_timer.tick().await;
+                batch_service.process_all_stats_batch().await;
+            }
+        });
+    }
+
+    async fn process_all_stats_batch(&self) {
+        // 한 번만 락 획득하여 데이터 복사
+        let (chat_data_clone, donation_data_clone) = {
+            let (chat_guard, donation_guard) =
+                tokio::join!(self.chat_data.read(), self.donation_data.read());
+            (chat_guard.clone(), donation_guard.clone())
+        };
+
+        let results: Vec<StatsMatrix> = self
+            .stats_processors
+            .iter()
+            .map(|processor| processor.evaluate(&chat_data_clone, &donation_data_clone))
+            .collect();
+
+        for stat in results {
+            let _ = self.app_handle.emit(event_name::LOG_STATS, &stat);
+        }
+    }
+
+    async fn cleanup_old_data_periodic(&self) {
+        let current_time = Utc::now();
         let cutoff_time = current_time - Duration::minutes(self.time_window_minutes as i64);
-        data.retain(|item| item.get_timestamp() >= cutoff_time);
-    }
-}
 
-trait HasTimestamp {
-    fn get_timestamp(&self) -> DateTime<Utc>;
-}
+        // 채팅 데이터 정리 - VecDeque에서 앞쪽부터 제거
+        {
+            let mut chat_data = self.chat_data.write().await;
+            while let Some(front) = chat_data.front() {
+                if front.get_timestamp() >= cutoff_time {
+                    break;
+                }
+                chat_data.pop_front();
+            }
+        }
 
-impl HasTimestamp for EnrichedChatData {
-    fn get_timestamp(&self) -> DateTime<Utc> {
-        self.timestamp
-    }
-}
-
-impl HasTimestamp for EnrichedDonationData {
-    fn get_timestamp(&self) -> DateTime<Utc> {
-        self.timestamp
+        // 도네이션 데이터 정리 - VecDeque에서 앞쪽부터 제거
+        {
+            let mut donation_data = self.donation_data.write().await;
+            while let Some(front) = donation_data.front() {
+                if front.get_timestamp() >= cutoff_time {
+                    break;
+                }
+                donation_data.pop_front();
+            }
+        }
     }
 }

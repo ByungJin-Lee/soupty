@@ -1,10 +1,9 @@
-use async_trait::async_trait;
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use std::collections::VecDeque;
+
+use crate::services::stats::interface::StatsMatrix;
 
 use super::models::*;
 
-#[async_trait]
 pub trait Stats: Send + Sync {
     /// 통계의 고유 이름
     fn name(&self) -> &'static str;
@@ -13,9 +12,9 @@ pub trait Stats: Send + Sync {
     fn interval(&self) -> u64;
 
     /// 통계 평가/계산 실행
-    async fn evaluate(
+    fn evaluate(
         &self,
-        chat_data: &Arc<RwLock<Vec<EnrichedChatData>>>,
-        donation_data: &Arc<RwLock<Vec<EnrichedDonationData>>>,
-    ) -> f32;
+        chat_data: &VecDeque<EnrichedChatData>,
+        donation_data: &VecDeque<EnrichedDonationData>,
+    ) -> StatsMatrix;
 }

@@ -3,6 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 import GlobalEventManger from "~/services/manager/event-manager";
 import { useChatEventStore } from "./chat-event-store";
 import { useOtherEventStore } from "./other-event-store";
+import { useStatsEventStore } from "./stats-event-store";
 
 interface EventManagerState {
   isListening: boolean;
@@ -27,10 +28,12 @@ export const useEventManagerStore = create<
           // 각 store의 핸들러를 가져와서 등록
           const chatHandler = useChatEventStore.getState().handleChatEvent;
           const otherHandler = useOtherEventStore.getState().handleOtherEvent;
+          const statsHandler = useStatsEventStore.getState().handleStatsEvent;
 
           eventManager.setCallbacks({
             chat: chatHandler,
             other: otherHandler,
+            stats: statsHandler,
           });
 
           eventManager.start();

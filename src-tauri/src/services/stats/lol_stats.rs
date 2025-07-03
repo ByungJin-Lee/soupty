@@ -1,8 +1,7 @@
-use async_trait::async_trait;
-use chrono::{Duration, Utc};
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use chrono::Utc;
+use std::collections::VecDeque;
 
+use crate::services::stats::interface::StatsMatrix;
 use crate::services::stats::matrix::lol::calculate_lol;
 
 use super::models::*;
@@ -16,7 +15,6 @@ impl LOLStats {
     }
 }
 
-#[async_trait]
 impl Stats for LOLStats {
     fn name(&self) -> &'static str {
         "lol"
@@ -26,14 +24,13 @@ impl Stats for LOLStats {
         2500 // 2.5 계산 (밀리초)
     }
 
-    async fn evaluate(
+    fn evaluate(
         &self,
-        chat_data: &Arc<RwLock<Vec<EnrichedChatData>>>,
-        _donation_data: &Arc<RwLock<Vec<EnrichedDonationData>>>,
-    ) -> f32 {
-        let chat_data_guard = chat_data.read().await;
+        chat_data: &VecDeque<EnrichedChatData>,
+        _donation_data: &VecDeque<EnrichedDonationData>,
+    ) -> StatsMatrix {
         // 최근 30초간
-        let lol = calculate_lol(chat_data_guard, Utc::now());
-        lol as f32
+        let lol = calculate_lol(chat_data, Utc::now());
+        StatsMatrix::LOL(lol)
     }
 }
