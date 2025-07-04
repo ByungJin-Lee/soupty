@@ -9,11 +9,16 @@ pub struct EnrichmentProcessor {
 impl EnrichmentProcessor {
     pub fn new() -> Self {
         Self {
-            token_analyzer: TokenAnalyzer::new(),
+            token_analyzer: TokenAnalyzer::new().expect("Failed to initialize TokenAnalyzer"),
         }
     }
 
     pub async fn process_chat_event(&self, event: &ChatEvent) -> Option<EnrichedChatData> {
+        // 만약 매니저 채팅이거나 BJ라면 생략
+        if event.user.status.is_bj || event.user.status.is_manager {
+            return None;
+        }
+
         let tokens = self.token_analyzer.tokenize(&event.comment);
         let word_count = tokens.len();
         let character_count = event.comment.chars().count();

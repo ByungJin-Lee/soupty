@@ -1,23 +1,42 @@
-pub struct TokenAnalyzer;
+use lindera::dictionary::load_dictionary_from_kind;
+use lindera::mode::Mode;
+use lindera::segmenter::Segmenter;
+use lindera::tokenizer::Tokenizer;
+use lindera::LinderaResult;
+
+pub struct TokenAnalyzer {
+    tokenizer: Tokenizer,
+}
 
 impl TokenAnalyzer {
-    pub fn new() -> Self {
-        Self
+    pub fn new() -> LinderaResult<Self> {
+        let dic = load_dictionary_from_kind(lindera::dictionary::DictionaryKind::KoDic)?;
+        let segmenter = Segmenter::new(Mode::Normal, dic, None);
+        let tokenizer = Tokenizer::new(segmenter);
+
+        Ok(Self { tokenizer })
     }
 
     pub fn tokenize(&self, text: &str) -> Vec<String> {
-        text.split_whitespace()
-            .map(|word| self.clean_token(word))
-            .filter(|token| !token.is_empty())
-            .collect()
-    }
-
-    fn clean_token(&self, token: &str) -> String {
-        token
-            .chars()
-            .filter(|c| c.is_alphanumeric() || c.is_whitespace() || *c == '_' || *c == '-')
-            .collect::<String>()
-            .trim()
-            .to_lowercase()
+        match self.tokenizer.tokenize(text) {
+            Ok(mut tokens) => {
+                tokens
+                    .iter_mut()
+                    .filter_map(|token| {
+                        let details = token.details();
+                        if details.len() > 0 {
+                            match details[0].as_ref() {
+                                "NNG" | "NNP" => Some(token.text.to_string()),
+                                // NNB 의존명사 제외
+                                _ => None,
+                            }
+                        } else {
+                            None
+                        }
+                    })
+                    .collect()
+            }
+            Err(_) => Vec::new(),
+        }
     }
 }
