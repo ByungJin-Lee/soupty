@@ -34,6 +34,7 @@ async-trait = "0.1.88"
 chrono = { version = "0.4.4", features = ["serde"] }
 uuid = {version = "1.17.0", features = ["v4"] }
 soup-sdk = "=0.1.9"
+lindera = { version ="0.44.1", features = ["ko-dic"] }
 
 [target.'cfg(windows)'.dependencies]
 ort = { version = "=2.0.0-rc.10", features = ["load-dynamic"] }
