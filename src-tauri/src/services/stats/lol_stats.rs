@@ -16,12 +16,8 @@ impl LOLStats {
 }
 
 impl Stats for LOLStats {
-    fn name(&self) -> &'static str {
-        "lol"
-    }
-
-    fn interval(&self) -> u64 {
-        2500 // 2.5 계산 (밀리초)
+    fn interval_cycles(&self) -> u64 {
+        1 // 1 cycle = 2500ms
     }
 
     fn evaluate(

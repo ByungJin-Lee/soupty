@@ -15,6 +15,35 @@ pub struct LOLData {
     pub count: u32,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ActiveChatterRankingData {
+    pub timestamp: DateTime<Utc>,
+    pub rankings: Vec<ChatterRankingItem>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChatterRankingItem {
+    pub user_id: String,
+    pub nickname: String,
+    pub chat_count: u32,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WordCountData {
+    pub timestamp: DateTime<Utc>,
+    pub words: Vec<WordCountItem>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WordCountItem {
+    pub word: String,
+    pub count: u32,
+}
+
 // 전처리 과정을 거친 이벤트입니다.
 #[derive(Debug, Clone, Serialize)]
 #[serde(tag = "type", content = "payload")]
@@ -22,6 +51,8 @@ pub enum StatsMatrix {
     ChatPerMinute(ChatPerMinuteData),
     LOL(LOLData),
     ActiveViewer(ActiveViewerData),
+    ActiveChatterRanking(ActiveChatterRankingData),
+    WordCount(WordCountData),
 }
 
 // 전처리 과정을 거친 이벤트입니다.

@@ -13,29 +13,31 @@ pub fn calculate_active_viewer(
     donations: &VecDeque<EnrichedDonationData>,
 ) -> ActiveViewerData {
     let standard = Utc::now();
-    
+
     let mut user_set = HashSet::with_capacity(chats.len() + donations.len());
     let mut counts = [0u32; 3]; // [subscriber, fan, normal]
-    
+
     // 채팅 사용자 처리
     for chat in chats.iter() {
         let user_id = &chat.user.id;
-        if user_set.insert(user_id) { // 중복 체크와 삽입을 동시에
+        if user_set.insert(user_id) {
+            // 중복 체크와 삽입을 동시에
             let group = classify_user_group(&chat.user.status);
             if group < 3 {
                 counts[group as usize] += 1;
             }
         }
     }
-    
+
     // 도네이션 사용자 처리 (새로운 사용자만 일반사용자로 분류)
     for donation in donations.iter() {
         let user_id = &donation.user_id;
-        if user_set.insert(user_id) { // 새로운 사용자만 카운트
+        if user_set.insert(user_id) {
+            // 새로운 사용자만 카운트
             counts[2] += 1; // 일반 사용자로 분류
         }
     }
-    
+
     ActiveViewerData {
         total: counts.iter().sum(),
         subscriber: counts[0],

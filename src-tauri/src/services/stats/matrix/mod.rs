@@ -1,3 +1,5 @@
 pub mod chat_per_minute;
 pub mod lol;
+pub mod active_chatter_ranking;
 pub mod active_viewer;
+pub mod word_count;

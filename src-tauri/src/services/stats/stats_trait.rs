@@ -5,11 +5,8 @@ use crate::services::stats::interface::StatsMatrix;
 use super::models::*;
 
 pub trait Stats: Send + Sync {
-    /// 통계의 고유 이름
-    fn name(&self) -> &'static str;
-
-    /// 계산 주기 (밀리초)
-    fn interval(&self) -> u64;
+    /// 계산 주기 (사이클 단위, 1 사이클 = 2500ms)
+    fn interval_cycles(&self) -> u64;
 
     /// 통계 평가/계산 실행
     fn evaluate(

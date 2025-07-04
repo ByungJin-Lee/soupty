@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use rusqlite::{fallible_streaming_iterator::FallibleStreamingIterator, Connection};
+use rusqlite::{Connection};
 use tokio::sync::oneshot;
 
 use crate::services::db::commands::{ChannelData, ChatLogData, EventLogData, UserData};

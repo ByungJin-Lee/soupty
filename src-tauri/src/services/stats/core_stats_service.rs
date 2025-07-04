@@ -4,10 +4,18 @@ use std::sync::Arc;
 use tokio::sync::RwLock;
 use tokio::time::{interval, Duration as TokioDuration};
 
+const CYCLE_DURATION_MS: u64 = 2500;
+
+fn cycles_to_duration(cycles: u64) -> TokioDuration {
+    TokioDuration::from_millis(cycles * CYCLE_DURATION_MS)
+}
+
 use crate::services::event_name;
+use crate::services::stats::active_chatter_ranking_stats::ActiveChatterRankingStats;
 use crate::services::stats::active_viewer_stats::ActiveViewerStats;
 use crate::services::stats::interface::StatsMatrix;
 use crate::services::stats::lol_stats::LOLStats;
+use crate::services::stats::word_count_stats::WordCountStats;
 
 use super::chat_per_minute_stats::ChatPerMinuteStats;
 use super::models::*;
@@ -39,6 +47,8 @@ impl CoreStatsService {
         service.add_stats_processor(Box::new(ChatPerMinuteStats::new()));
         service.add_stats_processor(Box::new(LOLStats::new()));
         service.add_stats_processor(Box::new(ActiveViewerStats::new()));
+        service.add_stats_processor(Box::new(ActiveChatterRankingStats::new()));
+        service.add_stats_processor(Box::new(WordCountStats::new()));
         service
     }
 
@@ -79,19 +89,22 @@ impl CoreStatsService {
             }
         });
 
-        // 배치 처리 스케줄러 - 모든 통계를 2.5초마다 한 번에 계산
+        // 배치 처리 스케줄러 - 각 통계의 interval_cycles에 따라 계산
         let batch_service = Arc::clone(&self);
         tokio::spawn(async move {
-            let mut batch_timer = interval(TokioDuration::from_millis(2500));
+            let mut batch_timer = interval(cycles_to_duration(1));
+            let mut cycle_count = 0u64;
 
             loop {
                 batch_timer.tick().await;
-                batch_service.process_all_stats_batch().await;
+                cycle_count += 1;
+                
+                batch_service.process_all_stats_batch(cycle_count).await;
             }
         });
     }
 
-    async fn process_all_stats_batch(&self) {
+    async fn process_all_stats_batch(&self, cycle_count: u64) {
         // 한 번만 락 획득하여 데이터 복사
         let (chat_data_clone, donation_data_clone) = {
             let (chat_guard, donation_guard) =
@@ -102,6 +115,7 @@ impl CoreStatsService {
         let results: Vec<StatsMatrix> = self
             .stats_processors
             .iter()
+            .filter(|processor| cycle_count % processor.interval_cycles() == 0)
             .map(|processor| processor.evaluate(&chat_data_clone, &donation_data_clone))
             .collect();
 
