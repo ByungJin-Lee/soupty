@@ -3,9 +3,11 @@
   "identifier": "default",
   "description": "enables the default permissions",
   "windows": [
-    "main"
+    "main",
+    "splashscreen"
   ],
   "permissions": [
-    "core:default"
+    "core:default",
+    "core:window:allow-close"
   ]
 }

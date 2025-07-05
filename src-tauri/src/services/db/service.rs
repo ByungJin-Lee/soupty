@@ -13,7 +13,7 @@ pub struct DBService {
 }
 
 impl DBService {
-    pub fn new(db_path: &Path) -> Self {
+    pub async fn new(db_path: &Path) -> Result<Self, String> {
         let (sender, receiver) = mpsc::channel(128);
         let path = db_path.to_path_buf();
 
@@ -25,10 +25,11 @@ impl DBService {
 
         // 초기화 명령을 보냅니다.
         let _ = sender
-            .blocking_send(DBCommand::Initialize)
-            .map_err(|_| eprintln!("Initialization error!"));
+            .send(DBCommand::Initialize)
+            .await
+            .map_err(|_| "Initialization DB Command error!".to_string())?;
 
-        Self { sender }
+        Ok(Self { sender })
     }
 
     pub async fn create_broadcast_session(
@@ -74,9 +75,7 @@ impl DBService {
     pub async fn get_channels(&self) -> Result<Vec<ChannelData>, String> {
         let (tx, rx) = oneshot::channel::<Result<Vec<ChannelData>, String>>();
         self.sender
-            .send(DBCommand::GetChannels {
-                reply_to: tx,
-            })
+            .send(DBCommand::GetChannels { reply_to: tx })
             .await
             .map_err(|_| "Failed to send command".to_string())?;
 

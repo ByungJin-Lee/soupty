@@ -2,10 +2,14 @@ use tauri::generate_handler;
 
 use crate::{
     commands::{
-        channel::{delete_channel, get_channels, upsert_channel}, main_controller::{start_main_controller, stop_main_controller}, soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station}
+        channel::{delete_channel, get_channels, upsert_channel},
+        main_controller::{start_main_controller, stop_main_controller},
+        soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station},
+        splash::{
+            check_for_updates, connect_database, setup_ai, setup_app_state, show_main_window,
+        },
     },
     sentiment_analyzer::analyze_chat,
-    setup::setup,
 };
 
 mod commands;
@@ -13,7 +17,6 @@ mod controllers;
 mod models;
 mod sentiment_analyzer;
 mod services;
-mod setup;
 mod state;
 mod util;
 
@@ -28,7 +31,6 @@ pub fn run() {
                         .build(),
                 )?;
             }
-            setup(app)?;
             Ok(())
         })
         .invoke_handler(generate_handler![
@@ -40,7 +42,12 @@ pub fn run() {
             stop_main_controller,
             upsert_channel,
             delete_channel,
-            get_channels
+            get_channels,
+            check_for_updates,
+            connect_database,
+            setup_ai,
+            setup_app_state,
+            show_main_window
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

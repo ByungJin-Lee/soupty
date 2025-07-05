@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { GlobalEventProvider } from "~/common/components/global-event-provider";
-import { GlobalNavigationBar } from "~/common/ui/global-navigation-bar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,11 +17,7 @@ export default function RootLayout({
         <meta charSet="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       </head>
-      <body className="flex flex-col h-screen overflow-hidden">
-        <GlobalEventProvider />
-        <GlobalNavigationBar />
-        <main className="flex-grow overflow-hidden">{children}</main>
-      </body>
+      <body className="">{children}</body>
     </html>
   );
 }

@@ -10,13 +10,30 @@
     "beforeBuildCommand": "yarn build"
   },
   "app": {
+    "macOSPrivateApi": true,
     "windows": [
       {
+        "label": "splashscreen",
+        "title": "soupty",
+        "width": 400,
+        "height": 300,
+        "resizable": false,
+        "fullscreen": false,
+        "center": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "url": "/splash",
+        "transparent": true,
+        "shadow": false
+      },
+      {
+        "label": "main",
         "title": "soupty",
         "width": 800,
         "height": 600,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "visible": false
       }
     ],
     "security": {
