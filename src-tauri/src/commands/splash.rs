@@ -1,9 +1,10 @@
 use crate::services::db::service::DBService;
+use crate::state::AppState;
 use anyhow::{Context, Result as AnyhowResult};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager, Window};
+use tauri::{AppHandle, Manager, State, Window};
 
 #[tauri::command]
 pub async fn check_for_updates() -> Result<(), String> {
@@ -102,7 +103,7 @@ pub async fn setup_app_state(app_handle: AppHandle) -> Result<(), String> {
         tokio::sync::Mutex::new(crate::controllers::main_controller::MainController::new());
 
     // AppState 생성
-    let app_state = crate::state::AppState {
+    let app_state = AppState {
         db: db_service,
         main_controller,
     };

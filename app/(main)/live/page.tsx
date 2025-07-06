@@ -2,6 +2,8 @@
 
 import { ChatViewer } from "~/features/chat/components/chat-viewer";
 import { EventViewer } from "~/features/event/components/event-viewer";
+import { ChannelSelectModal } from "~/features/soop/components/channel";
+import { ChannelEditModal } from "~/features/soop/components/channel/channel-edit-modal";
 import { useSOOPConnection } from "~/features/soop/hooks/soop-connection";
 import ipcService from "~/services/ipc";
 
@@ -39,6 +41,8 @@ export default function LivePage() {
         <br />
         <button onClick={handleGetChannel}>get</button>
         <button onClick={handleUpsert}>upsert</button>
+        <ChannelSelectModal isOpen={true} onClose={() => {}} />
+        <ChannelEditModal />
       </div>
     </>
   );

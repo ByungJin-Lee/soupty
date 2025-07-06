@@ -1,0 +1,22 @@
+import { CloseButton } from "./close-button";
+
+interface ModalHeaderProps {
+  title?: string;
+  showCloseButton?: boolean;
+  onClose: () => void;
+}
+
+export function ModalHeader({
+  title,
+  showCloseButton = true,
+  onClose,
+}: ModalHeaderProps) {
+  if (!title && !showCloseButton) return null;
+
+  return (
+    <div className="mb-4 flex items-center justify-between">
+      {title && <h2 className="text-lg">{title}</h2>}
+      {showCloseButton && <CloseButton onClick={onClose} />}
+    </div>
+  );
+}
