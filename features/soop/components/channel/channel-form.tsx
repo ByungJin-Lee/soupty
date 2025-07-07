@@ -1,7 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { Channel } from "~/types";
 
 interface ChannelFormData {
@@ -14,6 +14,7 @@ interface ChannelFormProps {
   channel?: Channel;
   onSubmit: (data: ChannelFormData) => void;
   onCancel: () => void;
+  onDelete?: (channelId: string) => void;
 }
 
 export const ChannelForm: React.FC<ChannelFormProps> = ({
@@ -21,6 +22,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
   channel,
   onSubmit,
   onCancel,
+  onDelete,
 }) => {
   const {
     register,
@@ -34,6 +36,14 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
       label: "",
     },
   });
+
+  const handleDelete = useCallback(() => {
+    if (channel && onDelete) {
+      if (confirm(`"${channel.label}" 채널을 삭제하시겠습니까?`)) {
+        onDelete(channel.id);
+      }
+    }
+  }, [channel, onDelete]);
 
   useEffect(() => {
     if (mode === "edit" && channel) {
@@ -96,21 +106,34 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
         )}
       </div>
 
-      <div className="flex justify-end gap-2 pt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800"
-        >
-          취소
-        </button>
-        <button
-          type="submit"
-          disabled={!isValid}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {mode === "create" ? "생성" : "수정"}
-        </button>
+      <div className="flex justify-between items-center pt-4">
+        <div>
+          {mode === "edit" && onDelete && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              className="px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+            >
+              삭제
+            </button>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            취소
+          </button>
+          <button
+            type="submit"
+            disabled={!isValid}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {mode === "create" ? "생성" : "수정"}
+          </button>
+        </div>
       </div>
     </form>
   );

@@ -4,9 +4,13 @@ interface ChannelActionsProps {
   disabled: boolean;
 }
 
-export const ChannelActions: React.FC<ChannelActionsProps> = ({ onCancel, onConfirm, disabled }) => {
+export const ChannelActions: React.FC<ChannelActionsProps> = ({
+  onCancel,
+  onConfirm,
+  disabled,
+}) => {
   return (
-    <div className="flex justify-end gap-2 mt-6">
+    <div className="flex justify-end gap-2 mt-2">
       <button
         onClick={onCancel}
         className="px-4 py-2 text-gray-600 hover:text-gray-800"

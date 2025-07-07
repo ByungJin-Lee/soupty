@@ -5,7 +5,7 @@ import { ChannelForm } from "./channel-form";
 import { useChannelEdit } from "../../stores/channel-edit";
 
 export const ChannelEditModal: React.FC = () => {
-  const { isOpen, mode, channel, close, submit } = useChannelEdit();
+  const { isOpen, mode, channel, close, submit, delete: deleteChannel } = useChannelEdit();
 
   const title = mode === "create" ? "채널 생성" : "채널 수정";
 
@@ -17,6 +17,7 @@ export const ChannelEditModal: React.FC = () => {
           channel={channel}
           onSubmit={submit}
           onCancel={close}
+          onDelete={mode === "edit" ? deleteChannel : undefined}
         />
       </div>
     </Modal>

@@ -9,6 +9,13 @@
     border-radius: 200px;
     overflow: hidden;
   }
+  button {
+    cursor: pointer;
+  }
+}
+
+@theme {
+  --inset-shadow-bottom: inset 0 -5px 8px -5px rgba(0, 0, 0, 0.25);
 }
 
 @layer components {

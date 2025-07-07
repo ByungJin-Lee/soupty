@@ -1,20 +1,40 @@
 "use client";
 
-import { formatChannelImage } from "~/common/utils/format";
-import { useChannel } from "~/features/soop/stores/channel";
+import { ChannelSelectModal } from "~/features/soop/components/channel/channel-select-modal";
+import { ChannelDisplay } from "./channel-display";
+import { ConnectionButton } from "./connection-button";
+import { useLiveStatus } from "./live-status.hook";
 
 export const LiveStatus = () => {
-  const { channel } = useChannel();
+  const {
+    channel,
+    connectStatus,
+    isModalOpen,
+    handleChannelSelect,
+    handleOpenModal,
+    handleCloseModal,
+    handleToggleConnection,
+  } = useLiveStatus();
 
   return (
-    <div className="flex">
-      <img
-        src={channel ? formatChannelImage(channel) : "/default"}
-        title={channel?.label}
-        alt="프로필 이미지"
-        referrerPolicy="no-referrer"
+    <>
+      <div className="flex items-center gap-2">
+        <ChannelDisplay
+          channel={channel}
+          connectStatus={connectStatus}
+          onClick={handleOpenModal}
+        />
+        <ConnectionButton
+          connectStatus={connectStatus}
+          onClick={handleToggleConnection}
+        />
+      </div>
+
+      <ChannelSelectModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSelectChannel={handleChannelSelect}
       />
-      <span>채널: {channel?.label}</span>
-    </div>
+    </>
   );
 };
