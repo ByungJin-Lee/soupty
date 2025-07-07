@@ -1,4 +1,6 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { route } from "~/constants/route";
 
 const links: { href: string; label: string }[] = [
@@ -14,20 +16,30 @@ const links: { href: string; label: string }[] = [
     href: route.report,
     label: "리포트",
   },
-  {
-    href: route.setting,
-    label: "설정",
-  },
+  // {
+  //   href: route.setting,
+  //   label: "설정",
+  // },
 ];
 
 export const Links = () => {
+  const pathname = usePathname();
+
   return (
-    <div className="flex gap-2 items-center">
-      {links.map((l) => (
-        <Link key={l.href} href={l.href} className="text-lg font-semibold">
-          {l.label}
-        </Link>
-      ))}
+    <div className="flex gap-4 items-center justify-center flex-grow ">
+      {links.map((l) => {
+        return (
+          <Link
+            key={l.href}
+            href={l.href}
+            className={`text-lg text-gray-400 hover:text-gradient ${
+              pathname === l.href ? "text-gradient-accent font-semibold" : ""
+            }`}
+          >
+            {l.label}
+          </Link>
+        );
+      })}
     </div>
   );
 };

@@ -1,10 +1,10 @@
 import { memo } from "react";
 import { User } from "react-feather";
 import { ChannelAvatar } from "~/features/soop/components/channel/channel-avatar";
-import { Channel } from "~/types";
 import { ConnectStatus } from "~/features/soop/stores/channel";
-import { StatusIndicator } from "./status-indicator";
+import { Channel } from "~/types";
 import { getStatusText } from "./live-status-utils";
+import { StatusIndicator } from "./status-indicator";
 
 interface ChannelDisplayProps {
   channel: Channel | null;
@@ -19,16 +19,12 @@ const ChannelDisplayComponent: React.FC<ChannelDisplayProps> = ({
 }) => {
   return (
     <div
-      className="flex items-center gap-3 p-1 bg-gray-50 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer flex-1"
+      className="flex items-center gap-3 py-1 px-2 bg-gray-50 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer flex-1"
       onClick={onClick}
     >
       <div className="relative">
         {channel ? (
-          <ChannelAvatar
-            channel={channel}
-            size={32}
-            className="rounded-full"
-          />
+          <ChannelAvatar channel={channel} size={32} className="rounded-full" />
         ) : (
           <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
             <User className="w-4 h-4 text-gray-500" />
@@ -49,5 +45,5 @@ const ChannelDisplayComponent: React.FC<ChannelDisplayProps> = ({
   );
 };
 
-ChannelDisplayComponent.displayName = 'ChannelDisplay';
+ChannelDisplayComponent.displayName = "ChannelDisplay";
 export const ChannelDisplay = memo(ChannelDisplayComponent);

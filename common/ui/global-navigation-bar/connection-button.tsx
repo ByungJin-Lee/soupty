@@ -1,4 +1,4 @@
-import { useMemo, memo } from "react";
+import { memo, useMemo } from "react";
 import { Loader, Pause, Play } from "react-feather";
 import { ConnectStatus } from "~/features/soop/stores/channel";
 
@@ -19,7 +19,7 @@ const ConnectionButtonComponent: React.FC<ConnectionButtonProps> = ({
         return <Pause className="w-4 h-4" />;
       case ConnectStatus.DISCONNECTED:
       default:
-        return <Play className="w-4 h-4" />;
+        return <Play className="w-4 h-4" fill="" />;
     }
   }, [connectStatus]);
 
@@ -33,12 +33,14 @@ const ConnectionButtonComponent: React.FC<ConnectionButtonProps> = ({
       }}
       disabled={isDisabled}
       className="p-1.5 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50"
-      aria-label={connectStatus === ConnectStatus.CONNECTED ? "연결 해제" : "연결"}
+      aria-label={
+        connectStatus === ConnectStatus.CONNECTED ? "연결 해제" : "연결"
+      }
     >
       {connectionIcon}
     </button>
   );
 };
 
-ConnectionButtonComponent.displayName = 'ConnectionButton';
+ConnectionButtonComponent.displayName = "ConnectionButton";
 export const ConnectionButton = memo(ConnectionButtonComponent);

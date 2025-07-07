@@ -103,7 +103,7 @@ impl<'a> CommandHandlers<'a> {
         let result = self
             .conn
             .prepare_cached(
-                "INSERT OR IGNORE INTO channels (channel_id, channel_name, last_updated) VALUES (?1, ?2, ?3)",
+                "INSERT INTO channels (channel_id, channel_name, last_updated) VALUES (?1, ?2, ?3) ON CONFLICT(channel_id) DO UPDATE SET channel_name = excluded.channel_name, last_updated = excluded.last_updated",
             )
             .and_then(|mut stmt| {
                 for channel in channels {

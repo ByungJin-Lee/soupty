@@ -1,6 +1,7 @@
+import { Settings } from "react-feather";
 import { Channel } from "~/types";
-import { ChannelAvatar } from "./channel-avatar";
 import { useChannelEdit } from "../../stores/channel-edit";
+import { ChannelAvatar } from "./channel-avatar";
 
 interface ChannelItemProps {
   channel: Channel;
@@ -39,7 +40,7 @@ export const ChannelItem: React.FC<ChannelItemProps> = ({
         className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-200 rounded text-xs text-gray-600"
         title="편집"
       >
-        ✏️
+        <Settings className="w-4 h-4" />
       </button>
     </div>
   );
