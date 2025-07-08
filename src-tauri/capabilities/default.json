@@ -2,12 +2,11 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "enables the default permissions",
-  "windows": [
-    "main",
-    "splashscreen"
-  ],
+  "windows": ["main", "splashscreen"],
   "permissions": [
     "core:default",
-    "core:window:allow-close"
+    "core:window:allow-close",
+    "core:window:allow-minimize",
+    "core:window:allow-start-dragging"
   ]
 }

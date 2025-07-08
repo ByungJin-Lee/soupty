@@ -11,12 +11,12 @@ const StatusIndicatorComponent: React.FC<StatusIndicatorProps> = ({
 }) => {
   return (
     <div
-      className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(
+      className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white ${getStatusColor(
         connectStatus
       )}`}
     />
   );
 };
 
-StatusIndicatorComponent.displayName = 'StatusIndicator';
+StatusIndicatorComponent.displayName = "StatusIndicator";
 export const StatusIndicator = memo(StatusIndicatorComponent);

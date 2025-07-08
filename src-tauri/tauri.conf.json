@@ -30,11 +30,14 @@
         "label": "main",
         "title": "soupty",
         "width": 800,
+        "minWidth": 450,
+        "minHeight": 500,
         "height": 600,
         "resizable": true,
         "fullscreen": false,
         "visible": false,
-        "url": "/live"
+        "url": "/live",
+        "decorations": false
       }
     ],
     "security": {

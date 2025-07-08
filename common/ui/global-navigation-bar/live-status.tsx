@@ -18,15 +18,15 @@ export const LiveStatus = () => {
 
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1">
+        <ConnectionButton
+          connectStatus={connectStatus}
+          onClick={handleToggleConnection}
+        />
         <ChannelDisplay
           channel={channel}
           connectStatus={connectStatus}
           onClick={handleOpenModal}
-        />
-        <ConnectionButton
-          connectStatus={connectStatus}
-          onClick={handleToggleConnection}
         />
       </div>
 

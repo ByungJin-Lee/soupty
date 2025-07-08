@@ -14,12 +14,20 @@ const ConnectionButtonComponent: React.FC<ConnectionButtonProps> = ({
   const connectionIcon = useMemo(() => {
     switch (connectStatus) {
       case ConnectStatus.CONNECTING:
-        return <Loader className="w-4 h-4 animate-spin" />;
+        return (
+          <Loader
+            className="w-4 h-4 animate-spin"
+            fill="currentColor"
+            strokeWidth={1}
+          />
+        );
       case ConnectStatus.CONNECTED:
-        return <Pause className="w-4 h-4" />;
+        return (
+          <Pause className="w-4 h-4" fill="currentColor" strokeWidth={1} />
+        );
       case ConnectStatus.DISCONNECTED:
       default:
-        return <Play className="w-4 h-4" fill="" />;
+        return <Play className="w-4 h-4" fill="currentColor" strokeWidth={1} />;
     }
   }, [connectStatus]);
 
@@ -32,7 +40,7 @@ const ConnectionButtonComponent: React.FC<ConnectionButtonProps> = ({
         onClick();
       }}
       disabled={isDisabled}
-      className="p-1.5 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50"
+      className="p-1.5 rounded-full text-blue-600 hover:bg-gray-200 transition-colors disabled:opacity-50"
       aria-label={
         connectStatus === ConnectStatus.CONNECTED ? "연결 해제" : "연결"
       }

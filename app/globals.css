@@ -13,6 +13,10 @@
   button {
     cursor: pointer;
   }
+
+  *[data-tauri-drag-region] {
+    app-region: drag;
+  }
 }
 
 @theme {
@@ -78,5 +82,9 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  .bg-gradient-accent {
+    @apply bg-gradient-to-br from-blue-500 to-purple-600;
   }
 }

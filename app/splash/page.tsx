@@ -70,7 +70,10 @@ export default function SplashPage() {
   }, [initializeApp]);
 
   return (
-    <div id="splash" className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 text-white font-sans overflow-hidden">
+    <div
+      id="splash"
+      className="flex flex-col items-center justify-center min-h-screen bg-gradient-accent text-white font-sans overflow-hidden"
+    >
       <div className="text-3xl font-bold mb-8 text-center">soupty</div>
 
       <div className="flex gap-2 text-sm mb-5 text-center opacity-90">

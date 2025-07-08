@@ -32,7 +32,7 @@ export const Links = () => {
           <Link
             key={l.href}
             href={l.href}
-            className={`text-lg text-gray-400 hover:text-gradient ${
+            className={`text-md text-gray-500 hover:text-gradient ${
               pathname === l.href ? "text-gradient-accent font-semibold" : ""
             }`}
           >
