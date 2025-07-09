@@ -74,4 +74,13 @@ impl AddonManager {
             addon.on_metadata_update(context).await;
         }
     }
+
+    // 모든 애드온의 stop 메서드 호출하여 정리
+    pub async fn stop_all(&self, context: &AddonContext) {
+        let addons_clone = self.addons.lock().unwrap().clone();
+        for addon in addons_clone.values() {
+            addon.stop(context).await;
+        }
+        println!("[AddonManager] 모든 애드온이 정리되었습니다.");
+    }
 }

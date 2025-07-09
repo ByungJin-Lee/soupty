@@ -28,6 +28,7 @@ pub trait Addon: Send + Sync {
     async fn on_connected(&self, _ctx: &AddonContext) {}
     async fn on_disconnected(&self, _ctx: &AddonContext) {}
     async fn on_metadata_update(&self, _ctx: &AddonContext) {}
+    async fn stop(&self, _ctx: &AddonContext) {}
 
     // 채팅 관련 이벤트 핸들러
     async fn on_bj_state_change(&self, _ctx: &AddonContext) {}

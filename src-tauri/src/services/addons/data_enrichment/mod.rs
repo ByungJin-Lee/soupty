@@ -54,4 +54,10 @@ impl Addon for DataEnrichmentAddon {
                 .await;
         }
     }
+
+    async fn stop(&self, _ctx: &AddonContext) {
+        println!("[DataEnrichmentAddon] Stopping addon - cleaning up resources");
+        self.core_stats_service.stop().await;
+        println!("[DataEnrichmentAddon] Cleanup completed");
+    }
 }

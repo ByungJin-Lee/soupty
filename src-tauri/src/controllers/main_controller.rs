@@ -165,7 +165,7 @@ impl MainController {
         self.status = SystemStatus::Running;
     }
 
-    pub fn stop(&mut self) {
+    pub async fn stop(&mut self, app_handle: AppHandle, db: Arc<DBService>) {
         // 이미 정지상태인 경우, 무시
         if self.status == SystemStatus::Idle {
             return;
@@ -177,6 +177,15 @@ impl MainController {
         if let Some(timer) = self.timer_task.take() {
             timer.abort();
         }
+        
+        // 애드온 정리
+        let ctx = AddonContext {
+            app_handle,
+            db,
+            broadcast_metadata: None,
+        };
+        self.addon_manager.stop_all(&ctx).await;
+        
         self.status = SystemStatus::Idle;
     }
 

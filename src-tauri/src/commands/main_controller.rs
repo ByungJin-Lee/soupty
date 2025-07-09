@@ -19,10 +19,13 @@ pub async fn start_main_controller(
 }
 
 #[tauri::command]
-pub async fn stop_main_controller(state: State<'_, AppState>) -> Result<(), String> {
+pub async fn stop_main_controller(
+    state: State<'_, AppState>,
+    app_handle: AppHandle,
+) -> Result<(), String> {
     let mut controller = state.main_controller.lock().await;
 
-    controller.stop();
+    controller.stop(app_handle, state.db.clone()).await;
 
     Ok(())
 }

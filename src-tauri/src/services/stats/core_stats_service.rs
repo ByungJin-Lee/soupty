@@ -2,13 +2,8 @@ use chrono::{Duration, Utc};
 use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::RwLock;
+use tokio::task::JoinHandle;
 use tokio::time::{interval, Duration as TokioDuration};
-
-const CYCLE_DURATION_MS: u64 = 2500;
-
-fn cycles_to_duration(cycles: u64) -> TokioDuration {
-    TokioDuration::from_millis(cycles * CYCLE_DURATION_MS)
-}
 
 use crate::services::event_name;
 use crate::services::stats::active_chatter_ranking_stats::ActiveChatterRankingStats;
@@ -22,6 +17,12 @@ use super::models::*;
 use super::stats_trait::Stats;
 use tauri::{AppHandle, Emitter};
 
+const CYCLE_DURATION_MS: u64 = 2500;
+
+fn cycles_to_duration(cycles: u64) -> TokioDuration {
+    TokioDuration::from_millis(cycles * CYCLE_DURATION_MS)
+}
+
 pub struct CoreStatsService {
     chat_data: Arc<RwLock<VecDeque<EnrichedChatData>>>,
     donation_data: Arc<RwLock<VecDeque<EnrichedDonationData>>>,
@@ -29,6 +30,8 @@ pub struct CoreStatsService {
     stats_processors: Vec<Box<dyn Stats>>,
     app_handle: AppHandle,
     max_buffer_size: usize,
+    cleanup_task: Arc<RwLock<Option<JoinHandle<()>>>>,
+    batch_task: Arc<RwLock<Option<JoinHandle<()>>>>,
 }
 
 impl CoreStatsService {
@@ -42,6 +45,8 @@ impl CoreStatsService {
             stats_processors: Vec::new(),
             app_handle,
             max_buffer_size: Self::DEFAULT_MAX_BUFFER_SIZE,
+            cleanup_task: Arc::new(RwLock::new(None)),
+            batch_task: Arc::new(RwLock::new(None)),
         };
 
         service.add_stats_processor(Box::new(ChatPerMinuteStats::new()));
@@ -80,7 +85,7 @@ impl CoreStatsService {
     pub fn start_stats_scheduler(self: Arc<Self>) {
         // 데이터 정리 작업을 1초마다 실행
         let cleanup_service = Arc::clone(&self);
-        tokio::spawn(async move {
+        let cleanup_task = tokio::spawn(async move {
             let mut cleanup_timer = interval(TokioDuration::from_secs(1));
 
             loop {
@@ -91,17 +96,25 @@ impl CoreStatsService {
 
         // 배치 처리 스케줄러 - 각 통계의 interval_cycles에 따라 계산
         let batch_service = Arc::clone(&self);
-        tokio::spawn(async move {
+        let batch_task = tokio::spawn(async move {
             let mut batch_timer = interval(cycles_to_duration(1));
             let mut cycle_count = 0u64;
 
             loop {
                 batch_timer.tick().await;
                 cycle_count += 1;
-                
+
                 batch_service.process_all_stats_batch(cycle_count).await;
             }
         });
+
+        // 태스크 핸들 저장 (동기적으로 가능한 경우)
+        if let Ok(mut guard) = self.cleanup_task.try_write() {
+            *guard = Some(cleanup_task);
+        }
+        if let Ok(mut guard) = self.batch_task.try_write() {
+            *guard = Some(batch_task);
+        }
     }
 
     async fn process_all_stats_batch(&self, cycle_count: u64) {
@@ -148,6 +161,20 @@ impl CoreStatsService {
                 }
                 donation_data.pop_front();
             }
+        }
+    }
+
+    pub async fn stop(&self) {
+        // cleanup 태스크 종료
+        let mut cleanup_guard = self.cleanup_task.write().await;
+        if let Some(task) = cleanup_guard.take() {
+            task.abort();
+        }
+
+        // batch 태스크 종료
+        let mut batch_guard = self.batch_task.write().await;
+        if let Some(task) = batch_guard.take() {
+            task.abort();
         }
     }
 }
