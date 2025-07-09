@@ -9,7 +9,7 @@ export const WindowTitlebar: React.FC<PropsWithChildren> = ({ children }) => {
   const minimize = () => getCurrentWindow().minimize();
 
   return (
-    <div className="flex items-center bg-gray-100">
+    <div className="flex items-center  border-b border-gray-100">
       <div data-tauri-drag-region className="flex-grow">
         {children}
       </div>

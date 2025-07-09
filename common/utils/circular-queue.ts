@@ -41,4 +41,25 @@ export default class CircularQueue<T> {
 
     return result;
   }
+
+  public getLatest(n: number): T[] {
+    // 0 이하의 값을 요청하면 빈 배열을 반환합니다.
+    if (n <= 0) {
+      return [];
+    }
+
+    // 요청된 갯수가 현재 사이즈보다 크면 현재 사이즈로 제한합니다.
+    const count = Math.min(n, this.size);
+    const result: T[] = [];
+
+    for (let i = 1; i <= count; i++) {
+      const index = (this.head - i + this.capacity) % this.capacity;
+      const item = this.buffer[index];
+      if (item !== undefined) {
+        result.push(item);
+      }
+    }
+
+    return result.reverse();
+  }
 }

@@ -32,8 +32,8 @@ export const Links = () => {
           <Link
             key={l.href}
             href={l.href}
-            className={`text-md text-gray-500 hover:text-gradient ${
-              pathname === l.href ? "text-gradient-accent font-semibold" : ""
+            className={`text-sm text-gray-500 rounded-md py-0.5 px-2 ${
+              pathname === l.href ? "text-white bg-gradient-accent" : ""
             }`}
           >
             {l.label}
