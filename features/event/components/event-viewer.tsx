@@ -24,7 +24,7 @@ export const EventViewer: React.FC<Props> = ({ className = "" }) => {
 
   return (
     <div
-      className={`overflow-y-scroll ${className}`}
+      className={`overflow-y-scroll invisible-scrollbar ${className}`}
       ref={containerRef}
       onScroll={checkIfAtBottom}
     >

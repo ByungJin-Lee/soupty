@@ -2,6 +2,7 @@ import {
   ArcElement,
   CategoryScale,
   Chart as ChartJS,
+  Filler,
   Legend,
   LinearScale,
   LineElement,
@@ -19,7 +20,8 @@ ChartJS.register(
   ChartDataLabels,
   LinearScale,
   PointElement,
-  LineElement
+  LineElement,
+  Filler
 );
 
 export { Doughnut, Line };

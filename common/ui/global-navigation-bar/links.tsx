@@ -26,7 +26,7 @@ export const Links = () => {
   const pathname = usePathname();
 
   return (
-    <div className="flex gap-4 items-center justify-center flex-grow ">
+    <div className="flex gap-4 items-center mx-auto">
       {links.map((l) => {
         return (
           <Link

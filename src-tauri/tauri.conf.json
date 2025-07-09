@@ -37,7 +37,9 @@
         "fullscreen": false,
         "visible": false,
         "url": "/live",
-        "decorations": false
+        "decorations": false,
+        "titleBarStyle": "Transparent",
+        "acceptFirstMouse": true
       }
     ],
     "security": {

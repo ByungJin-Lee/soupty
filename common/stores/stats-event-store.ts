@@ -73,9 +73,8 @@ export const useStatsEventStore = create<StatsEventState & StatsEventActions>()(
       handleStatsEvent(e) {
         switch (e.type) {
           case StatsType.LOL:
-            const t = new Date(e.payload.timestamp);
             get().lol.data.push({
-              timeLabel: `${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}`,
+              timeLabel: formatTimestamp(e.payload.timestamp),
               count: e.payload.count,
             });
             forceUpdate("lol");
@@ -84,9 +83,8 @@ export const useStatsEventStore = create<StatsEventState & StatsEventActions>()(
             update("activeViewers", e.payload);
             break;
           case StatsType.ChatPerMinute: {
-            const t = new Date(e.payload.timestamp);
             get().cpm.data.push({
-              timeLabel: `${t.getHours()}:${t.getMinutes()}:${t.getSeconds()}`,
+              timeLabel: formatTimestamp(e.payload.timestamp),
               count: e.payload.count,
             });
             forceUpdate("cpm");
@@ -97,3 +95,8 @@ export const useStatsEventStore = create<StatsEventState & StatsEventActions>()(
     };
   })
 );
+
+const formatTimestamp = (timestamp: string) => {
+  const t = new Date(timestamp);
+  return `${t.getMinutes()}:${t.getSeconds()}`;
+};
