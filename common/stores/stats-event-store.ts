@@ -1,6 +1,12 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { ActiveViewerStats, Stats, StatsType } from "~/types/stats";
+import {
+  ActiveChatterRankingStats,
+  ActiveViewerStats,
+  Stats,
+  StatsType,
+  WordCountStats,
+} from "~/types/stats";
 import CircularQueue from "../utils/circular-queue";
 
 type NumericValue = {
@@ -12,6 +18,8 @@ interface StatsEventState {
   activeViewers: StatsDatasource<ActiveViewerStats>;
   lol: StatsDatasource<CircularQueue<NumericValue>>;
   cpm: StatsDatasource<CircularQueue<NumericValue>>;
+  activeChatterRanking: StatsDatasource<ActiveChatterRankingStats>;
+  wordCount: StatsDatasource<WordCountStats>;
 }
 
 interface StatsDatasource<T> {
@@ -70,6 +78,20 @@ export const useStatsEventStore = create<StatsEventState & StatsEventActions>()(
         data: new CircularQueue<NumericValue>(100),
         lastUpdated: now,
       },
+      activeChatterRanking: {
+        data: {
+          rankings: [],
+          timestamp: "",
+        },
+        lastUpdated: now,
+      },
+      wordCount: {
+        data: {
+          words: [],
+          timestamp: "",
+        },
+        lastUpdated: now,
+      },
       handleStatsEvent(e) {
         switch (e.type) {
           case StatsType.LOL:
@@ -82,13 +104,21 @@ export const useStatsEventStore = create<StatsEventState & StatsEventActions>()(
           case StatsType.ActiveViewer:
             update("activeViewers", e.payload);
             break;
-          case StatsType.ChatPerMinute: {
+          case StatsType.ChatPerMinute:
             get().cpm.data.push({
               timeLabel: formatTimestamp(e.payload.timestamp),
               count: e.payload.count,
             });
             forceUpdate("cpm");
-          }
+            break;
+          case StatsType.WordCount:
+            update("wordCount", e.payload);
+            break;
+          case StatsType.ActiveChatterRanking:
+            update("activeChatterRanking", e.payload);
+            break;
+          default:
+            console.log(e);
         }
       },
       clearStats() {},

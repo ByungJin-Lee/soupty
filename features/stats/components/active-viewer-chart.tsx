@@ -11,10 +11,10 @@ export const ActiveViewerChart = () => {
       plugins={[totalTextPlugin]}
       options={doughnutChartOptions}
       data={{
-        labels: ["팬", "구독", "일반"],
+        labels: ["구독", "팬", "일반"],
         datasets: [
           {
-            label: "활성자 수",
+            label: "명",
             data: aggregate(v.data),
             backgroundColor: [
               "rgba(255, 99, 132, 0.2)",
@@ -35,7 +35,7 @@ export const ActiveViewerChart = () => {
 };
 
 export const aggregate = (stats: ActiveViewerStats) => [
-  stats.fan,
   stats.subscriber,
+  stats.fan,
   stats.normal,
 ];

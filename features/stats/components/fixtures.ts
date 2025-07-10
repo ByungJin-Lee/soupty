@@ -12,6 +12,9 @@ export const lineChartOptions: ChartOptions<"line"> = {
       // Y축이 항상 0에서 시작하도록 설정합니다.
       beginAtZero: true,
       display: false,
+      ticks: {
+        padding: 100,
+      },
     },
   },
   layout: {
@@ -27,7 +30,7 @@ export const lineChartOptions: ChartOptions<"line"> = {
     datalabels: {
       font: {
         weight: "bold",
-        size: 18,
+        size: 17,
       },
     },
   },
@@ -82,5 +85,22 @@ export const totalTextPlugin = {
     ctx.fillText("합계", centerX, centerY + 20); // "합계" 텍스트 위치 (살짝 아래로)
 
     ctx.restore();
+  },
+};
+
+export const wordCloudOptions = {
+  plugins: {
+    legend: {
+      display: false,
+    },
+    datalabels: {
+      display: false,
+    },
+  },
+  elements: {
+    word: {
+      // strokeStyle: "red",
+      // strokeWidth: 8,
+    },
   },
 };

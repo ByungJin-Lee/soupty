@@ -9,8 +9,13 @@ import {
   PointElement,
   Tooltip,
 } from "chart.js";
+import {
+  WordCloudChart,
+  WordCloudController,
+  WordElement,
+} from "chartjs-chart-wordcloud";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { Doughnut, Line } from "react-chartjs-2";
+import { Chart, Doughnut, Line } from "react-chartjs-2";
 
 ChartJS.register(
   ArcElement,
@@ -21,7 +26,9 @@ ChartJS.register(
   LinearScale,
   PointElement,
   LineElement,
-  Filler
+  Filler,
+  WordCloudController,
+  WordElement
 );
 
-export { Doughnut, Line };
+export { Chart, Doughnut, Line, WordCloudChart, WordCloudController };

@@ -4,7 +4,7 @@ import { lineChartOptions } from "./fixtures";
 
 export const CPMChart = () => {
   useStatsEventStore((v) => v.cpm.lastUpdated);
-  const values = useStatsEventStore((v) => v.cpm.data).getLatest(10);
+  const values = useStatsEventStore((v) => v.cpm.data).getLatest(6);
 
   return (
     <Line

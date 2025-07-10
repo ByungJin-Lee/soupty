@@ -880,6 +880,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/d3-cloud@npm:^1.2.9":
+  version: 1.2.9
+  resolution: "@types/d3-cloud@npm:1.2.9"
+  dependencies:
+    "@types/d3": "npm:^3"
+  checksum: 10c0/bb8dd363a7bb330db07ba5fa6cff5c73db6359b5b9fb2570fa1ac45911ec5b46f83d022d12a2c847da51fc2f894d887d60674bc8aa77cbb4dabafd0500f1e72c
+  languageName: node
+  linkType: hard
+
+"@types/d3@npm:^3":
+  version: 3.5.53
+  resolution: "@types/d3@npm:3.5.53"
+  checksum: 10c0/1ffab5a29e9a5eb2fe976b38333a085406b3f1f3d0d1ed07d2947217ad891e61c95b06d74bb7db378b7d6ea51df93bc7c57edfcade45dadd4dff7e0f7c415507
+  languageName: node
+  linkType: hard
+
 "@types/estree@npm:^1.0.6":
   version: 1.0.8
   resolution: "@types/estree@npm:1.0.8"
@@ -1505,6 +1521,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chartjs-chart-wordcloud@npm:^4.4.4":
+  version: 4.4.4
+  resolution: "chartjs-chart-wordcloud@npm:4.4.4"
+  dependencies:
+    "@types/d3-cloud": "npm:^1.2.9"
+    d3-cloud: "npm:^1.2.7"
+  peerDependencies:
+    chart.js: ^4.1.0
+  checksum: 10c0/ffe0267894fe243573a1b3e5e89000ad35fb1391573ccb732f5a96543c7b795bdffa87c1554e4829ffb19cf87a1c830460cdd917639698e77aadccc0693cf197
+  languageName: node
+  linkType: hard
+
 "chartjs-plugin-datalabels@npm:^2.2.0":
   version: 2.2.0
   resolution: "chartjs-plugin-datalabels@npm:2.2.0"
@@ -1586,6 +1614,22 @@ __metadata:
   version: 3.1.3
   resolution: "csstype@npm:3.1.3"
   checksum: 10c0/80c089d6f7e0c5b2bd83cf0539ab41474198579584fa10d86d0cafe0642202343cbc119e076a0b1aece191989477081415d66c9fefbf3c957fc2fc4b7009f248
+  languageName: node
+  linkType: hard
+
+"d3-cloud@npm:^1.2.7":
+  version: 1.2.7
+  resolution: "d3-cloud@npm:1.2.7"
+  dependencies:
+    d3-dispatch: "npm:^1.0.3"
+  checksum: 10c0/9a1eb9b1854d5f54b9aba9afe1edfeca14f2849e6176aa6fcee51def62fd825c802e9b2cf37d8b3d51868c894558596fbe5a0bd956d9bf065b55decb95892e10
+  languageName: node
+  linkType: hard
+
+"d3-dispatch@npm:^1.0.3":
+  version: 1.0.6
+  resolution: "d3-dispatch@npm:1.0.6"
+  checksum: 10c0/6302554a019e2d75d4e3dc7e8757a00b4b12ac2a2952bccc66e4478ccd170f425e2b6a9443118d5feadcd2439f33582b63c7925e832104ff1978cadea2a30dc2
   languageName: node
   linkType: hard
 
@@ -3865,6 +3909,7 @@ __metadata:
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"
     chart.js: "npm:^4.5.0"
+    chartjs-chart-wordcloud: "npm:^4.4.4"
     chartjs-plugin-datalabels: "npm:^2.2.0"
     eslint: "npm:^9"
     eslint-config-next: "npm:15.3.3"

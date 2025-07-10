@@ -4,7 +4,7 @@ import { ChatViewer } from "~/features/chat/components/chat-viewer";
 import { EventViewer } from "~/features/event/components/event-viewer";
 import { ChannelEditModal } from "~/features/soop/components/channel/channel-edit-modal";
 import { ActiveViewerChart } from "~/features/stats/components/active-viewer-chart";
-import { CPMChart } from "~/features/stats/components/cpm-chart";
+import { WordCloud } from "~/features/stats/components/word-cloud";
 
 export default function LivePage() {
   return (
@@ -12,10 +12,11 @@ export default function LivePage() {
       <ChatViewer className="max-w-[500px]" />
       <EventViewer className="max-w-[500px]" />
 
-      <div className="w-[300px] max-w-[300px]">
+      <div className="w-[250px] max-w-[300px]">
         <ActiveViewerChart />
+        <WordCloud />
         {/* <LOLChart /> */}
-        <CPMChart />
+        {/* <CPMChart /> */}
         {/* <ChannelSelectModal isOpen={true} onClose={() => {}} /> */}
         <ChannelEditModal />
       </div>
