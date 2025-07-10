@@ -88,7 +88,7 @@ export const totalTextPlugin = {
   },
 };
 
-export const wordCloudOptions = {
+export const wordCloudOptions: ChartOptions<"wordCloud"> = {
   plugins: {
     legend: {
       display: false,
@@ -101,6 +101,8 @@ export const wordCloudOptions = {
     word: {
       // strokeStyle: "red",
       // strokeWidth: 8,
+      minRotation: 0,
+      maxRotation: 0,
     },
   },
 };
