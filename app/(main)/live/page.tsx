@@ -1,25 +1,30 @@
 "use client";
 
-import { ChatViewer } from "~/features/chat/components/chat-viewer";
-import { EventViewer } from "~/features/event/components/event-viewer";
-import { ChannelEditModal } from "~/features/soop/components/channel/channel-edit-modal";
-import { ActiveViewerChart } from "~/features/stats/components/active-viewer-chart";
-import { WordCloud } from "~/features/stats/components/word-cloud";
+import { LayoutBluePrinter } from "~/features/live/components/layout-blueprinter/layout-blueprinter";
+import { BlueprintColumnType } from "~/types/blueprint";
+import { StatsType } from "~/types/stats";
 
 export default function LivePage() {
   return (
-    <>
-      <ChatViewer className="max-w-[500px]" />
-      <EventViewer className="max-w-[500px]" />
-
-      <div className="w-[250px] max-w-[300px]">
-        <ActiveViewerChart />
-        <WordCloud />
-        {/* <LOLChart /> */}
-        {/* <CPMChart /> */}
-        {/* <ChannelSelectModal isOpen={true} onClose={() => {}} /> */}
-        <ChannelEditModal />
-      </div>
-    </>
+    <LayoutBluePrinter
+      blueprint={{
+        columns: [
+          {
+            type: BlueprintColumnType.ChatViewer,
+            width: 0,
+          },
+          {
+            type: BlueprintColumnType.StatsViewer,
+            width: 0,
+            components: [StatsType.ActiveViewer, StatsType.ChatPerMinute],
+          },
+          {
+            type: BlueprintColumnType.StatsViewer,
+            width: 0,
+            components: [StatsType.WordCount, StatsType.LOL],
+          },
+        ],
+      }}
+    />
   );
 }

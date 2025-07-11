@@ -7,20 +7,22 @@ export const LOLChart = () => {
   const values = useStatsEventStore((v) => v.lol.data).getLatest(10);
 
   return (
-    <Line
-      data={{
-        labels: values.map((v) => v.timeLabel),
-        datasets: [
-          {
-            label: "웃음 지표",
-            data: values.map((v) => v.count),
-            borderColor: "rgb(255, 99, 132)",
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
-          },
-        ],
-      }}
-      options={lineChartOptions}
-      height={250}
-    />
+    <div className="stats-chart">
+      <Line
+        data={{
+          labels: values.map((v) => v.timeLabel),
+          datasets: [
+            {
+              label: "웃음 지표",
+              data: values.map((v) => v.count),
+              borderColor: "rgb(255, 99, 132)",
+              backgroundColor: "rgba(255, 99, 132, 0.5)",
+            },
+          ],
+        }}
+        options={lineChartOptions}
+        height={250}
+      />
+    </div>
   );
 };

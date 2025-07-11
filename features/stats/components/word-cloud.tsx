@@ -1,7 +1,7 @@
 import { useStatsEventStore } from "~/common/stores/stats-event-store";
 import { Chart } from "~/common/ui/chart";
-import { wordCloudOptions } from "./fixtures";
 import { normalizeData } from "../utils";
+import { wordCloudOptions } from "./fixtures";
 
 export const WordCloud = () => {
   const d = useStatsEventStore((v) => v.wordCount.data);
@@ -11,7 +11,7 @@ export const WordCloud = () => {
   const clouds = d.words.slice(0, 20);
 
   return (
-    <div>
+    <div className="stats-chart">
       <Chart
         height={250}
         type="wordCloud"

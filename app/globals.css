@@ -2,6 +2,7 @@
 
 :root {
   overflow: hidden;
+  --stats-chart-size: 250px;
 }
 
 @layer base {
@@ -30,6 +31,10 @@
     &::-webkit-scrollbar {
       display: none;
     }
+  }
+
+  .stats-chart {
+    width: var(--stats-chart-size);
   }
 
   .badge-streamer {

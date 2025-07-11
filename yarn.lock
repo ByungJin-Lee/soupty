@@ -3534,6 +3534,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-resizable-panels@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "react-resizable-panels@npm:3.0.3"
+  peerDependencies:
+    react: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+    react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+  checksum: 10c0/4881d24af0bfb6f599b8256a0ffaa248376483e4e65c43be62dfc22d60c2d0fc329211ea1ca409ebebd5f9f6302c3f828bfc341980c1067bd3fcb2d050810d8e
+  languageName: node
+  linkType: hard
+
 "react@npm:^19.0.0":
   version: 19.1.0
   resolution: "react@npm:19.1.0"
@@ -3919,6 +3929,7 @@ __metadata:
     react-dom: "npm:^19.0.0"
     react-feather: "npm:^2.0.10"
     react-hook-form: "npm:^7.60.0"
+    react-resizable-panels: "npm:^3.0.3"
     swr: "npm:^2.3.4"
     tailwindcss: "npm:^4"
     typescript: "npm:^5"

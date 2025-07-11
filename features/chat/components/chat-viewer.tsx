@@ -23,18 +23,12 @@ export const ChatViewer: React.FC<Props> = ({ className = "" }) => {
   const messages = chatQueue.getAll();
 
   return (
-    <div
-      className={`overflow-y-scroll invisible-scrollbar ${className}`}
-      ref={containerRef}
-      onScroll={checkIfAtBottom}
-    >
-      <div>
-        {messages.map((v) => (
-          <ChatRow key={v.id} data={v} />
-        ))}
-        {/* 스크롤 앵커: 항상 최하단에 위치 */}
-        <div ref={scrollAnchorRef} />
-      </div>
+    <div ref={containerRef} onScroll={checkIfAtBottom}>
+      {messages.map((v) => (
+        <ChatRow key={v.id} data={v} />
+      ))}
+      {/* 스크롤 앵커: 항상 최하단에 위치 */}
+      <div ref={scrollAnchorRef} />
     </div>
   );
 };
