@@ -1,5 +1,5 @@
 use chrono::Utc;
-use tauri::{AppHandle, State};
+use tauri::State;
 
 use crate::{services::db::commands::ChannelData, state::AppState};
 

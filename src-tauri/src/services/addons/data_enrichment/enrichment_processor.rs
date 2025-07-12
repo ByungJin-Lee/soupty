@@ -3,13 +3,13 @@ use crate::models::events::*;
 use crate::services::stats::models::*;
 
 pub struct EnrichmentProcessor {
-    token_analyzer: TokenAnalyzer,
+    token_analyzer: &'static TokenAnalyzer,
 }
 
 impl EnrichmentProcessor {
     pub fn new() -> Self {
         Self {
-            token_analyzer: TokenAnalyzer::new().expect("Failed to initialize TokenAnalyzer"),
+            token_analyzer: TokenAnalyzer::global(),
         }
     }
 

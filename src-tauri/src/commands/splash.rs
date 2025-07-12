@@ -4,7 +4,7 @@ use anyhow::{Context, Result as AnyhowResult};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager, State, Window};
+use tauri::{AppHandle, Manager};
 
 #[tauri::command]
 pub async fn check_for_updates() -> Result<(), String> {

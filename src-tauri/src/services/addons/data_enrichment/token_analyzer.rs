@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use lindera::dictionary::load_dictionary_from_kind;
 use lindera::mode::Mode;
 use lindera::segmenter::Segmenter;
@@ -8,6 +9,11 @@ pub struct TokenAnalyzer {
     tokenizer: Tokenizer,
 }
 
+lazy_static! {
+    static ref GLOBAL_TOKEN_ANALYZER: TokenAnalyzer =
+        TokenAnalyzer::new().expect("Failed to initialize TokenAnalyzer");
+}
+
 impl TokenAnalyzer {
     pub fn new() -> LinderaResult<Self> {
         let dic = load_dictionary_from_kind(lindera::dictionary::DictionaryKind::KoDic)?;
@@ -15,6 +21,10 @@ impl TokenAnalyzer {
         let tokenizer = Tokenizer::new(segmenter);
 
         Ok(Self { tokenizer })
+    }
+
+    pub fn global() -> &'static TokenAnalyzer {
+        &GLOBAL_TOKEN_ANALYZER
     }
 
     pub fn tokenize(&self, text: &str) -> Vec<String> {
