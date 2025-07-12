@@ -2,7 +2,8 @@ import { BaseEvent } from "./base";
 
 export enum DonationType {
   Balloon = "Balloon",
-  ADBalloon = "AdBallon",
+  ADBalloon = "ADBalloon",
+  VODBalloon = "VODBalloon",
 }
 
 export interface DonationEvent extends BaseEvent {
@@ -11,7 +12,7 @@ export interface DonationEvent extends BaseEvent {
    */
   amount: number;
   /**
-   * @deprecated 해당 선물로 열혈이 되었는지 여부
+   * @description 해당 선물로 열혈이 되었는지 여부
    */
   becomeTopFan: boolean;
   /**

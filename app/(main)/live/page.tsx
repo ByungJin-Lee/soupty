@@ -1,30 +1,10 @@
 "use client";
 
-import { LayoutBluePrinter } from "~/features/live/components/layout-blueprinter/layout-blueprinter";
-import { BlueprintColumnType } from "~/types/blueprint";
-import { StatsType } from "~/types/stats";
+import { LayoutBluePrinter } from "~/features/live/components/layout-blueprinter";
+import { useLayoutBlueprintStore } from "~/features/live/stores/layout-blueprinter";
 
 export default function LivePage() {
-  return (
-    <LayoutBluePrinter
-      blueprint={{
-        columns: [
-          {
-            type: BlueprintColumnType.ChatViewer,
-            width: 0,
-          },
-          {
-            type: BlueprintColumnType.StatsViewer,
-            width: 0,
-            components: [StatsType.ActiveViewer, StatsType.ChatPerMinute],
-          },
-          {
-            type: BlueprintColumnType.StatsViewer,
-            width: 0,
-            components: [StatsType.WordCount, StatsType.LOL],
-          },
-        ],
-      }}
-    />
-  );
+  const { blueprint } = useLayoutBlueprintStore();
+
+  return <LayoutBluePrinter blueprint={blueprint} />;
 }

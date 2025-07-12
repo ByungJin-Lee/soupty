@@ -2,7 +2,7 @@
 
 import { useOtherEventStore } from "~/common/stores/other-event-store";
 import { useAutoScroll } from "~/features/chat";
-import { EventRow } from "./event-row";
+import { EventView } from "./event-view";
 
 type Props = {
   className?: string;
@@ -28,13 +28,9 @@ export const EventViewer: React.FC<Props> = ({ className = "" }) => {
       ref={containerRef}
       onScroll={checkIfAtBottom}
     >
-      <div>
-        {events.map((v) => (
-          <EventRow key={v.id} data={v} />
-        ))}
-        {/* 스크롤 앵커: 항상 최하단에 위치 */}
-        <div ref={scrollAnchorRef} />
-      </div>
+      <EventView events={events} />
+      {/* 스크롤 앵커: 항상 최하단에 위치 */}
+      <div ref={scrollAnchorRef} />
     </div>
   );
 };

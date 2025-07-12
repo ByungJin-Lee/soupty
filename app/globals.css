@@ -11,6 +11,11 @@
     border-radius: 200px;
     overflow: hidden;
   }
+  body {
+    overflow: hidden;
+    height: 100vh;
+    max-height: 100vh;
+  }
   button {
     cursor: pointer;
   }

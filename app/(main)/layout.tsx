@@ -8,13 +8,12 @@ export default function MainLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main className="flex flex-col h-screen overflow-hidden">
+    <main className="flex flex-col h-full">
       <GlobalEventProvider />
       <WindowTitlebar>
         <GlobalNavigationBar />
       </WindowTitlebar>
-
-      <main className="flex-grow overflow-hidden">{children}</main>
+      {children}
     </main>
   );
 }
