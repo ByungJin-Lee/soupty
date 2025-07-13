@@ -15,15 +15,18 @@ export const CPMChart = () => {
             {
               label: "CPM",
               data: values.map((v) => v.count),
-              borderColor: "rgb(255, 99, 132)",
-              backgroundColor: "rgba(255, 99, 132, 0.5)",
+              borderColor: "#10b981",
+              backgroundColor: "rgba(16, 185, 129, 0.1)",
+              pointBackgroundColor: "#ffffff",
+              pointBorderColor: "#10b981",
+              pointHoverBackgroundColor: "#10b981",
+              pointHoverBorderColor: "#ffffff",
               tension: 0.4,
               fill: true,
             },
           ],
         }}
         options={lineChartOptions}
-        height={250}
       />
     </div>
   );

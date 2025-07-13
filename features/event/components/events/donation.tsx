@@ -1,12 +1,14 @@
 import { DonationEvent, DonationType } from "~/types";
-import { formatAmount, getAmountColor, getDonationTypeIcon } from "../../utils/donation-utils";
+import {
+  getAmountColor,
+  getDonationTypeIcon,
+} from "../../utils/donation-utils";
 
 type Props = {
   data: DonationEvent;
 };
 
 export const DonationRow: React.FC<Props> = ({ data }) => {
-
   const isSpecialEvent = data.becomeTopFan || data.fanClubOrdinal > 0;
 
   return (
@@ -36,33 +38,32 @@ export const DonationRow: React.FC<Props> = ({ data }) => {
             data.amount
           )}`}
         >
-          {formatAmount(data.amount)}
+          {data.amount}개
         </span>
       </div>
 
       {/* 후원자 정보 */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center">
         <div className="flex items-center gap-2">
           <span className="text-sm text-orange-700 font-medium">후원자:</span>
           <span className=" text-orange-800 text-md bg-yellow-200/60 px-2 py-0.5 rounded-lg">
             {data.fromLabel}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          {data.becomeTopFan && (
-            <span className="text-xs bg-red-500 text-white px-2 py-1 rounded-full font-bold animate-bounce">
-              🔥 열혈팬!
-            </span>
-          )}
-          {data.fanClubOrdinal > 0 && (
-            <span className="text-xs bg-pink-500 text-white px-2 py-1 rounded-full font-bold">
-              {data.fanClubOrdinal === 1
-                ? "🎉 첫 팬클럽!"
-                : `팬클럽 ${data.fanClubOrdinal}번째`}
-            </span>
-          )}
-        </div>
       </div>
+
+      {data.becomeTopFan && (
+        <div className="w-full text-xs bg-red-500 text-white mt-2 px-2 py-1 rounded-full font-bold animate-bounce">
+          🔥 열혈팬!
+        </div>
+      )}
+      {data.fanClubOrdinal > 0 && (
+        <div className="w-full text-xs bg-pink-500 text-white mt-2 px-2 py-1 rounded-full font-bold">
+          {data.fanClubOrdinal > 0
+            ? `🎉 팬 가입(${data.fanClubOrdinal}번째)`
+            : ""}
+        </div>
+      )}
 
       {/* 메시지 */}
       {data.message && (
@@ -70,17 +71,6 @@ export const DonationRow: React.FC<Props> = ({ data }) => {
           <p className="text-orange-800 text-sm font-medium leading-relaxed">
             &ldquo;{data.message}&rdquo;
           </p>
-        </div>
-      )}
-
-      {/* 특별 이벤트 알림 */}
-      {isSpecialEvent && (
-        <div className="bg-gradient-to-r from-red-100 mt-1.5 to-pink-100 rounded-lg py-0.5 border border-red-300/50">
-          <div className="text-center">
-            <span className="text-sm font-semibold text-red-700">
-              ✨ 특별한 후원입니다! ✨
-            </span>
-          </div>
         </div>
       )}
     </div>

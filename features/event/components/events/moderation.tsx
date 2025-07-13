@@ -75,7 +75,7 @@ export const MuteRow: React.FC<MuteProps> = ({ data }) => {
 
         <div className="flex items-center gap-2">
           <span className="text-xs text-red-200 bg-red-900/60 px-2 py-0.5 rounded">
-            {data.counts}회차
+            {data.counts}회
           </span>
           <span
             className={`text-sm font-bold text-red-100 px-3 py-0.5 rounded-lg ${getSeverityColor(
@@ -88,7 +88,7 @@ export const MuteRow: React.FC<MuteProps> = ({ data }) => {
       </div>
 
       {/* 사용자 정보 */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm text-red-300">대상:</span>
           <span className="font-bold text-red-100 text-base bg-red-600/70 px-3 py-0.5 rounded-lg">

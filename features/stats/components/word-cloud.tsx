@@ -13,7 +13,6 @@ export const WordCloud = () => {
   return (
     <div className="stats-chart">
       <Chart
-        height={250}
         type="wordCloud"
         data={{
           labels: clouds.map((v) => v.word),

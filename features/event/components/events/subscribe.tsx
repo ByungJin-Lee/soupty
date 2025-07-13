@@ -18,7 +18,7 @@ export const SubscribeRow: React.FC<Props> = ({ data }) => {
       </div>
       <div className="flex justify-end">
         <span className="text-lg font-bold text-rose-900 bg-pink-100/80 px-3 py-1 rounded-lg shadow-sm">
-          {data.tier}티어 {data.renew}개월
+          {data.tier}티어 {data.renew === 0 ? "신규 가입" : `${data.renew}개월`}
         </span>
       </div>
     </div>

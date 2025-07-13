@@ -12,17 +12,18 @@ export const NotificationRow: React.FC<Props> = ({ data }) => {
           <div className="w-2 h-2 rounded-full bg-indigo-800 shadow-inner"></div>
           <span className="font-semibold text-indigo-100 text-sm">알림</span>
         </div>
-        <span className={`font-bold text-indigo-100 text-sm px-2 py-1 rounded-lg ${
-          data.show ? 'bg-indigo-600/60' : 'bg-gray-600/60'
-        }`}>
-          {data.show ? '표시' : '숨김'}
+        <span
+          className={`font-bold text-indigo-100 text-sm px-2 py-1 rounded-lg ${
+            data.show ? "bg-indigo-600/60" : "bg-gray-600/60"
+          }`}
+        >
+          {data.show ? "표시" : "숨김"}
         </span>
       </div>
-      <div className="text-center">
-        <span className="text-sm font-medium text-indigo-100 bg-indigo-500/60 px-2 py-1 rounded-lg">
-          {data.message}
-        </span>
-      </div>
+
+      <pre className="text-xs font-medium text-indigo-100 bg-indigo-500/60 px-2 py-1 rounded-lg whitespace-pre-wrap">
+        {data.message}
+      </pre>
     </div>
   );
 };

@@ -9,7 +9,9 @@ export const StatsViewer: React.FC<Props> = ({ types }) => {
   return (
     <div className="">
       {types.map((type) => (
-        <StatsRow key={type} type={type} />
+        <div key={type}>
+          <StatsRow type={type} />
+        </div>
       ))}
     </div>
   );
