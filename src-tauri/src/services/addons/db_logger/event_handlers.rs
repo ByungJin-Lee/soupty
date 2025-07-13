@@ -5,7 +5,7 @@ use crate::{
     models::events::*,
     services::{
         addons::interface::AddonContext,
-        db::commands::{ChannelData, ChatLogData, EventLogData, UserData},
+        db::commands::{ChatLogData, EventLogData, UserData},
     },
 };
 
@@ -52,15 +52,6 @@ impl EventProcessor {
             },
         );
 
-        // 채널 정보 저장
-        buffer.channels.insert(
-            event.channel_id.clone(),
-            ChannelData {
-                channel_id: event.channel_id.clone(),
-                channel_name: event.channel_id.clone(),
-                last_updated: event.timestamp,
-            },
-        );
 
         // 채팅 로그 추가
         let message_type = match event.chat_type {
@@ -111,15 +102,6 @@ impl EventProcessor {
             .ensure_broadcast_session(ctx, channel_id)
             .await?;
 
-        // 채널 정보 저장
-        buffer.channels.insert(
-            channel_id.to_string(),
-            ChannelData {
-                channel_id: channel_id.to_string(),
-                channel_name: channel_id.to_string(),
-                last_updated: timestamp,
-            },
-        );
 
         buffer.event_logs.push(EventLogData {
             broadcast_id,
@@ -142,7 +124,6 @@ impl EventProcessor {
         }
 
         let users: Vec<UserData> = buffer.users.values().cloned().collect();
-        let channels: Vec<ChannelData> = buffer.channels.values().cloned().collect();
         let chat_logs = buffer.chat_logs.clone();
         let event_logs = buffer.event_logs.clone();
 
@@ -168,13 +149,6 @@ impl EventProcessor {
             })?;
         }
 
-        // 채널 정보 저장
-        if !channels.is_empty() {
-            ctx.db.upsert_channels(channels).await.map_err(|e| {
-                Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))
-                    as Box<dyn std::error::Error>
-            })?;
-        }
 
         // 채팅 로그 저장
         if !chat_logs.is_empty() {

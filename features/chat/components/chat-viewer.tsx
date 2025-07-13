@@ -12,18 +12,15 @@ export const ChatViewer: React.FC<Props> = ({ className = "" }) => {
   const chatQueue = useChatEventStore((s) => s.chatQueue);
   const lastChatUpdate = useChatEventStore((s) => s.lastUpdate);
 
-  const { containerRef, scrollAnchorRef, checkIfAtBottom } = useAutoScroll(
-    lastChatUpdate,
-    {
-      threshold: 100,
-      behavior: "smooth",
-    }
-  );
+  const { scrollAnchorRef } = useAutoScroll(lastChatUpdate, {
+    threshold: 100,
+    behavior: "smooth",
+  });
 
   const messages = chatQueue.getAll();
 
   return (
-    <div ref={containerRef} onScroll={checkIfAtBottom} className={className}>
+    <div className={className}>
       <ChatView messages={messages} />
       {/* 스크롤 앵커: 항상 최하단에 위치 */}
       <div ref={scrollAnchorRef} />

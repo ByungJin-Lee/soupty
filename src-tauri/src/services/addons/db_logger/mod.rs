@@ -4,10 +4,8 @@ mod session_manager;
 mod event_handlers;
 
 use async_trait::async_trait;
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 use tokio::sync::Mutex;
-use tokio::time::{interval, MissedTickBehavior};
-use tokio::task::JoinHandle;
 
 use crate::{
     models::events::*,
@@ -23,7 +21,6 @@ pub struct DBLoggerAddon {
     buffer: Arc<Mutex<LogBuffer>>,
     session_manager: SessionManager,
     event_processor: EventProcessor,
-    batch_timer_task: Arc<Mutex<Option<JoinHandle<()>>>>,
 }
 
 impl DBLoggerAddon {
@@ -31,45 +28,13 @@ impl DBLoggerAddon {
         let session_manager = SessionManager::new();
         let event_processor = EventProcessor::new(SessionManager::new());
         
-        let addon = Self {
+        Self {
             buffer: Arc::new(Mutex::new(LogBuffer::default())),
             session_manager,
             event_processor,
-            batch_timer_task: Arc::new(Mutex::new(None)),
-        };
-
-        // 배치 처리 타이머 시작
-        addon.start_batch_timer();
-
-        addon
-    }
-
-    fn start_batch_timer(&self) {
-        let buffer = Arc::clone(&self.buffer);
-
-        let task = tokio::spawn(async move {
-            let mut interval = interval(Duration::from_secs(BATCH_INTERVAL_SECS));
-            interval.set_missed_tick_behavior(MissedTickBehavior::Skip);
-
-            loop {
-                interval.tick().await;
-
-                let should_flush = {
-                    let buffer_guard = buffer.lock().await;
-                    buffer_guard.should_flush()
-                };
-
-                if should_flush {
-                    println!("[DBLoggerAddon] Batch flush needed - waiting for next event");
-                }
-            }
-        });
-
-        // 태스크 핸들 저장 (동기적으로 가능한 경우)
-        if let Ok(mut guard) = self.batch_timer_task.try_lock() {
-            *guard = Some(task);
         }
     }
+
 
     async fn should_flush_and_process(&self, ctx: &AddonContext) -> Result<(), Box<dyn std::error::Error>> {
         let should_flush = {
@@ -383,12 +348,6 @@ impl Addon for DBLoggerAddon {
     async fn stop(&self, ctx: &AddonContext) {
         println!("[DBLoggerAddon] Stopping addon - cleaning up resources");
         
-        // 배치 타이머 태스크 종료
-        let mut task_guard = self.batch_timer_task.lock().await;
-        if let Some(task) = task_guard.take() {
-            task.abort();
-            println!("[DBLoggerAddon] Batch timer task aborted");
-        }
 
         // 남은 버퍼 데이터 모두 flush
         {

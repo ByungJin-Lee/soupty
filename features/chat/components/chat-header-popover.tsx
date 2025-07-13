@@ -5,6 +5,7 @@ import {
   PopoverId,
   withPopover,
 } from "~/common/ui/popover";
+import { isTargetUser } from "~/common/utils/target-users";
 import { ChatEvent } from "~/types";
 import { useChatHeaderPopover } from "../hooks";
 
@@ -13,6 +14,8 @@ const ChatHeaderPopoverContent: React.FC<PopoverContentProps<ChatEvent>> = ({
 }) => {
   const { userInfo, isLoading, handleToggleTargetUser } =
     useChatHeaderPopover(payload);
+
+  const isTarget = userInfo.userId ? isTargetUser(userInfo.userId) : false;
 
   return (
     <div className="p-4 min-w-[200px]">
@@ -26,14 +29,14 @@ const ChatHeaderPopoverContent: React.FC<PopoverContentProps<ChatEvent>> = ({
           onClick={handleToggleTargetUser}
           disabled={isLoading}
           className={`w-full px-3 py-1 text-sm rounded-md font-medium transition-colors ${
-            userInfo.isTarget
+            isTarget
               ? "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
               : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
           } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           {isLoading
             ? "처리 중..."
-            : userInfo.isTarget
+            : isTarget
             ? "타겟 사용자에서 제거"
             : "타겟 사용자로 추가"}
         </button>

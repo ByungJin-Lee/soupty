@@ -1,10 +1,10 @@
-import { useState, useMemo, useCallback } from "react";
-import { ChatEvent } from "~/types";
+import { useCallback, useMemo, useState } from "react";
 import {
   addTargetUser,
   isTargetUser,
   removeTargetUser,
 } from "~/common/utils/target-users";
+import { ChatEvent } from "~/types";
 
 export function useChatHeaderPopover(chatData: ChatEvent) {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,9 +12,8 @@ export function useChatHeaderPopover(chatData: ChatEvent) {
   // 계산된 값들을 메모화
   const userInfo = useMemo(() => {
     const userId = chatData.user?.id || "";
-    const isTarget = isTargetUser(userId);
     const isManager = chatData.user?.status?.isManager || false;
-    
+
     // 구독 관련 정보
     const followStatus = chatData.user?.status?.follow;
     const isFollower = followStatus && followStatus > 0;
@@ -29,7 +28,6 @@ export function useChatHeaderPopover(chatData: ChatEvent) {
 
     return {
       userId,
-      isTarget,
       isManager,
       label: chatData.user?.label || "",
       isFollower,
@@ -47,7 +45,7 @@ export function useChatHeaderPopover(chatData: ChatEvent) {
 
     setIsLoading(true);
     try {
-      if (userInfo.isTarget) {
+      if (isTargetUser(userInfo.userId)) {
         await removeTargetUser(userInfo.userId);
       } else {
         await addTargetUser(userInfo.userId);
@@ -57,7 +55,7 @@ export function useChatHeaderPopover(chatData: ChatEvent) {
     } finally {
       setIsLoading(false);
     }
-  }, [userInfo.userId, userInfo.isTarget]);
+  }, [userInfo.userId]);
 
   return {
     userInfo,
