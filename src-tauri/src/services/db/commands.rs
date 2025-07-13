@@ -47,6 +47,20 @@ pub enum DBCommand {
         logs: Vec<EventLogData>,
         reply_to: oneshot::Sender<Result<(), String>>,
     },
+
+    // Target Users 관리
+    GetTargetUsers {
+        reply_to: oneshot::Sender<Result<Vec<String>, String>>,
+    },
+    AddTargetUser {
+        user_id: String,
+        description: Option<String>,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
+    RemoveTargetUser {
+        user_id: String,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
 }
 
 #[derive(Debug, Clone)]

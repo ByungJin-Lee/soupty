@@ -1,4 +1,5 @@
 import { DomainEvent, DomainEventType } from "~/types";
+import { ChatRow } from "~/features/chat/components/chat-row";
 import { DonationRow } from "./events/donation";
 import { EnterRow, ExitRow } from "./events/enter-exit";
 import {
@@ -38,6 +39,8 @@ export const EventRow: React.FC<Props> = ({ data }) => {
       return <BJStateChangeRow data={data.payload} />;
 
     // Chat related events
+    case DomainEventType.Chat:
+      return <ChatRow data={data.payload} />;
     case DomainEventType.Donation:
       return <DonationRow data={data.payload} />;
     case DomainEventType.Subscribe:

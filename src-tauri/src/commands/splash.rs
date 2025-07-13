@@ -4,7 +4,7 @@ use anyhow::{Context, Result as AnyhowResult};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager};
+use tauri::{AppHandle, Manager, State};
 
 #[tauri::command]
 pub async fn check_for_updates() -> Result<(), String> {
@@ -113,6 +113,21 @@ pub async fn setup_app_state(app_handle: AppHandle) -> Result<(), String> {
 
     println!("App State 설정 완료");
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_target_users(app_state: State<'_, AppState>) -> Result<Vec<String>, String> {
+    app_state.db.get_target_users().await
+}
+
+#[tauri::command]
+pub async fn add_target_user(user_id: String, app_state: State<'_, AppState>) -> Result<(), String> {
+    app_state.db.add_target_user(user_id, None).await
+}
+
+#[tauri::command]
+pub async fn remove_target_user(user_id: String, app_state: State<'_, AppState>) -> Result<(), String> {
+    app_state.db.remove_target_user(user_id).await
 }
 
 #[tauri::command]

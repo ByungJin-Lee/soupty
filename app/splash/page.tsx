@@ -3,6 +3,8 @@
 import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useState } from "react";
+import { setTargetUsers } from "~/common/utils/target-users";
+import { ipcService } from "~/services/ipc";
 
 export default function SplashPage() {
   const [progress, setProgress] = useState(0);
@@ -36,8 +38,13 @@ export default function SplashPage() {
       await invoke("setup_ai");
 
       // 2-3. App State 설정
-      updateProgress(70, "[5/5] 최종 상태 설정 중");
+      updateProgress(70, "[5/6] 최종 상태 설정 중");
       await invoke("setup_app_state");
+
+      // 2-4. Target Users 초기화
+      updateProgress(80, "[6/6] 사용자 설정 로드 중");
+      const targetUsers = await ipcService.targetUsers.getTargetUsers();
+      setTargetUsers(targetUsers);
 
       // 3. 완료
       updateProgress(90, "초기화 완료");

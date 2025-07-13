@@ -23,6 +23,17 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 --------------------------------------------------------------------
+-- Table: target_users
+-- 역할: other-event-store로 전달할 대상 사용자들을 관리합니다.
+--       특정 사용자의 채팅 이벤트를 별도로 추적하기 위한 설정 테이블입니다.
+--------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS target_users (
+    user_id         TEXT PRIMARY KEY NOT NULL,
+    added_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    description     TEXT -- 추가된 이유나 설명 (선택사항)
+);
+
+--------------------------------------------------------------------
 -- Table: broadcast_sessions
 -- 역할: 개별 방송 세션을 식별하고 관리합니다.
 --------------------------------------------------------------------

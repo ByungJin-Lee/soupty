@@ -1,7 +1,8 @@
-import { Fragment } from "react";
+import { Fragment, useCallback } from "react";
 import { MessagePart, MessageType } from "~/types/chat";
 import { ChatEvent } from "~/types/event";
 import { ChatBadge } from "./chat-badge";
+import { usePopoverStore, PopoverId } from "~/common/ui/popover";
 
 type Props = {
   data: ChatEvent;
@@ -21,8 +22,23 @@ type HeaderProps = {
 };
 
 const Header: React.FC<HeaderProps> = ({ data }) => {
+  const { showPopover } = usePopoverStore();
+
+  const handleClick = useCallback((event: React.MouseEvent) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const position = {
+      x: rect.left,
+      y: rect.bottom + 4, // 4px 간격
+    };
+
+    showPopover(PopoverId.ChatHeader, data, position);
+  }, [data, showPopover]);
+
   return (
-    <div className="min-w-[120px] max-w-[120px] flex">
+    <div 
+      className="min-w-[120px] max-w-[120px] flex cursor-pointer hover:bg-gray-100 rounded px-1 py-0.5 transition-colors"
+      onClick={handleClick}
+    >
       {data.badges.map((b) => (
         <ChatBadge key={b} badge={b} />
       ))}

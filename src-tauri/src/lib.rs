@@ -6,7 +6,7 @@ use crate::{
         main_controller::{start_main_controller, stop_main_controller},
         soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station},
         splash::{
-            check_for_updates, connect_database, setup_ai, setup_app_state, show_main_window,
+            add_target_user, check_for_updates, connect_database, get_target_users, remove_target_user, setup_ai, setup_app_state, show_main_window,
         },
     },
     sentiment_analyzer::analyze_chat,
@@ -43,8 +43,11 @@ pub fn run() {
             upsert_channel,
             delete_channel,
             get_channels,
+            add_target_user,
             check_for_updates,
             connect_database,
+            get_target_users,
+            remove_target_user,
             setup_ai,
             setup_app_state,
             show_main_window

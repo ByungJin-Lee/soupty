@@ -229,4 +229,62 @@ impl<'a> CommandHandlers<'a> {
 
         let _ = reply_to.send(result);
     }
+
+    pub fn handle_get_target_users(
+        &self,
+        reply_to: oneshot::Sender<Result<Vec<String>, String>>,
+    ) {
+        let result = (|| {
+            let mut stmt = self.conn.prepare("SELECT user_id FROM target_users ORDER BY added_at")
+                .map_err(|e| e.to_string())?;
+            let mut rows = stmt.query([])
+                .map_err(|e| e.to_string())?;
+
+            let mut user_ids: Vec<String> = Vec::new();
+            while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+                let user_id: String = row.get(0).map_err(|e| e.to_string())?;
+                user_ids.push(user_id);
+            }
+            Ok(user_ids)
+        })();
+
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_add_target_user(
+        &self,
+        user_id: String,
+        description: Option<String>,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self
+            .conn
+            .prepare_cached(
+                "INSERT INTO target_users (user_id, description) VALUES (?1, ?2) ON CONFLICT(user_id) DO UPDATE SET description = excluded.description"
+            )
+            .and_then(|mut stmt| {
+                stmt.execute([&user_id, &description.unwrap_or_default()])?;
+                Ok(())
+            })
+            .map_err(|e| e.to_string());
+
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_remove_target_user(
+        &self,
+        user_id: String,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self
+            .conn
+            .prepare_cached("DELETE FROM target_users WHERE user_id = ?1")
+            .and_then(|mut stmt| {
+                stmt.execute([&user_id])?;
+                Ok(())
+            })
+            .map_err(|e| e.to_string());
+
+        let _ = reply_to.send(result);
+    }
 }

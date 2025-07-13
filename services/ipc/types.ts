@@ -5,6 +5,7 @@ export enum IpcRequestWithoutPayload {
   None = "none",
   DisconnectChannel = "stop_main_controller",
   GetChannels = "get_channels",
+  GetTargetUsers = "get_target_users",
 }
 
 // 요청 Payload가 있는 request 객체입니다.
@@ -16,6 +17,8 @@ export enum IpcRequestWithPayload {
   GetStreamerLive = "fetch_streamer_live",
   GetStreamerStation = "fetch_streamer_station",
   GetStreamerEmoji = "fetch_streamer_emoticon",
+  AddTargetUser = "add_target_user",
+  RemoveTargetUser = "remove_target_user",
 }
 
 export type IpcRequest = IpcRequestWithPayload | IpcRequestWithoutPayload;
@@ -46,6 +49,12 @@ export interface IpcPayloadMap {
   [IpcRequestWithPayload.DeleteChannel]: {
     channelId: string;
   };
+  [IpcRequestWithPayload.AddTargetUser]: {
+    userId: string;
+  };
+  [IpcRequestWithPayload.RemoveTargetUser]: {
+    userId: string;
+  };
 }
 
 /**
@@ -59,6 +68,7 @@ export interface IpcResponseMap {
     channelName: string;
     lastUpdated: number;
   }[];
+  [IpcRequestWithoutPayload.GetTargetUsers]: string[];
   /// 라이브가 아닌 경우 null이 반환됩니다.
   [IpcRequestWithPayload.GetStreamerLive]: StreamerLive | null;
   [IpcRequestWithPayload.GetStreamerEmoji]: StreamerEmoji;
@@ -67,6 +77,8 @@ export interface IpcResponseMap {
   [IpcRequestWithPayload.ConnectChannel]: void;
   [IpcRequestWithPayload.DeleteChannel]: void;
   [IpcRequestWithPayload.UpsertChannel]: void;
+  [IpcRequestWithPayload.AddTargetUser]: void;
+  [IpcRequestWithPayload.RemoveTargetUser]: void;
 }
 
 export interface StreamerLive {

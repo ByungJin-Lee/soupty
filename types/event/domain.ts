@@ -1,3 +1,4 @@
+import { ChatEvent } from "./chat";
 import { DonationEvent } from "./donation";
 import { EnterEvent, ExitEvent } from "./enter-exit";
 import {
@@ -29,6 +30,7 @@ export enum DomainEventType {
   BJStateChange = "BJStateChange",
 
   // Chat related events
+  Chat = "Chat",
   Donation = "Donation",
   Subscribe = "Subscribe",
 
@@ -74,6 +76,7 @@ export type DomainEvent =
   | _DomainMap<DomainEventType.BJStateChange, BJStateChangeEvent>
 
   // Chat related events
+  | _DomainMap<DomainEventType.Chat, ChatEvent>
   | _DomainMap<DomainEventType.Donation, DonationEvent>
   | _DomainMap<DomainEventType.Subscribe, SubscribeEvent>
 

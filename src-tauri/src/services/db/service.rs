@@ -146,4 +146,44 @@ impl DBService {
         rx.await
             .map_err(|_| "Failed to receive response".to_string())?
     }
+
+    pub async fn get_target_users(&self) -> Result<Vec<String>, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::GetTargetUsers { reply_to: tx })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn add_target_user(&self, user_id: String, description: Option<String>) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::AddTargetUser {
+                user_id,
+                description,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn remove_target_user(&self, user_id: String) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::RemoveTargetUser {
+                user_id,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
 }
