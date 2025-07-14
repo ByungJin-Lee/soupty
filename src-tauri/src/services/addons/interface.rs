@@ -3,14 +3,17 @@ use std::sync::Arc;
 use crate::{models::events::*, services::db::service::DBService};
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use serde::Serialize;
 use tauri::AppHandle;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct BroadcastMetadata {
     pub channel_id: String,
     pub title: String,
     pub started_at: DateTime<Utc>,
     pub viewer_count: u64,
+    pub timestamp: DateTime<Utc>,
 }
 
 #[derive(Clone)]
@@ -27,7 +30,7 @@ pub trait Addon: Send + Sync {
     // 생명 주기 이벤트
     async fn on_connected(&self, _ctx: &AddonContext) {}
     async fn on_disconnected(&self, _ctx: &AddonContext) {}
-    async fn on_metadata_update(&self, _ctx: &AddonContext) {}
+    async fn on_metadata_update(&self, _ctx: &AddonContext, _event: &MetadataEvent) {}
     async fn stop(&self, _ctx: &AddonContext) {}
 
     // 채팅 관련 이벤트 핸들러

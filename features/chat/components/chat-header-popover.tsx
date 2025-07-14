@@ -1,5 +1,6 @@
 "use client";
 
+import { Star } from "react-feather";
 import {
   PopoverContentProps,
   PopoverId,
@@ -18,29 +19,29 @@ const ChatHeaderPopoverContent: React.FC<PopoverContentProps<ChatEvent>> = ({
   const isTarget = userInfo.userId ? isTargetUser(userInfo.userId) : false;
 
   return (
-    <div className="p-4 min-w-[200px]">
-      <div className="mb-3">
-        <h3 className="font-semibold text-gray-900">{userInfo.label}</h3>
-        <p className="text-sm text-gray-500">ID: {userInfo.userId}</p>
-      </div>
-
-      <div className="space-y-2">
+    <div className="p-3 min-w-[200px]">
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="font-semibold text-gray-900">{userInfo.label}</h3>
+          <p className="text-sm text-gray-500">{userInfo.userId}</p>
+        </div>
         <button
           onClick={handleToggleTargetUser}
           disabled={isLoading}
-          className={`w-full px-3 py-1 text-sm rounded-md font-medium transition-colors ${
-            isTarget
-              ? "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
-              : "bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200"
+          className={`p-1 rounded-md transition-colors border border-gray-300 text-gray-500 ${
+            isTarget ? "" : ""
           } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
         >
-          {isLoading
-            ? "처리 중..."
-            : isTarget
-            ? "타겟 사용자에서 제거"
-            : "타겟 사용자로 추가"}
+          <Star
+            size={20}
+            fill={isTarget ? "yellow" : "none"}
+            fillOpacity={0.5}
+            strokeWidth={1.2}
+          />
         </button>
+      </div>
 
+      <div className="space-y-2 mt-3">
         {userInfo.isBj && (
           <div className="px-3 py-2 bg-yellow-50 text-yellow-700 text-sm rounded-md border border-yellow-200">
             방송자 (BJ)
@@ -49,14 +50,14 @@ const ChatHeaderPopoverContent: React.FC<PopoverContentProps<ChatEvent>> = ({
 
         <div className="text-sm rounded-md flex flex-wrap gap-1">
           {userInfo.isManager && (
-            <div className="px-2 py-1 bg-purple-50 text-purple-700 text-sm rounded-md border border-purple-200">
+            <span className="px-2 py-1 bg-purple-50 text-purple-700 text-sm rounded-md border border-purple-200">
               매니저
-            </div>
+            </span>
           )}
 
           {userInfo.isTopFan && (
             <span className="px-2 py-1 bg-red-50 text-red-700 rounded border border-red-200">
-              열혈 팬
+              열혈
             </span>
           )}
           {userInfo.isFan && !userInfo.isTopFan && (
@@ -72,16 +73,15 @@ const ChatHeaderPopoverContent: React.FC<PopoverContentProps<ChatEvent>> = ({
                   : "bg-blue-50 text-blue-700 border-blue-200"
               }`}
             >
-              {userInfo.isFollowPlus ? "팔로우 플러스" : "팔로우"}
+              {userInfo.isFollowPlus ? "팔로우+" : "팔로우"}
             </span>
           ) : null}
+          {userInfo.isSupporter && (
+            <span className="px-2 py-1 bg-orange-50 rounded text-orange-700 text-sm border border-orange-200">
+              서포터
+            </span>
+          )}
         </div>
-
-        {userInfo.isSupporter && (
-          <div className="px-3 py-2 bg-orange-50 text-orange-700 text-sm rounded-md border border-orange-200">
-            서포터
-          </div>
-        )}
       </div>
     </div>
   );

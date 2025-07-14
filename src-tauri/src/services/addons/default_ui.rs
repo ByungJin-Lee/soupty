@@ -110,4 +110,9 @@ impl Addon for DefaultUIAddon {
         let domain_event = DomainEvent::Slow(event.clone());
         let _ = ctx.app_handle.emit(event_name::LOG_EVENT, domain_event);
     }
+
+    async fn on_metadata_update(&self, ctx: &AddonContext, event: &MetadataEvent) {
+        let domain_event = DomainEvent::MetadataUpdate(event.clone());
+        let _ = ctx.app_handle.emit(event_name::LOG_EVENT, domain_event);
+    }
 }

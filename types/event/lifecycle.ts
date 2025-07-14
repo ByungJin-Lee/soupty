@@ -1,14 +1,17 @@
 import { BaseEvent } from "./base";
 
-export interface ConnectedEvent extends BaseEvent {
-  // Connection related data can be added here if needed
-}
+export type ConnectedEvent = BaseEvent;
 
-export interface DisconnectedEvent extends BaseEvent {
-  // Disconnection related data can be added here if needed
-}
+export type DisconnectedEvent = BaseEvent;
 
 export interface BJStateChangeEvent extends BaseEvent {
   channelId: string;
   // BJ state change data can be added here if needed
+}
+
+export interface MetadataUpdateEvent extends BaseEvent {
+  id: string;
+  startedAt: string;
+  title: string;
+  viewCount: number;
 }

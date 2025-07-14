@@ -3,8 +3,10 @@ use std::{
     sync::{Arc, Mutex},
 };
 
+use uuid::Uuid;
+
 use crate::{
-    models::events::DomainEvent,
+    models::events::{DomainEvent, MetadataEvent},
     services::addons::interface::{Addon, AddonContext},
 };
 
@@ -63,15 +65,29 @@ impl AddonManager {
                     addon.on_challenge_mission_result(context, e).await
                 }
                 DomainEvent::Slow(e) => addon.on_slow(context, e).await,
+                _ => {
+                    log::warn!("Unhandled event: {:?}", event);
+                }
             }
         }
     }
 
     // 메타데이터 업데이트를 모든 애드온에게 알림
     pub async fn notify_metadata_update(&self, context: &AddonContext) {
-        let addons_clone = self.addons.lock().unwrap().clone();
-        for addon in addons_clone.values() {
-            addon.on_metadata_update(context).await;
+        if let Some(metadata) = &context.broadcast_metadata {
+            let event = MetadataEvent {
+                title: metadata.title.clone(),
+                started_at: metadata.started_at,
+                viewer_count: metadata.viewer_count,
+                timestamp: metadata.timestamp,
+                channel_id: metadata.channel_id.clone(),
+                id: Uuid::new_v4(),
+            };
+
+            let addons_clone = self.addons.lock().unwrap().clone();
+            for addon in addons_clone.values() {
+                addon.on_metadata_update(context, &event).await;
+            }
         }
     }
 

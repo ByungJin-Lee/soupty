@@ -5,6 +5,7 @@ import {
   BJStateChangeEvent,
   ConnectedEvent,
   DisconnectedEvent,
+  MetadataUpdateEvent,
 } from "./lifecycle";
 import {
   BattleMissionResultEvent,
@@ -54,6 +55,7 @@ export enum DomainEventType {
 
   // System events
   Notification = "Notification",
+  MetadataUpdate = "MetadataUpdate",
 }
 
 export type RawDomainEvent = {
@@ -102,4 +104,5 @@ export type DomainEvent =
   | _DomainMap<DomainEventType.BattleMissionResult, BattleMissionResultEvent>
 
   // System events
-  | _DomainMap<DomainEventType.Notification, NotificationEvent>;
+  | _DomainMap<DomainEventType.Notification, NotificationEvent>
+  | _DomainMap<DomainEventType.MetadataUpdate, MetadataUpdateEvent>;

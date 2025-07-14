@@ -1,5 +1,5 @@
-import { DomainEvent, DomainEventType } from "~/types";
 import { ChatRow } from "~/features/chat/components/chat-row";
+import { DomainEvent, DomainEventType } from "~/types";
 import { DonationRow } from "./events/donation";
 import { EnterRow, ExitRow } from "./events/enter-exit";
 import {
@@ -80,6 +80,9 @@ export const EventRow: React.FC<Props> = ({ data }) => {
     case DomainEventType.Notification:
       return <NotificationRow data={data.payload} />;
 
+    case DomainEventType.MetadataUpdate:
+      console.log("MetadataUpdate event:", data);
+      break;
     default:
       return (
         <div className="my-0.5 p-1 rounded-md bg-gray-100">

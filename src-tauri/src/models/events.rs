@@ -19,6 +19,7 @@ pub const EVENT_TYPE_MISSION_TOTAL: &str = "MISSION_TOTAL";
 pub const EVENT_TYPE_BATTLE_MISSION_RESULT: &str = "BATTLE_MISSION_RESULT";
 pub const EVENT_TYPE_CHALLENGE_MISSION_RESULT: &str = "CHALLENGE_MISSION_RESULT";
 pub const EVENT_TYPE_SLOW: &str = "SLOW";
+pub const EVENT_TYPE_METADATA_UPDATE: &str = "METADATA_UPDATE";
 
 // 전처리 과정을 거친 이벤트입니다.
 #[derive(Debug, Clone, Serialize)]
@@ -27,6 +28,7 @@ pub enum DomainEvent {
     // --- 생명 주기 관련 이벤트 ---
     Connected,
     Disconnected,
+    MetadataUpdate(MetadataEvent),
 
     // --- 채팅 관련 이벤트 ---
     BJStateChange,
@@ -57,6 +59,17 @@ pub struct ChatEvent {
     pub user: User,
     pub is_admin: bool,
     pub ogq: Option<Emoticon>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MetadataEvent {
+    pub title: String,
+    pub channel_id: String,
+    pub started_at: DateTime<Utc>,
+    pub viewer_count: u64,
+    pub timestamp: DateTime<Utc>,
+    pub id: uuid::Uuid,
 }
 
 #[derive(Debug, Clone, Serialize)]

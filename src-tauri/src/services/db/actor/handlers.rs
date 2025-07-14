@@ -209,13 +209,28 @@ impl<'a> CommandHandlers<'a> {
                 )?;
                 
                 for log in logs {
-                    stmt.execute([
-                        &log.broadcast_id.to_string(),
-                        &log.user_id.unwrap_or_default(),
-                        &log.event_type,
-                        &log.payload,
-                        &log.timestamp.to_rfc3339()
-                    ])?;
+                    match &log.user_id {
+                        Some(user_id) => {
+                            stmt.execute([
+                                &log.broadcast_id.to_string(),
+                                user_id,
+                                &log.event_type,
+                                &log.payload,
+                                &log.timestamp.to_rfc3339()
+                            ])?;
+                        },
+                        None => {
+                            let mut stmt_null = self.conn.prepare_cached(
+                                "INSERT INTO event_logs (broadcast_id, user_id, event_type, payload, timestamp) VALUES (?1, NULL, ?2, ?3, ?4)"
+                            )?;
+                            stmt_null.execute([
+                                &log.broadcast_id.to_string(),
+                                &log.event_type,
+                                &log.payload,
+                                &log.timestamp.to_rfc3339()
+                            ])?;
+                        }
+                    }
                 }
                 
                 self.conn.execute("COMMIT", [])?;
