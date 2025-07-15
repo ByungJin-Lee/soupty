@@ -6,6 +6,10 @@
 }
 
 @layer base {
+  * {
+    font-family: pretendard, pretendard Fallback;
+  }
+
   body:has(#splash) {
     margin: 0;
     border-radius: 200px;
