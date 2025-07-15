@@ -13,5 +13,5 @@ export interface MetadataUpdateEvent extends BaseEvent {
   id: string;
   startedAt: string;
   title: string;
-  viewCount: number;
+  viewerCount: number;
 }

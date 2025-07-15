@@ -1,11 +1,13 @@
 "use client";
 
-import { Edit3, Plus, Save } from "react-feather";
+import { Edit3, Eye, Plus, Save } from "react-feather";
+import { useChannel } from "~/features/soop/stores/channel";
 import { BlueprintColumnType } from "~/types/blueprint";
 import { useLayoutBlueprintStore } from "../../stores/layout-blueprinter";
 
 export const LayoutHeader: React.FC = () => {
   const { addColumn, isEditMode, toggleEditMode } = useLayoutBlueprintStore();
+  const { channel, broadcast } = useChannel();
 
   const handleAddColumn = () => {
     addColumn({
@@ -15,7 +17,29 @@ export const LayoutHeader: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-end p-0.5 border-b border-gray-200 bg-gray-100">
+    <div className="flex items-center justify-between p-0.5 border-b border-gray-200 bg-gray-100">
+      {/* Broadcast State Display */}
+      <div className="flex items-center gap-4 text-sm text-gray-600">
+        {channel && (
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            <span className="font-medium">{channel.label}</span>
+          </div>
+        )}
+        {broadcast && (
+          <div className="flex items-center gap-3">
+            <span className="truncate max-w-xs" title={broadcast.title}>
+              {broadcast.title}
+            </span>
+            <div className="flex items-center gap-1">
+              <Eye size={12} />
+              <span>{broadcast.viewerCount.toLocaleString()}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Controls */}
       <div className="flex items-center gap-2">
         <button
           onClick={toggleEditMode}

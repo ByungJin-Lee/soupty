@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::Result;
+use serde::Serialize;
 use soup_sdk::{
     chat::{SoopChatConnection, SoopChatOptions},
     SoopHttpClient,
@@ -13,16 +14,14 @@ use tokio::sync::Mutex;
 
 use crate::{
     controllers::{
-        addon_manager::AddonManager,
-        metadata_manager::MetadataManager,
-        timer_manager::TimerManager,
+        addon_manager::AddonManager, metadata_manager::MetadataManager, timer_manager::TimerManager,
     },
     services::{
         addons::{
             data_enrichment::DataEnrichmentAddon,
-            db_logger::DBLoggerAddon, 
-            default_ui::DefaultUIAddon, 
-            interface::AddonContext
+            db_logger::DBLoggerAddon,
+            default_ui::DefaultUIAddon,
+            interface::{AddonContext, BroadcastMetadata},
         },
         db::service::DBService,
         event_mapper::EventMapper,
@@ -40,6 +39,7 @@ pub struct MainController {
     timer_task: Option<JoinHandle<()>>,
     addon_manager: AddonManager,
     pub status: SystemStatus,
+    pub broadcast_metadata: Option<BroadcastMetadata>,
 }
 
 impl MainController {
@@ -49,6 +49,7 @@ impl MainController {
             status: SystemStatus::Idle,
             listener_task: None,
             timer_task: None,
+            broadcast_metadata: None,
         }
     }
 
@@ -59,8 +60,12 @@ impl MainController {
         db: Arc<DBService>,
     ) -> Result<()> {
         self.validate_not_running()?;
-        let (chat_conn, ctx, event_mapper, manager) = self.initialize_dependencies(streamer_id, app_handle, db).await?;
-        let (event_task, timer_task) = self.start_processing_tasks(chat_conn, event_mapper, manager, ctx, streamer_id).await?;
+        let (chat_conn, ctx, event_mapper, manager) = self
+            .initialize_dependencies(streamer_id, app_handle, db)
+            .await?;
+        let (event_task, timer_task) = self
+            .start_processing_tasks(chat_conn, event_mapper, manager, ctx, streamer_id)
+            .await?;
         self.finalize_startup(event_task, timer_task);
         Ok(())
     }
@@ -77,7 +82,12 @@ impl MainController {
         streamer_id: &str,
         app_handle: AppHandle,
         db: Arc<DBService>,
-    ) -> Result<(SoopChatConnection, AddonContext, Arc<Mutex<EventMapper>>, AddonManager)> {
+    ) -> Result<(
+        SoopChatConnection,
+        AddonContext,
+        Arc<Mutex<EventMapper>>,
+        AddonManager,
+    )> {
         // Chat connection 설정
         let soop_client = SoopHttpClient::new();
         let chat_conn = SoopChatConnection::new(
@@ -90,14 +100,18 @@ impl MainController {
         // 방송 메타데이터 가져오기
         let broadcast_metadata = MetadataManager::fetch_initial_metadata(streamer_id).await?;
 
+        // MainController context 설정
+        self.broadcast_metadata = Some(broadcast_metadata.clone());
+
         // Addon 등록
         self.addon_manager.register(Arc::new(DefaultUIAddon::new()));
         self.addon_manager.register(Arc::new(DBLoggerAddon::new()));
-        self.addon_manager.register(Arc::new(DataEnrichmentAddon::new(app_handle.clone())));
+        self.addon_manager
+            .register(Arc::new(DataEnrichmentAddon::new(app_handle.clone())));
 
         // 컨텍스트 생성
-        let ctx = AddonContext { 
-            app_handle, 
+        let ctx = AddonContext {
+            app_handle,
             db,
             broadcast_metadata: Some(broadcast_metadata),
         };
@@ -135,9 +149,11 @@ impl MainController {
                             let mut mapper = event_task_mapper.lock().await;
                             mapper.process_event(&event_task_channel_id, &e)
                         };
-                        
+
                         if let Some(domain_event) = event {
-                            event_task_manager.dispatch(&event_task_ctx, &domain_event).await;
+                            event_task_manager
+                                .dispatch(&event_task_ctx, &domain_event)
+                                .await;
                         }
                     }
                     Err(e) => {
@@ -149,12 +165,8 @@ impl MainController {
         });
 
         // 통합 타이머 태스크 (donation 처리 + 메타데이터 업데이트)
-        let timer_task = TimerManager::start_unified_timer(
-            event_mapper,
-            manager,
-            ctx,
-            channel_id.clone(),
-        );
+        let timer_task =
+            TimerManager::start_unified_timer(event_mapper, manager, ctx, channel_id.clone());
 
         Ok((event_task, timer_task))
     }
@@ -177,7 +189,7 @@ impl MainController {
         if let Some(timer) = self.timer_task.take() {
             timer.abort();
         }
-        
+
         // 애드온 정리
         let ctx = AddonContext {
             app_handle,
@@ -185,8 +197,8 @@ impl MainController {
             broadcast_metadata: None,
         };
         self.addon_manager.stop_all(&ctx).await;
-        
-        self.status = SystemStatus::Idle;
-    }
 
+        self.status = SystemStatus::Idle;
+        self.broadcast_metadata = None;
+    }
 }

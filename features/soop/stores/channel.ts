@@ -1,11 +1,10 @@
 import { create } from "zustand";
-import { subscribeWithSelector } from "zustand/middleware";
-import { Channel } from "~/types";
-import ipcService from "~/services/ipc";
 import { mergeWithDefault } from "~/features/emoji";
 import { useEmoji } from "~/features/emoji/stores/emoji";
 import { transformStreamerEmojis } from "~/features/emoji/utils";
+import ipcService from "~/services/ipc";
 import { StreamerLive } from "~/services/ipc/types";
+import { Channel, MetadataUpdateEvent } from "~/types";
 import { makeBroadcastState } from "../utils";
 
 const validateStreamerLive = (streamerLive: StreamerLive | null) => {
@@ -16,7 +15,7 @@ const validateStreamerLive = (streamerLive: StreamerLive | null) => {
 
 export enum ConnectStatus {
   DISCONNECTED = "disconnected",
-  CONNECTING = "connecting", 
+  CONNECTING = "connecting",
   CONNECTED = "connected",
 }
 
@@ -38,6 +37,8 @@ interface ChannelState {
   connect(channel: Channel): Promise<void>;
   disconnect(): Promise<void>;
   reset(): void;
+  handleMetadataUpdate(e: MetadataUpdateEvent): void;
+  restoreFromMainController(): Promise<void>;
 }
 
 /**
@@ -75,24 +76,26 @@ export const useChannel = create<ChannelState>((set) => ({
       // 방송 중인지 확인
       const streamerLive = await ipcService.soop.getStreamerLive(channel.id);
       validateStreamerLive(streamerLive);
-      
+
       // 방송 중이라면 관련 데이터를 가져옵니다.
       // - 방송국 정보, 이모지 정보
       const [station, emojis] = await Promise.all([
         ipcService.soop.getStreamerStation(channel.id),
         ipcService.soop.getStreamerEmoji(channel.id),
       ]);
-      
+
       // 이모지 업데이트
       const emojiStore = useEmoji.getState();
-      emojiStore.update(mergeWithDefault(transformStreamerEmojis(channel.id, emojis)));
-      
+      emojiStore.update(
+        mergeWithDefault(transformStreamerEmojis(channel.id, emojis))
+      );
+
       // 채널 업데이트
       set({
         channel,
         broadcast: makeBroadcastState(streamerLive!, station),
       });
-      
+
       // 채널 연결
       await ipcService.channel.connectChannel(channel.id);
       set({ connectStatus: ConnectStatus.CONNECTED });
@@ -123,5 +126,47 @@ export const useChannel = create<ChannelState>((set) => ({
       broadcast: null,
       connectStatus: ConnectStatus.DISCONNECTED,
     });
+  },
+  handleMetadataUpdate(e) {
+    set((state) => ({
+      broadcast: state.broadcast
+        ? {
+            ...state.broadcast,
+            title: e.title,
+            viewerCount: e.viewerCount,
+            start: e.startedAt,
+          }
+        : null,
+    }));
+  },
+  async restoreFromMainController() {
+    try {
+      const context = await ipcService.channel.getMainControllerContext();
+
+      if (context) {
+        // 채널 정보 복원
+        const channels = await ipcService.channel.getChannels();
+        const channel = channels.find((c) => c.id === context.channelId);
+
+        if (channel) {
+          // BroadcastState 복원
+          const broadcastState: BroadcastState = {
+            title: context.broadcastMetadata.title,
+            viewerCount: context.broadcastMetadata.viewerCount,
+            start: context.broadcastMetadata.startedAt,
+            isPassword: false, // 메타데이터에 없으므로 기본값
+            categories: [], // 메타데이터에 없으므로 기본값
+          };
+
+          set({
+            channel,
+            broadcast: broadcastState,
+            connectStatus: ConnectStatus.CONNECTED,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to restore channel state:", error);
+    }
   },
 }));

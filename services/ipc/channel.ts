@@ -39,10 +39,15 @@ const getChannels = async () => {
   })) as Channel[];
 };
 
+const getMainControllerContext = () => {
+  return ipcClient(IpcRequestWithoutPayload.GetMainControllerContext);
+};
+
 export const channel = Object.freeze({
   connectChannel,
   disconnectChannel,
   upsertChannel,
   deleteChannel,
   getChannels,
+  getMainControllerContext,
 });

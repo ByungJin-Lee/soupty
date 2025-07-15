@@ -36,7 +36,7 @@
         "resizable": true,
         "fullscreen": false,
         "visible": false,
-        "url": "/live",
+        "url": "/pending",
         "decorations": false,
         "titleBarStyle": "Transparent",
         "acceptFirstMouse": true

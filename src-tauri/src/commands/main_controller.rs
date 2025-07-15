@@ -1,6 +1,6 @@
 use tauri::{AppHandle, State};
 
-use crate::state::AppState;
+use crate::{services::addons::interface::BroadcastMetadata, state::AppState};
 
 #[tauri::command]
 pub async fn start_main_controller(
@@ -28,4 +28,12 @@ pub async fn stop_main_controller(
     controller.stop(app_handle, state.db.clone()).await;
 
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_main_controller_context(
+    state: State<'_, AppState>,
+) -> Result<Option<BroadcastMetadata>, String> {
+    let controller = state.main_controller.lock().await;
+    Ok(controller.broadcast_metadata.clone())
 }

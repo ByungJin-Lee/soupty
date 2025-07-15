@@ -3,7 +3,7 @@ use tauri::generate_handler;
 use crate::{
     commands::{
         channel::{delete_channel, get_channels, upsert_channel},
-        main_controller::{start_main_controller, stop_main_controller},
+        main_controller::{get_main_controller_context, start_main_controller, stop_main_controller},
         soop_api::{fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station},
         splash::{
             add_target_user, check_for_updates, connect_database, get_target_users, remove_target_user, setup_ai, setup_app_state, show_main_window,
@@ -40,6 +40,7 @@ pub fn run() {
             fetch_streamer_emoticon,
             start_main_controller,
             stop_main_controller,
+            get_main_controller_context,
             upsert_channel,
             delete_channel,
             get_channels,

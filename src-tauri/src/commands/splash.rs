@@ -4,7 +4,7 @@ use anyhow::{Context, Result as AnyhowResult};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::path::BaseDirectory;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 #[tauri::command]
 pub async fn check_for_updates() -> Result<(), String> {
@@ -121,12 +121,18 @@ pub async fn get_target_users(app_state: State<'_, AppState>) -> Result<Vec<Stri
 }
 
 #[tauri::command]
-pub async fn add_target_user(user_id: String, app_state: State<'_, AppState>) -> Result<(), String> {
+pub async fn add_target_user(
+    user_id: String,
+    app_state: State<'_, AppState>,
+) -> Result<(), String> {
     app_state.db.add_target_user(user_id, None).await
 }
 
 #[tauri::command]
-pub async fn remove_target_user(user_id: String, app_state: State<'_, AppState>) -> Result<(), String> {
+pub async fn remove_target_user(
+    user_id: String,
+    app_state: State<'_, AppState>,
+) -> Result<(), String> {
     app_state.db.remove_target_user(user_id).await
 }
 
@@ -134,6 +140,11 @@ pub async fn remove_target_user(user_id: String, app_state: State<'_, AppState>)
 pub async fn show_main_window(app_handle: AppHandle) -> Result<(), String> {
     // 메인 윈도우 표시
     if let Some(main_window) = app_handle.get_webview_window("main") {
+        // splash 초기화 완료 이벤트 발생 (메인 윈도우로)
+        app_handle
+            .emit_to("main", "splash-initialization-complete", ())
+            .map_err(|e| e.to_string())?;
+
         main_window.show().map_err(|e| e.to_string())?;
         main_window.set_focus().map_err(|e| e.to_string())?;
     }
