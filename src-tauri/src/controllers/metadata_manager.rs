@@ -1,13 +1,38 @@
-use anyhow::Result;
+use std::{future::Future, sync::Arc};
+
+use anyhow::{Result};
 use chrono::Utc;
 use soup_sdk::SoopHttpClient;
+use tauri::async_runtime::{spawn, JoinHandle};
+use tokio::sync::Mutex;
 
-use crate::services::addons::interface::BroadcastMetadata;
+use crate::{controllers::config::{metadata_update_duration}, services::addons::interface::BroadcastMetadata};
 
-pub struct MetadataManager;
+pub struct MetadataManager {
+    broadcast_metadata: Arc<Mutex<Option<BroadcastMetadata>>>,
+    timer_task: Option<JoinHandle<()>>,
+}
 
 impl MetadataManager {
-    pub async fn fetch_initial_metadata(streamer_id: &str) -> Result<BroadcastMetadata> {
+    pub fn new() -> Self {
+        Self {
+            broadcast_metadata: Arc::new(Mutex::new(None)),
+            timer_task: None,
+        }
+    }
+
+    pub async fn initialize(
+        &mut self,
+        streamer_id: &str,
+    ) -> Result<()> {
+        // 초기 메타데이터를 가져와서 broadcast_metadata에 저장
+        let metadata = Self::fetch_metadata(streamer_id).await?;
+        let mut mut_ref = self.broadcast_metadata.lock().await;
+        *mut_ref = Some(metadata);
+        Ok(())
+    }
+
+    async fn fetch_metadata(streamer_id: &str) -> Result<BroadcastMetadata> {
         let soop_client = SoopHttpClient::new();
 
         // Station 데이터에서 broad_start, viewer_count 가져오기
@@ -31,9 +56,55 @@ impl MetadataManager {
         })
     }
 
-    pub async fn update_viewer_count(channel_id: &str) -> Result<u64> {
-        let soop_client = SoopHttpClient::new();
-        let station = soop_client.get_station(channel_id).await?;
-        Ok(station.viewer_count)
+    pub async fn start<F, Fut>(&mut self, notifier: F)
+        where 
+            F: Fn(&BroadcastMetadata) -> Fut + Send + Sync + 'static, 
+            Fut: Future<Output = ()> + Send {
+        let metadata_arc = self.broadcast_metadata.clone();
+        let streamer_id = {
+            let guard = metadata_arc.lock().await;
+            guard.as_ref().unwrap().channel_id.clone()
+        };
+
+        self.timer_task = Some(spawn(async move {
+            let mut interval = tokio::time::interval(metadata_update_duration());
+
+            {
+                // 기존 메타데이터로 한번 notifier를 호출합니다.
+                let guard = metadata_arc.lock().await;  
+                if let Some(ref e) = *guard {
+                    notifier(e).await;
+                }
+            }
+            
+            loop {
+                interval.tick().await;
+                let fresh_metadata = match Self::fetch_metadata(&streamer_id).await {
+                    Ok(metadata) => metadata,
+                    Err(e) => {
+                        eprintln!("Failed to fetch metadata: {}", e);
+                        continue;
+                    }
+                };
+                notifier(&fresh_metadata).await;
+
+                let mut guard = metadata_arc.lock().await;
+                *guard = Some(fresh_metadata);
+            }
+        }));
+    }
+
+    pub async fn get_metadata(&self) -> Result<Option<BroadcastMetadata>> {
+        let guard = self.broadcast_metadata.lock().await;
+
+       Ok(guard.clone())
+    }
+
+    pub async  fn stop(&mut self) {
+        if let Some(task) = self.timer_task.take() {
+            task.abort();
+        }
+        let mut guard = self.broadcast_metadata.lock().await;
+        *guard = None;
     }
 }

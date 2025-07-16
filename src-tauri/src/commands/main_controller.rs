@@ -35,5 +35,5 @@ pub async fn get_main_controller_context(
     state: State<'_, AppState>,
 ) -> Result<Option<BroadcastMetadata>, String> {
     let controller = state.main_controller.lock().await;
-    Ok(controller.broadcast_metadata.clone())
+    Ok(controller.metadata_manager.get_metadata().await.map_err(|e| e.to_string())?)
 }

@@ -1,7 +1,6 @@
 use std::sync::Arc;
 
 use anyhow::Result;
-use serde::Serialize;
 use soup_sdk::{
     chat::{SoopChatConnection, SoopChatOptions},
     SoopHttpClient,
@@ -38,18 +37,18 @@ pub struct MainController {
     listener_task: Option<JoinHandle<()>>,
     timer_task: Option<JoinHandle<()>>,
     addon_manager: AddonManager,
+    pub metadata_manager: MetadataManager,
     pub status: SystemStatus,
-    pub broadcast_metadata: Option<BroadcastMetadata>,
 }
 
 impl MainController {
     pub fn new() -> Self {
         Self {
             addon_manager: AddonManager::new(),
+            metadata_manager: MetadataManager::new(),
             status: SystemStatus::Idle,
             listener_task: None,
             timer_task: None,
-            broadcast_metadata: None,
         }
     }
 
@@ -97,23 +96,15 @@ impl MainController {
             },
         )?;
 
-        // 방송 메타데이터 가져오기
-        let broadcast_metadata = MetadataManager::fetch_initial_metadata(streamer_id).await?;
 
-        // MainController context 설정
-        self.broadcast_metadata = Some(broadcast_metadata.clone());
-
-        // Addon 등록
-        self.addon_manager.register(Arc::new(DefaultUIAddon::new()));
-        self.addon_manager.register(Arc::new(DBLoggerAddon::new()));
-        self.addon_manager
-            .register(Arc::new(DataEnrichmentAddon::new(app_handle.clone())));
+        self.initialize_addon_manager(app_handle.clone());
+        self.initialize_metadata_manager(streamer_id, app_handle.clone(), db.clone()).await?;
 
         // 컨텍스트 생성
         let ctx = AddonContext {
             app_handle,
             db,
-            broadcast_metadata: Some(broadcast_metadata),
+            broadcast_metadata: self.metadata_manager.get_metadata().await?,
         };
 
         // 매니저와 매퍼 준비
@@ -123,6 +114,44 @@ impl MainController {
         chat_conn.start().await?;
 
         Ok((chat_conn, ctx, event_mapper, manager))
+    }
+
+    fn initialize_addon_manager(
+        &mut self,
+        app_handle: AppHandle,
+    ) {
+        // Addon 등록
+        self.addon_manager.register(Arc::new(DefaultUIAddon::new()));
+        self.addon_manager.register(Arc::new(DBLoggerAddon::new()));
+        self.addon_manager
+            .register(Arc::new(DataEnrichmentAddon::new(app_handle.clone())));
+    }
+
+    async fn initialize_metadata_manager(
+        &mut self,
+        streamer_id: &str,
+        app_handle: AppHandle,
+        db: Arc<DBService>,
+    ) -> Result<()> {
+        self.metadata_manager.initialize(streamer_id).await?;
+        let addon_manager = self.addon_manager.clone();
+       
+        self.metadata_manager.start(move |metadata: &BroadcastMetadata| {
+            let app_handle_clone = app_handle.clone();
+            let db_clone = db.clone();
+            let addon_manager_clone = addon_manager.clone();
+            let metadata_clone = metadata.clone();
+
+            async move {
+                addon_manager_clone.notify_metadata_update(&AddonContext {
+                    app_handle: app_handle_clone,
+                    db: db_clone,
+                    broadcast_metadata: Some(metadata_clone),
+                }).await;
+            }
+        }).await; 
+
+        Ok(())
     }
 
     async fn start_processing_tasks(
@@ -166,7 +195,7 @@ impl MainController {
 
         // 통합 타이머 태스크 (donation 처리 + 메타데이터 업데이트)
         let timer_task =
-            TimerManager::start_unified_timer(event_mapper, manager, ctx, channel_id.clone());
+            TimerManager::start_unified_timer(event_mapper, manager, ctx);
 
         Ok((event_task, timer_task))
     }
@@ -177,10 +206,10 @@ impl MainController {
         self.status = SystemStatus::Running;
     }
 
-    pub async fn stop(&mut self, app_handle: AppHandle, db: Arc<DBService>) {
+    pub async fn stop(&mut self, app_handle: AppHandle, db: Arc<DBService>) -> Result<()> {
         // 이미 정지상태인 경우, 무시
         if self.status == SystemStatus::Idle {
-            return;
+            return Ok(());
         }
         // 처리
         if let Some(task) = self.listener_task.take() {
@@ -194,11 +223,12 @@ impl MainController {
         let ctx = AddonContext {
             app_handle,
             db,
-            broadcast_metadata: None,
+            broadcast_metadata: self.metadata_manager.get_metadata().await?,
         };
         self.addon_manager.stop_all(&ctx).await;
 
         self.status = SystemStatus::Idle;
-        self.broadcast_metadata = None;
+        self.metadata_manager.stop().await;
+        Ok(())
     }
 }
