@@ -70,7 +70,7 @@ export interface IpcResponseMap {
     lastUpdated: number;
   }[];
   [IpcRequestWithoutPayload.GetTargetUsers]: string[];
-  [IpcRequestWithoutPayload.GetMainControllerContext]: MainControllerContext | null;
+  [IpcRequestWithoutPayload.GetMainControllerContext]: BroadcastMetadata | null;
   /// 라이브가 아닌 경우 null이 반환됩니다.
   [IpcRequestWithPayload.GetStreamerLive]: StreamerLive | null;
   [IpcRequestWithPayload.GetStreamerEmoji]: StreamerEmoji;
@@ -102,13 +102,10 @@ export interface StreamerEmoji {
   tier2: Emoji[];
 }
 
-export interface MainControllerContext {
+export interface BroadcastMetadata {
   channelId: string;
-  broadcastMetadata: {
-    channelId: string;
-    title: string;
-    startedAt: string;
-    viewerCount: number;
-    timestamp: string;
-  };
+  title: string;
+  startedAt: string;
+  viewerCount: number;
+  timestamp: string;
 }

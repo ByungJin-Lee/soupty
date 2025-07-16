@@ -141,19 +141,19 @@ export const useChannel = create<ChannelState>((set) => ({
   },
   async restoreFromMainController() {
     try {
-      const context = await ipcService.channel.getMainControllerContext();
+      const ctx = await ipcService.channel.getMainControllerContext();
 
-      if (context) {
+      if (ctx) {
         // 채널 정보 복원
         const channels = await ipcService.channel.getChannels();
-        const channel = channels.find((c) => c.id === context.channelId);
+        const channel = channels.find((c) => c.id === ctx.channelId);
 
         if (channel) {
           // BroadcastState 복원
           const broadcastState: BroadcastState = {
-            title: context.broadcastMetadata.title,
-            viewerCount: context.broadcastMetadata.viewerCount,
-            start: context.broadcastMetadata.startedAt,
+            title: ctx.title,
+            viewerCount: ctx.viewerCount,
+            start: ctx.startedAt,
             isPassword: false, // 메타데이터에 없으므로 기본값
             categories: [], // 메타데이터에 없으므로 기본값
           };
