@@ -75,6 +75,12 @@ impl DBActor {
             DBCommand::RemoveTargetUser { user_id, reply_to } => {
                 handlers.handle_remove_target_user(user_id, reply_to)
             }
+            DBCommand::SearchChatLogs { filters, pagination, reply_to } => {
+                handlers.handle_search_chat_logs(filters, pagination, reply_to)
+            }
+            DBCommand::SearchEventLogs { filters, pagination, reply_to } => {
+                handlers.handle_search_event_logs(filters, pagination, reply_to)
+            }
         }
     }
 }

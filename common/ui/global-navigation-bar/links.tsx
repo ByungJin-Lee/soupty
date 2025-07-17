@@ -16,6 +16,10 @@ const links: { href: string; label: string }[] = [
     href: route.report,
     label: "리포트",
   },
+  {
+    href: route.history,
+    label: "기록",
+  },
   // {
   //   href: route.setting,
   //   label: "설정",

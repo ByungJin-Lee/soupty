@@ -2,7 +2,10 @@ use chrono::{DateTime, Utc};
 use rusqlite::{Connection};
 use tokio::sync::oneshot;
 
-use crate::services::db::commands::{ChannelData, ChatLogData, EventLogData, UserData};
+use crate::services::db::commands::{
+    ChannelData, ChatLogData, EventLogData, UserData, ChatSearchFilters, EventSearchFilters,
+    PaginationParams, ChatSearchResult, EventSearchResult, ChatLogResult, EventLogResult
+};
 
 pub struct CommandHandlers<'a> {
     conn: &'a Connection,
@@ -301,5 +304,383 @@ impl<'a> CommandHandlers<'a> {
             .map_err(|e| e.to_string());
 
         let _ = reply_to.send(result);
+    }
+
+    pub fn handle_search_chat_logs(
+        &self,
+        filters: ChatSearchFilters,
+        pagination: PaginationParams,
+        reply_to: oneshot::Sender<Result<ChatSearchResult, String>>,
+    ) {
+        let result = self.search_chat_logs_impl(filters, pagination);
+        let _ = reply_to.send(result);
+    }
+    
+    pub fn handle_search_event_logs(
+        &self,
+        filters: EventSearchFilters,
+        pagination: PaginationParams,
+        reply_to: oneshot::Sender<Result<EventSearchResult, String>>,
+    ) {
+        let result = self.search_event_logs_impl(filters, pagination);
+        let _ = reply_to.send(result);
+    }
+
+    fn search_chat_logs_impl(
+        &self,
+        filters: ChatSearchFilters,
+        pagination: PaginationParams,
+    ) -> Result<ChatSearchResult, String> {
+        let offset = (pagination.page - 1) * pagination.page_size;
+        let limit = pagination.page_size;
+
+        // Build WHERE conditions and collect string values
+        let mut where_conditions = Vec::new();
+        let mut param_values = Vec::new();
+
+        if let Some(channel_id) = &filters.channel_id {
+            where_conditions.push("c.channel_id = ?");
+            param_values.push(channel_id.clone());
+        }
+
+        if let Some(user_id) = &filters.user_id {
+            where_conditions.push("cl.user_id = ?");
+            param_values.push(user_id.clone());
+        }
+
+        if let Some(message_type) = &filters.message_type {
+            where_conditions.push("cl.message_type = ?");
+            param_values.push(message_type.clone());
+        }
+
+        if let Some(broadcast_id) = &filters.broadcast_id {
+            where_conditions.push("cl.broadcast_id = ?");
+            param_values.push(broadcast_id.to_string());
+        }
+
+        if let Some(start_date) = &filters.start_date {
+            where_conditions.push("cl.timestamp >= ?");
+            param_values.push(start_date.to_rfc3339());
+        }
+
+        if let Some(end_date) = &filters.end_date {
+            where_conditions.push("cl.timestamp <= ?");
+            param_values.push(end_date.to_rfc3339());
+        }
+
+        // Convert to &str for rusqlite
+        let params: Vec<&str> = param_values.iter().map(String::as_str).collect();
+
+        let where_clause = if where_conditions.is_empty() {
+            String::new()
+        } else {
+            format!("WHERE {}", where_conditions.join(" AND "))
+        };
+
+        // Search chat logs
+        let chat_logs = if filters.message_contains.is_some() {
+            self.search_chat_logs_with_fts(&filters, &where_clause, &params, limit, offset)?
+        } else {
+            self.search_chat_logs_without_fts(&where_clause, &params, limit, offset)?
+        };
+
+        // Get total count
+        let total_count = self.get_chat_total_count(&filters, &where_clause, &params)?;
+        let total_pages = (total_count + pagination.page_size - 1) / pagination.page_size;
+
+        Ok(ChatSearchResult {
+            chat_logs,
+            total_count,
+            page: pagination.page,
+            page_size: pagination.page_size,
+            total_pages,
+        })
+    }
+    
+    fn search_event_logs_impl(
+        &self,
+        filters: EventSearchFilters,
+        pagination: PaginationParams,
+    ) -> Result<EventSearchResult, String> {
+        let offset = (pagination.page - 1) * pagination.page_size;
+        let limit = pagination.page_size;
+
+        let mut where_conditions = Vec::new();
+        let mut param_values = Vec::new();
+        
+        if let Some(channel_id) = &filters.channel_id {
+            where_conditions.push("c.channel_id = ?");
+            param_values.push(channel_id.clone());
+        }
+
+        if let Some(user_id) = &filters.user_id {
+            where_conditions.push("el.user_id = ?");
+            param_values.push(user_id.clone());
+        }
+
+        if let Some(event_type) = &filters.event_type {
+            where_conditions.push("el.event_type = ?");
+            param_values.push(event_type.clone());
+        }
+
+        if let Some(broadcast_id) = &filters.broadcast_id {
+            where_conditions.push("el.broadcast_id = ?");
+            param_values.push(broadcast_id.to_string());
+        }
+
+        if let Some(start_date) = &filters.start_date {
+            where_conditions.push("el.timestamp >= ?");
+            param_values.push(start_date.to_rfc3339());
+        }
+
+        if let Some(end_date) = &filters.end_date {
+            where_conditions.push("el.timestamp <= ?");
+            param_values.push(end_date.to_rfc3339());
+        }
+
+        let params: Vec<&str> = param_values.iter().map(String::as_str).collect();
+
+        let where_clause = if where_conditions.is_empty() {
+            String::new()
+        } else {
+            format!("WHERE {}", where_conditions.join(" AND "))
+        };
+
+        // Search event logs
+        let event_logs = self.search_event_logs_only(&where_clause, &params, limit, offset)?;
+
+        // Get total count
+        let total_count = self.get_event_total_count(&where_clause, &params)?;
+        let total_pages = (total_count + pagination.page_size - 1) / pagination.page_size;
+
+        Ok(EventSearchResult {
+            event_logs,
+            total_count,
+            page: pagination.page,
+            page_size: pagination.page_size,
+            total_pages,
+        })
+    }
+
+    fn search_chat_logs_with_fts(
+        &self,
+        filters: &ChatSearchFilters,
+        where_clause: &str,
+        params: &[&str],
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<ChatLogResult>, String> {
+        let message_contains = filters.message_contains.as_ref().unwrap();
+        
+        let additional_where = if where_clause.is_empty() { 
+            String::new() 
+        } else { 
+            format!("AND {}", &where_clause[6..]) 
+        };
+        
+        let fts_query = format!(
+            "SELECT cl.id, cl.broadcast_id, cl.user_id, u.username, cl.message_type, 
+                    cl.message, cl.metadata, cl.timestamp, c.channel_id, c.channel_name, bs.title
+             FROM chat_logs_fts fts
+             JOIN chat_logs cl ON fts.chat_log_id = cl.id
+             JOIN users u ON cl.user_id = u.user_id
+             JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+             JOIN channels c ON bs.channel_id = c.channel_id
+             WHERE fts.message_morph MATCH ?1 {}
+             ORDER BY cl.timestamp DESC
+             LIMIT ? OFFSET ?",
+            additional_where
+        );
+
+        let mut stmt = self.conn.prepare_cached(&fts_query).map_err(|e| e.to_string())?;
+        
+        let limit_str = limit.to_string();
+        let offset_str = offset.to_string();
+        let mut all_params = vec![message_contains.as_str()];
+        all_params.extend(params);
+        all_params.push(&limit_str);
+        all_params.push(&offset_str);
+
+        let rows = stmt.query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+            Ok(ChatLogResult {
+                id: row.get(0)?,
+                broadcast_id: row.get(1)?,
+                user_id: row.get(2)?,
+                username: row.get(3)?,
+                message_type: row.get(4)?,
+                message: row.get(5)?,
+                metadata: row.get(6)?,
+                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
+                    .unwrap()
+                    .with_timezone(&Utc),
+                channel_id: row.get(8)?,
+                channel_name: row.get(9)?,
+                broadcast_title: row.get(10)?,
+            })
+        }).map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    }
+
+    fn search_chat_logs_without_fts(
+        &self,
+        where_clause: &str,
+        params: &[&str],
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<ChatLogResult>, String> {
+        let query = format!(
+            "SELECT cl.id, cl.broadcast_id, cl.user_id, u.username, cl.message_type, 
+                    cl.message, cl.metadata, cl.timestamp, c.channel_id, c.channel_name, bs.title
+             FROM chat_logs cl
+             JOIN users u ON cl.user_id = u.user_id
+             JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+             JOIN channels c ON bs.channel_id = c.channel_id
+             {}
+             ORDER BY cl.timestamp DESC
+             LIMIT ? OFFSET ?",
+            where_clause
+        );
+
+        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
+        
+        let limit_str = limit.to_string();
+        let offset_str = offset.to_string();
+        let mut all_params = params.to_vec();
+        all_params.push(&limit_str);
+        all_params.push(&offset_str);
+
+        let rows = stmt.query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+            Ok(ChatLogResult {
+                id: row.get(0)?,
+                broadcast_id: row.get(1)?,
+                user_id: row.get(2)?,
+                username: row.get(3)?,
+                message_type: row.get(4)?,
+                message: row.get(5)?,
+                metadata: row.get(6)?,
+                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
+                    .unwrap()
+                    .with_timezone(&Utc),
+                channel_id: row.get(8)?,
+                channel_name: row.get(9)?,
+                broadcast_title: row.get(10)?,
+            })
+        }).map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    }
+
+    fn search_event_logs_only(
+        &self,
+        where_clause: &str,
+        params: &[&str],
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<EventLogResult>, String> {
+        let query = format!(
+            "SELECT el.id, el.broadcast_id, el.user_id, u.username, el.event_type, 
+                    el.payload, el.timestamp, c.channel_id, c.channel_name, bs.title
+             FROM event_logs el
+             LEFT JOIN users u ON el.user_id = u.user_id
+             JOIN broadcast_sessions bs ON el.broadcast_id = bs.id
+             JOIN channels c ON bs.channel_id = c.channel_id
+             {}
+             ORDER BY el.timestamp DESC
+             LIMIT ? OFFSET ?",
+            where_clause
+        );
+
+        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
+        
+        let limit_str = limit.to_string();
+        let offset_str = offset.to_string();
+        let mut all_params = params.to_vec();
+        all_params.push(&limit_str);
+        all_params.push(&offset_str);
+
+        let rows = stmt.query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+            Ok(EventLogResult {
+                id: row.get(0)?,
+                broadcast_id: row.get(1)?,
+                user_id: row.get(2)?,
+                username: row.get(3)?,
+                event_type: row.get(4)?,
+                payload: row.get(5)?,
+                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(6)?)
+                    .unwrap()
+                    .with_timezone(&Utc),
+                channel_id: row.get(7)?,
+                channel_name: row.get(8)?,
+                broadcast_title: row.get(9)?,
+            })
+        }).map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    }
+
+    fn get_chat_total_count(
+        &self,
+        filters: &ChatSearchFilters,
+        where_clause: &str,
+        params: &[&str],
+    ) -> Result<i64, String> {
+        let query = if filters.message_contains.is_some() {
+            let additional_where = if where_clause.is_empty() { 
+                String::new() 
+            } else { 
+                format!("AND {}", &where_clause[6..]) 
+            };
+            format!(
+                "SELECT COUNT(*) FROM chat_logs_fts fts
+                 JOIN chat_logs cl ON fts.chat_log_id = cl.id
+                 JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+                 JOIN channels c ON bs.channel_id = c.channel_id
+                 WHERE fts.message_morph MATCH ?1 {}",
+                additional_where
+            )
+        } else {
+            format!(
+                "SELECT COUNT(*) FROM chat_logs cl
+                 JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+                 JOIN channels c ON bs.channel_id = c.channel_id
+                 {}",
+                where_clause
+            )
+        };
+
+        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
+        
+        let count = if filters.message_contains.is_some() {
+            let message_contains = filters.message_contains.as_ref().unwrap();
+            let mut all_params = vec![message_contains.as_str()];
+            all_params.extend(params);
+            stmt.query_row(rusqlite::params_from_iter(all_params.iter()), |row| row.get::<_, i64>(0))
+        } else {
+            stmt.query_row(rusqlite::params_from_iter(params.iter()), |row| row.get::<_, i64>(0))
+        }.map_err(|e| e.to_string())?;
+
+        Ok(count)
+    }
+    
+    fn get_event_total_count(
+        &self,
+        where_clause: &str,
+        params: &[&str],
+    ) -> Result<i64, String> {
+        let query = format!(
+            "SELECT COUNT(*) FROM event_logs el
+             JOIN broadcast_sessions bs ON el.broadcast_id = bs.id
+             JOIN channels c ON bs.channel_id = c.channel_id
+             {}",
+            where_clause
+        );
+
+        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
+        
+        let count = stmt.query_row(rusqlite::params_from_iter(params.iter()), |row| row.get::<_, i64>(0))
+            .map_err(|e| e.to_string())?;
+
+        Ok(count)
     }
 }

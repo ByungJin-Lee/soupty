@@ -3,5 +3,6 @@ export const route = Object.freeze({
   live: "/live",
   clip: "/clip",
   report: "/report",
+  history: "/history",
   setting: "/setting",
 });

@@ -1,4 +1,5 @@
 import { channel } from "./channel";
+import { chatHistoryService } from "./chat-history";
 import { soop } from "./soop";
 import { targetUsers } from "./target-users";
 
@@ -9,6 +10,7 @@ export const ipcService = Object.freeze({
   soop,
   channel,
   targetUsers,
+  chatHistory: chatHistoryService,
 });
 
 export default ipcService;

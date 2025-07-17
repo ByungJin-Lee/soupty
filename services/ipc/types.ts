@@ -20,6 +20,8 @@ export enum IpcRequestWithPayload {
   GetStreamerEmoji = "fetch_streamer_emoticon",
   AddTargetUser = "add_target_user",
   RemoveTargetUser = "remove_target_user",
+  SearchChatLogs = "search_chat_logs",
+  SearchEventLogs = "search_event_logs",
 }
 
 export type IpcRequest = IpcRequestWithPayload | IpcRequestWithoutPayload;
@@ -56,6 +58,14 @@ export interface IpcPayloadMap {
   [IpcRequestWithPayload.RemoveTargetUser]: {
     userId: string;
   };
+  [IpcRequestWithPayload.SearchChatLogs]: {
+    filters: ChatSearchFilters;
+    pagination: PaginationParams;
+  };
+  [IpcRequestWithPayload.SearchEventLogs]: {
+    filters: EventSearchFilters;
+    pagination: PaginationParams;
+  };
 }
 
 /**
@@ -81,6 +91,8 @@ export interface IpcResponseMap {
   [IpcRequestWithPayload.UpsertChannel]: void;
   [IpcRequestWithPayload.AddTargetUser]: void;
   [IpcRequestWithPayload.RemoveTargetUser]: void;
+  [IpcRequestWithPayload.SearchChatLogs]: ChatSearchResult;
+  [IpcRequestWithPayload.SearchEventLogs]: EventSearchResult;
 }
 
 export interface StreamerLive {
@@ -108,4 +120,73 @@ export interface BroadcastMetadata {
   startedAt: string;
   viewerCount: number;
   timestamp: string;
+}
+
+// 채팅 검색 관련 타입
+export interface ChatSearchFilters {
+  channelId?: string;
+  userId?: string;
+  messageContains?: string;
+  messageType?: string;
+  startDate?: string;
+  endDate?: string;
+  broadcastId?: number;
+}
+
+// 이벤트 검색 관련 타입
+export interface EventSearchFilters {
+  channelId?: string;
+  userId?: string;
+  eventType?: string;
+  startDate?: string;
+  endDate?: string;
+  broadcastId?: number;
+}
+
+export interface PaginationParams {
+  page: number;
+  pageSize: number;
+}
+
+export interface ChatSearchResult {
+  chatLogs: ChatLogResult[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface EventSearchResult {
+  eventLogs: EventLogResult[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface ChatLogResult {
+  id: number;
+  broadcastId: number;
+  userId: string;
+  username: string;
+  messageType: string;
+  message: string;
+  metadata?: string;
+  timestamp: string;
+  channelId: string;
+  channelName: string;
+  broadcastTitle: string;
+}
+
+export interface EventLogResult {
+  id: number;
+  broadcastId: number;
+  userId?: string;
+  username?: string;
+  eventType: string;
+  payload: string;
+  timestamp: string;
+  channelId: string;
+  channelName: string;
+  broadcastTitle: string;
 }

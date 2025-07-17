@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot;
 use chrono::{DateTime, Utc};
 
@@ -61,6 +61,20 @@ pub enum DBCommand {
         user_id: String,
         reply_to: oneshot::Sender<Result<(), String>>,
     },
+
+    // 채팅 기록 검색
+    SearchChatLogs {
+        filters: ChatSearchFilters,
+        pagination: PaginationParams,
+        reply_to: oneshot::Sender<Result<ChatSearchResult, String>>,
+    },
+    
+    // 이벤트 기록 검색
+    SearchEventLogs {
+        filters: EventSearchFilters,
+        pagination: PaginationParams,
+        reply_to: oneshot::Sender<Result<EventSearchResult, String>>,
+    },
 }
 
 #[derive(Debug, Clone)]
@@ -95,4 +109,92 @@ pub struct EventLogData {
     pub event_type: String,
     pub payload: String,
     pub timestamp: DateTime<Utc>,
+}
+
+// 채팅 검색 필터
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChatSearchFilters {
+    pub channel_id: Option<String>,
+    pub user_id: Option<String>,
+    pub message_contains: Option<String>,
+    pub message_type: Option<String>,
+    pub start_date: Option<DateTime<Utc>>,
+    pub end_date: Option<DateTime<Utc>>,
+    pub broadcast_id: Option<i64>,
+}
+
+// 이벤트 검색 필터
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventSearchFilters {
+    pub channel_id: Option<String>,
+    pub user_id: Option<String>,
+    pub event_type: Option<String>,
+    pub start_date: Option<DateTime<Utc>>,
+    pub end_date: Option<DateTime<Utc>>,
+    pub broadcast_id: Option<i64>,
+}
+
+// 페이지네이션 파라미터
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PaginationParams {
+    pub page: i64,
+    pub page_size: i64,
+}
+
+// 채팅 검색 결과
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChatSearchResult {
+    pub chat_logs: Vec<ChatLogResult>,
+    pub total_count: i64,
+    pub page: i64,
+    pub page_size: i64,
+    pub total_pages: i64,
+}
+
+// 이벤트 검색 결과
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventSearchResult {
+    pub event_logs: Vec<EventLogResult>,
+    pub total_count: i64,
+    pub page: i64,
+    pub page_size: i64,
+    pub total_pages: i64,
+}
+
+// 채팅 로그 결과
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChatLogResult {
+    pub id: i64,
+    pub broadcast_id: i64,
+    pub user_id: String,
+    pub username: String,
+    pub message_type: String,
+    pub message: String,
+    pub metadata: Option<String>,
+    pub timestamp: DateTime<Utc>,
+    pub channel_id: String,
+    pub channel_name: String,
+    pub broadcast_title: String,
+}
+
+// 이벤트 로그 결과
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventLogResult {
+    pub id: i64,
+    pub broadcast_id: i64,
+    pub user_id: Option<String>,
+    pub username: Option<String>,
+    pub event_type: String,
+    pub payload: String,
+    pub timestamp: DateTime<Utc>,
+    pub channel_id: String,
+    pub channel_name: String,
+    pub broadcast_title: String,
 }

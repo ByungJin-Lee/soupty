@@ -4,7 +4,7 @@ use tokio::sync::{mpsc, oneshot};
 
 use crate::services::db::{
     actor::DBActor,
-    commands::{ChannelData, ChatLogData, DBCommand, EventLogData, UserData},
+    commands::{ChannelData, ChatLogData, DBCommand, EventLogData, UserData, ChatSearchFilters, EventSearchFilters, PaginationParams, ChatSearchResult, EventSearchResult},
 };
 
 #[derive(Clone, Debug)]
@@ -178,6 +178,44 @@ impl DBService {
         self.sender
             .send(DBCommand::RemoveTargetUser {
                 user_id,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn search_chat_logs(
+        &self,
+        filters: ChatSearchFilters,
+        pagination: PaginationParams,
+    ) -> Result<ChatSearchResult, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::SearchChatLogs {
+                filters,
+                pagination,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+    
+    pub async fn search_event_logs(
+        &self,
+        filters: EventSearchFilters,
+        pagination: PaginationParams,
+    ) -> Result<EventSearchResult, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::SearchEventLogs {
+                filters,
+                pagination,
                 reply_to: tx,
             })
             .await
