@@ -16,7 +16,7 @@ pub struct BroadcastMetadata {
     pub timestamp: DateTime<Utc>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct AddonContext {
     pub app_handle: AppHandle,
     pub db: Arc<DBService>,

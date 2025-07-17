@@ -4,20 +4,74 @@ use std::{
 };
 
 use uuid::Uuid;
+use tauri::async_runtime::spawn;
 
 use crate::{
+    controllers::{
+        event_bus::{EventBusManager, SystemEvent},
+        constants::ADDON_MANAGER_SUBSCRIBER,
+    },
     models::events::{DomainEvent, MetadataEvent},
     services::addons::interface::{Addon, AddonContext},
 };
 
-#[derive(Default, Clone)]
+#[derive(Clone)]
 pub struct AddonManager {
     addons: Arc<Mutex<HashMap<String, Arc<dyn Addon>>>>,
+    event_bus: Option<EventBusManager>,
+}
+
+impl Default for AddonManager {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl AddonManager {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            addons: Arc::new(Mutex::new(HashMap::new())),
+            event_bus: None,
+        }
+    }
+    
+    pub fn with_event_bus(mut self, event_bus: EventBusManager) -> Self {
+        self.event_bus = Some(event_bus);
+        self
+    }
+    
+    pub async fn start_event_listener(&self) {
+        if let Some(event_bus) = &self.event_bus {
+            let mut receiver = event_bus.subscribe(ADDON_MANAGER_SUBSCRIBER).await;
+            let addons = self.addons.clone();
+            
+            spawn(async move {
+                while let Some(event) = receiver.recv().await {
+                    match event {
+                        SystemEvent::MetadataUpdated { metadata, context } => {
+                            let addons_clone = addons.lock().unwrap().clone();
+                            for addon in addons_clone.values() {
+                                let event = MetadataEvent {
+                                    title: metadata.title.clone(),
+                                    started_at: metadata.started_at,
+                                    viewer_count: metadata.viewer_count,
+                                    timestamp: metadata.timestamp,
+                                    channel_id: metadata.channel_id.clone(),
+                                    id: Uuid::new_v4(),
+                                };
+                                
+                                addon.on_metadata_update(&context, &event).await;
+                            }
+                        }
+                        SystemEvent::SystemStopping => {
+                            // Handle system stopping
+                            break;
+                        }
+                        _ => {}
+                    }
+                }
+            });
+        }
     }
 
     pub fn register(&self, addon: Arc<dyn Addon>) {

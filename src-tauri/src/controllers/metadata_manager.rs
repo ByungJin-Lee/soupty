@@ -3,21 +3,19 @@ use std::{future::Future, sync::Arc};
 use anyhow::{Result};
 use chrono::Utc;
 use soup_sdk::SoopHttpClient;
-use tauri::async_runtime::{spawn, JoinHandle};
 use tokio::sync::Mutex;
 
-use crate::{controllers::config::{metadata_update_duration}, services::addons::interface::BroadcastMetadata};
+use crate::services::addons::interface::BroadcastMetadata;
 
+#[derive(Clone)]
 pub struct MetadataManager {
     broadcast_metadata: Arc<Mutex<Option<BroadcastMetadata>>>,
-    timer_task: Option<JoinHandle<()>>,
 }
 
 impl MetadataManager {
     pub fn new() -> Self {
         Self {
             broadcast_metadata: Arc::new(Mutex::new(None)),
-            timer_task: None,
         }
     }
 
@@ -56,42 +54,32 @@ impl MetadataManager {
         })
     }
 
-    pub async fn start<F, Fut>(&mut self, notifier: F)
+    pub async fn update_metadata<F, Fut>(&mut self, notifier: F) -> Result<()>
         where 
             F: Fn(&BroadcastMetadata) -> Fut + Send + Sync + 'static, 
             Fut: Future<Output = ()> + Send {
-        let metadata_arc = self.broadcast_metadata.clone();
         let streamer_id = {
-            let guard = metadata_arc.lock().await;
+            let guard = self.broadcast_metadata.lock().await;
             guard.as_ref().unwrap().channel_id.clone()
         };
 
-        self.timer_task = Some(spawn(async move {
-            let mut interval = tokio::time::interval(metadata_update_duration());
+        let fresh_metadata = Self::fetch_metadata(&streamer_id).await?;
+        notifier(&fresh_metadata).await;
 
-            {
-                // 기존 메타데이터로 한번 notifier를 호출합니다.
-                let guard = metadata_arc.lock().await;  
-                if let Some(ref e) = *guard {
-                    notifier(e).await;
-                }
-            }
-            
-            loop {
-                interval.tick().await;
-                let fresh_metadata = match Self::fetch_metadata(&streamer_id).await {
-                    Ok(metadata) => metadata,
-                    Err(e) => {
-                        eprintln!("Failed to fetch metadata: {}", e);
-                        continue;
-                    }
-                };
-                notifier(&fresh_metadata).await;
+        let mut guard = self.broadcast_metadata.lock().await;
+        *guard = Some(fresh_metadata);
+        
+        Ok(())
+    }
 
-                let mut guard = metadata_arc.lock().await;
-                *guard = Some(fresh_metadata);
-            }
-        }));
+    pub async fn notify_initial_metadata<F, Fut>(&self, notifier: F)
+        where 
+            F: Fn(&BroadcastMetadata) -> Fut + Send + Sync + 'static, 
+            Fut: Future<Output = ()> + Send {
+        let guard = self.broadcast_metadata.lock().await;  
+        if let Some(ref metadata) = *guard {
+            notifier(metadata).await;
+        }
     }
 
     pub async fn get_metadata(&self) -> Result<Option<BroadcastMetadata>> {
@@ -100,10 +88,7 @@ impl MetadataManager {
        Ok(guard.clone())
     }
 
-    pub async  fn stop(&mut self) {
-        if let Some(task) = self.timer_task.take() {
-            task.abort();
-        }
+    pub async fn stop(&mut self) {
         let mut guard = self.broadcast_metadata.lock().await;
         *guard = None;
     }

@@ -7,7 +7,7 @@ use crate::services::db::{
     commands::{ChannelData, ChatLogData, DBCommand, EventLogData, UserData},
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DBService {
     sender: mpsc::Sender<DBCommand>,
 }
