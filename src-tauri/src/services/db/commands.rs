@@ -118,7 +118,6 @@ pub struct ChatSearchFilters {
     pub channel_id: Option<String>,
     pub user_id: Option<String>,
     pub message_contains: Option<String>,
-    pub message_type: Option<String>,
     pub start_date: Option<DateTime<Utc>>,
     pub end_date: Option<DateTime<Utc>>,
     pub broadcast_id: Option<i64>,

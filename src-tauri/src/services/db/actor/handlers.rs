@@ -348,11 +348,6 @@ impl<'a> CommandHandlers<'a> {
             param_values.push(user_id.clone());
         }
 
-        if let Some(message_type) = &filters.message_type {
-            where_conditions.push("cl.message_type = ?");
-            param_values.push(message_type.clone());
-        }
-
         if let Some(broadcast_id) = &filters.broadcast_id {
             where_conditions.push("cl.broadcast_id = ?");
             param_values.push(broadcast_id.to_string());

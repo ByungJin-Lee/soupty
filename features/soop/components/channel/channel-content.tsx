@@ -10,13 +10,15 @@ interface ChannelContentProps {
   onSelectChannel?: (channel: Channel) => void;
 }
 
-const ChannelContent: React.FC<ChannelContentProps> = ({ onClose, onSelectChannel }) => {
+const ChannelContent: React.FC<ChannelContentProps> = ({
+  onClose,
+  onSelectChannel,
+}) => {
   const { data: channels } = useChannels();
   const [selectedChannel, setSelectedChannel] = useState<Channel | null>(null);
 
   const handleSelectChannel = (channel: Channel) => {
     setSelectedChannel(channel);
-    onSelectChannel?.(channel);
   };
 
   const handleConfirm = () => {

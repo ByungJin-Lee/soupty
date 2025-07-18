@@ -28,5 +28,11 @@ export default function PendingPage() {
     initializeApp();
   }, [router]);
 
-  return <></>;
+  return (
+    <div className="w-full h-full flex items-center justify-center">
+      <span className="text-gradient-accent font-semibold text-4xl p-1">
+        Soupty
+      </span>
+    </div>
+  );
 }

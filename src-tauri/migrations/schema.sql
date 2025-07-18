@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS chat_logs (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     broadcast_id    INTEGER NOT NULL,
     user_id         TEXT NOT NULL,
+    user_flag       INTEGER, -- 사용자 플래그(BJ, 구독 등)
     message_type    TEXT NOT NULL, -- 'TEXT', 'EMOTICON', 'STICKER'
     message         TEXT NOT NULL, -- 타입에 따른 본문 (텍스트, 이모티콘 ID 등)
     metadata        TEXT,          -- 추가 정보 (JSON)
