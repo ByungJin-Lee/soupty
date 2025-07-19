@@ -11,16 +11,6 @@ CREATE TABLE IF NOT EXISTS channels (
     last_updated    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
---------------------------------------------------------------------
--- Table: users
--- 역할: 채팅 및 이벤트를 발생시킨 사용자의 정보를 저장합니다.
---       채팅 로그에서 사용자 이름 중복을 방지합니다.
---------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS users (
-    user_id         TEXT PRIMARY KEY NOT NULL,
-    username        TEXT NOT NULL,
-    last_seen       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
 
 --------------------------------------------------------------------
 -- Table: target_users
@@ -55,13 +45,13 @@ CREATE TABLE IF NOT EXISTS chat_logs (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     broadcast_id    INTEGER NOT NULL,
     user_id         TEXT NOT NULL,
-    user_flag       INTEGER, -- 사용자 플래그(BJ, 구독 등)
+    username        TEXT NOT NULL,
+    user_flag       INTEGER UNSIGNED, -- 사용자 플래그(BJ: 1<<0, SUB_TIER_1: 1<<1, SUB_TIER_2: 1<<2)
     message_type    TEXT NOT NULL, -- 'TEXT', 'EMOTICON', 'STICKER'
     message         TEXT NOT NULL, -- 타입에 따른 본문 (텍스트, 이모티콘 ID 등)
     metadata        TEXT,          -- 추가 정보 (JSON)
     timestamp       DATETIME NOT NULL,
-    FOREIGN KEY(broadcast_id) REFERENCES broadcast_sessions(id) ON DELETE CASCADE,
-    FOREIGN KEY(user_id) REFERENCES users(user_id)
+    FOREIGN KEY(broadcast_id) REFERENCES broadcast_sessions(id) ON DELETE CASCADE
 );
 
 --------------------------------------------------------------------
@@ -72,11 +62,12 @@ CREATE TABLE IF NOT EXISTS event_logs (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     broadcast_id    INTEGER NOT NULL,
     user_id         TEXT,          -- 이벤트 주체 (NULL 가능)
+    username        TEXT,          -- 이벤트 주체 (NULL 가능)
+    user_flag       INTEGER UNSIGNED, -- 사용자 플래그(BJ: 1<<0, SUB_TIER_1: 1<<1, SUB_TIER_2: 1<<2)
     event_type      TEXT NOT NULL, -- 'DONATION', 'SUBSCRIBE' 등
     payload         TEXT NOT NULL, -- 이벤트 고유 데이터 (JSON)
     timestamp       DATETIME NOT NULL,
-    FOREIGN KEY(broadcast_id) REFERENCES broadcast_sessions(id) ON DELETE CASCADE,
-    FOREIGN KEY(user_id) REFERENCES users(user_id)
+    FOREIGN KEY(broadcast_id) REFERENCES broadcast_sessions(id) ON DELETE CASCADE
 );
 
 --------------------------------------------------------------------
@@ -98,9 +89,7 @@ CREATE TABLE IF NOT EXISTS reports (
 --       FTS5 가상 테이블입니다.
 --------------------------------------------------------------------
 CREATE VIRTUAL TABLE IF NOT EXISTS chat_logs_fts USING fts5(
-    -- 의미 기반 검색을 위한 컬럼 (일반 텍스트)
-    message_morph,
-    -- 자모 분리 및 초성 검색을 위한 컬럼
+    -- 자모 분리 및 초성 검색을 위한 컬럼 (한국어 검색 최적화)
     message_jamo,
     -- 원본 chat_logs 테이블의 ID (조인용, 인덱싱 제외)
     chat_log_id UNINDEXED,

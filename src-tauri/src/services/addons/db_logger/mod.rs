@@ -2,6 +2,7 @@ mod buffer;
 mod constants;
 mod event_handlers;
 mod session_manager;
+pub mod user_flag;
 
 use async_trait::async_trait;
 use std::sync::Arc;
@@ -16,6 +17,7 @@ use buffer::LogBuffer;
 use constants::*;
 use event_handlers::EventProcessor;
 use session_manager::SessionManager;
+use user_flag::create_user_flag;
 
 pub struct DBLoggerAddon {
     buffer: Arc<Mutex<LogBuffer>>,
@@ -89,7 +91,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                Some(&event.from),
+                Some(&event.from),       // user_id
+                Some(&event.from_label), // username
+                None,                    // user_flag
                 EVENT_TYPE_DONATION,
                 event,
                 event.timestamp,
@@ -114,7 +118,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                Some(&event.user_id),
+                Some(&event.user_id), // user_id
+                Some(&event.label),   // username
+                None,                 // user_flag
                 EVENT_TYPE_SUBSCRIBE,
                 event,
                 event.timestamp,
@@ -139,7 +145,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                Some(&event.user_id),
+                Some(&event.user_id), // user_id
+                None,                 // username
+                None,                 // user_flag
                 EVENT_TYPE_KICK_CANCEL,
                 event,
                 event.timestamp,
@@ -164,7 +172,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                Some(&event.user.id),
+                Some(&event.user.id),    // user_id
+                Some(&event.user.label), // username
+                Some(create_user_flag(&event.user)), // user_flag
                 EVENT_TYPE_MUTE,
                 event,
                 event.timestamp,
@@ -189,7 +199,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                Some(&event.user_id),
+                Some(&event.user_id), // user_id
+                None,                 // username
+                None,                 // user_flag
                 EVENT_TYPE_BLACK,
                 event,
                 event.timestamp,
@@ -214,7 +226,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                None,
+                None, // user_id
+                None, // username
+                None, // user_flag
                 EVENT_TYPE_FREEZE,
                 event,
                 event.timestamp,
@@ -239,7 +253,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                None,
+                None, // user_id
+                None, // username
+                None, // user_flag,
                 EVENT_TYPE_NOTIFICATION,
                 event,
                 event.timestamp,
@@ -264,7 +280,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                Some(&event.from),
+                Some(&event.from),       // user_id
+                Some(&event.from_label), // username
+                None,                    // user_flag
                 EVENT_TYPE_MISSION_DONATION,
                 event,
                 event.timestamp,
@@ -289,7 +307,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                None,
+                None, // user_id
+                None, // username
+                None, // user_flag,
                 EVENT_TYPE_MISSION_TOTAL,
                 event,
                 event.timestamp,
@@ -314,7 +334,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                None,
+                None, // user_id
+                None, // username
+                None, // user_flag,
                 EVENT_TYPE_BATTLE_MISSION_RESULT,
                 event,
                 event.timestamp,
@@ -343,7 +365,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                None,
+                None, // user_id
+                None, // username
+                None, // user_flag,
                 EVENT_TYPE_CHALLENGE_MISSION_RESULT,
                 event,
                 event.timestamp,
@@ -371,7 +395,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                None,
+                None, // user_id
+                None, // username
+                None, // user_flag,
                 EVENT_TYPE_SLOW,
                 event,
                 event.timestamp,
@@ -426,7 +452,9 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                None,
+                None, // user_id
+                None, // username
+                None, // user_flag,
                 EVENT_TYPE_METADATA_UPDATE,
                 &event,
                 event.timestamp,

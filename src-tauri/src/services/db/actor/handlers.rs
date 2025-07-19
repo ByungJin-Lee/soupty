@@ -3,9 +3,12 @@ use rusqlite::{Connection};
 use tokio::sync::oneshot;
 
 use crate::services::db::commands::{
-    ChannelData, ChatLogData, EventLogData, UserData, ChatSearchFilters, EventSearchFilters,
-    PaginationParams, ChatSearchResult, EventSearchResult, ChatLogResult, EventLogResult
+    ChannelData, ChatLogData, EventLogData, ChatSearchFilters, EventSearchFilters,
+    PaginationParams, ChatSearchResult, EventSearchResult, ChatLogResult, EventLogResult,
+    ChatMetadata
 };
+use crate::services::addons::db_logger::user_flag::parse_user_from_flag;
+use crate::util::hangul::decompose_hangul_to_string;
 
 pub struct CommandHandlers<'a> {
     conn: &'a Connection,
@@ -77,26 +80,6 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
-    pub fn handle_upsert_users(
-        &self,
-        users: Vec<UserData>,
-        reply_to: oneshot::Sender<Result<(), String>>,
-    ) {
-        let result = self
-            .conn
-            .prepare_cached(
-                "INSERT INTO users (user_id, username, last_seen) VALUES (?1, ?2, ?3) ON CONFLICT(user_id) DO UPDATE SET username = excluded.username, last_seen = excluded.last_seen",
-            )
-            .and_then(|mut stmt| {
-                for user in users {
-                    stmt.execute([&user.user_id, &user.username, &user.last_seen.to_rfc3339()])?;
-                }
-                Ok(())
-            })
-            .map_err(|e| e.to_string());
-
-        let _ = reply_to.send(result);
-    }
 
     pub fn handle_upsert_channels(
         &self,
@@ -174,16 +157,18 @@ impl<'a> CommandHandlers<'a> {
         let result = self.conn.execute("BEGIN TRANSACTION", [])
             .and_then(|_| {
                 let mut stmt = self.conn.prepare_cached(
-                    "INSERT INTO chat_logs (broadcast_id, user_id, message_type, message, metadata, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6)"
+                    "INSERT INTO chat_logs (broadcast_id, user_id, username, user_flag, message_type, message, metadata, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)"
                 )?;
                 
                 for log in logs {
                     stmt.execute([
                         &log.broadcast_id.to_string(),
                         &log.user_id,
+                        &log.username,
+                        &log.user_flag.to_string(),
                         &log.message_type,
                         &log.message,
-                        &log.metadata.unwrap_or_default(),
+                        &serde_json::to_string(&log.metadata).unwrap_or_default(),
                         &log.timestamp.to_rfc3339()
                     ])?;
                 }
@@ -208,25 +193,53 @@ impl<'a> CommandHandlers<'a> {
         let result = self.conn.execute("BEGIN TRANSACTION", [])
             .and_then(|_| {
                 let mut stmt = self.conn.prepare_cached(
-                    "INSERT INTO event_logs (broadcast_id, user_id, event_type, payload, timestamp) VALUES (?1, ?2, ?3, ?4, ?5)"
+                    "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"
                 )?;
                 
                 for log in logs {
-                    match &log.user_id {
-                        Some(user_id) => {
+                    match (&log.user_id, &log.username, &log.user_flag) {
+                        (Some(user_id), Some(username), Some(user_flag)) => {
                             stmt.execute([
                                 &log.broadcast_id.to_string(),
                                 user_id,
+                                username,
+                                &user_flag.to_string(),
                                 &log.event_type,
                                 &log.payload,
                                 &log.timestamp.to_rfc3339()
                             ])?;
                         },
-                        None => {
-                            let mut stmt_null = self.conn.prepare_cached(
-                                "INSERT INTO event_logs (broadcast_id, user_id, event_type, payload, timestamp) VALUES (?1, NULL, ?2, ?3, ?4)"
+                        (Some(user_id), Some(username), None) => {
+                            let mut stmt_null_flag = self.conn.prepare_cached(
+                                "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp) VALUES (?1, ?2, ?3, NULL, ?4, ?5, ?6)"
                             )?;
-                            stmt_null.execute([
+                            stmt_null_flag.execute([
+                                &log.broadcast_id.to_string(),
+                                user_id,
+                                username,
+                                &log.event_type,
+                                &log.payload,
+                                &log.timestamp.to_rfc3339()
+                            ])?;
+                        },
+                        (Some(user_id), None, user_flag) => {
+                            let mut stmt_null_username = self.conn.prepare_cached(
+                                "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp) VALUES (?1, ?2, NULL, ?3, ?4, ?5, ?6)"
+                            )?;
+                            stmt_null_username.execute([
+                                &log.broadcast_id.to_string(),
+                                user_id,
+                                &user_flag.as_ref().map(|f| f.to_string()).unwrap_or_default(),
+                                &log.event_type,
+                                &log.payload,
+                                &log.timestamp.to_rfc3339()
+                            ])?;
+                        },
+                        (None, _, _) => {
+                            let mut stmt_null_all = self.conn.prepare_cached(
+                                "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp) VALUES (?1, NULL, NULL, NULL, ?2, ?3, ?4)"
+                            )?;
+                            stmt_null_all.execute([
                                 &log.broadcast_id.to_string(),
                                 &log.event_type,
                                 &log.payload,
@@ -353,6 +366,11 @@ impl<'a> CommandHandlers<'a> {
             param_values.push(broadcast_id.to_string());
         }
 
+        if let Some(message_type) = &filters.message_type {
+            where_conditions.push("cl.message_type = ?");
+            param_values.push(message_type.to_string());
+        }
+
         if let Some(start_date) = &filters.start_date {
             where_conditions.push("cl.timestamp >= ?");
             param_values.push(start_date.to_rfc3339());
@@ -465,7 +483,7 @@ impl<'a> CommandHandlers<'a> {
         limit: i64,
         offset: i64,
     ) -> Result<Vec<ChatLogResult>, String> {
-        let message_contains = filters.message_contains.as_ref().unwrap();
+        let message_contains = decompose_hangul_to_string(filters.message_contains.as_ref().unwrap());
         
         let additional_where = if where_clause.is_empty() { 
             String::new() 
@@ -474,14 +492,13 @@ impl<'a> CommandHandlers<'a> {
         };
         
         let fts_query = format!(
-            "SELECT cl.id, cl.broadcast_id, cl.user_id, u.username, cl.message_type, 
+            "SELECT cl.id, cl.broadcast_id, cl.user_id, cl.username, cl.user_flag, cl.message_type, 
                     cl.message, cl.metadata, cl.timestamp, c.channel_id, c.channel_name, bs.title
              FROM chat_logs_fts fts
              JOIN chat_logs cl ON fts.chat_log_id = cl.id
-             JOIN users u ON cl.user_id = u.user_id
              JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
              JOIN channels c ON bs.channel_id = c.channel_id
-             WHERE fts.message_morph MATCH ?1 {}
+             WHERE fts.message_jamo MATCH ?1 {}
              ORDER BY cl.timestamp DESC
              LIMIT ? OFFSET ?",
             additional_where
@@ -497,20 +514,30 @@ impl<'a> CommandHandlers<'a> {
         all_params.push(&offset_str);
 
         let rows = stmt.query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+            let user_id: String = row.get(2)?;
+            let username: String = row.get(3)?;
+            let user_flag: u32 = row.get(4)?;
+            
             Ok(ChatLogResult {
                 id: row.get(0)?,
                 broadcast_id: row.get(1)?,
-                user_id: row.get(2)?,
-                username: row.get(3)?,
-                message_type: row.get(4)?,
-                message: row.get(5)?,
-                metadata: row.get(6)?,
-                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
+                user: parse_user_from_flag(user_flag, user_id, username),
+                message_type: row.get(5)?,
+                message: row.get(6)?,
+                metadata: {
+                    let metadata_str: String = row.get(7)?;
+                    if metadata_str.is_empty() {
+                        None
+                    } else {
+                        serde_json::from_str(&metadata_str).ok()
+                    }
+                },
+                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?)
                     .unwrap()
                     .with_timezone(&Utc),
-                channel_id: row.get(8)?,
-                channel_name: row.get(9)?,
-                broadcast_title: row.get(10)?,
+                channel_id: row.get(9)?,
+                channel_name: row.get(10)?,
+                broadcast_title: row.get(11)?,
             })
         }).map_err(|e| e.to_string())?;
 
@@ -525,10 +552,9 @@ impl<'a> CommandHandlers<'a> {
         offset: i64,
     ) -> Result<Vec<ChatLogResult>, String> {
         let query = format!(
-            "SELECT cl.id, cl.broadcast_id, cl.user_id, u.username, cl.message_type, 
+            "SELECT cl.id, cl.broadcast_id, cl.user_id, cl.username, cl.user_flag, cl.message_type, 
                     cl.message, cl.metadata, cl.timestamp, c.channel_id, c.channel_name, bs.title
              FROM chat_logs cl
-             JOIN users u ON cl.user_id = u.user_id
              JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
              JOIN channels c ON bs.channel_id = c.channel_id
              {}
@@ -546,20 +572,30 @@ impl<'a> CommandHandlers<'a> {
         all_params.push(&offset_str);
 
         let rows = stmt.query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+            let user_id: String = row.get(2)?;
+            let username: String = row.get(3)?;
+            let user_flag: u32 = row.get(4)?;
+            
             Ok(ChatLogResult {
                 id: row.get(0)?,
                 broadcast_id: row.get(1)?,
-                user_id: row.get(2)?,
-                username: row.get(3)?,
-                message_type: row.get(4)?,
-                message: row.get(5)?,
-                metadata: row.get(6)?,
-                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
+                user: parse_user_from_flag(user_flag, user_id, username),
+                message_type: row.get(5)?,
+                message: row.get(6)?,
+                metadata: {
+                    let metadata_str: String = row.get(7)?;
+                    if metadata_str.is_empty() {
+                        None
+                    } else {
+                        serde_json::from_str(&metadata_str).ok()
+                    }
+                },
+                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?)
                     .unwrap()
                     .with_timezone(&Utc),
-                channel_id: row.get(8)?,
-                channel_name: row.get(9)?,
-                broadcast_title: row.get(10)?,
+                channel_id: row.get(9)?,
+                channel_name: row.get(10)?,
+                broadcast_title: row.get(11)?,
             })
         }).map_err(|e| e.to_string())?;
 
@@ -574,10 +610,9 @@ impl<'a> CommandHandlers<'a> {
         offset: i64,
     ) -> Result<Vec<EventLogResult>, String> {
         let query = format!(
-            "SELECT el.id, el.broadcast_id, el.user_id, u.username, el.event_type, 
+            "SELECT el.id, el.broadcast_id, el.user_id, el.username, el.user_flag, el.event_type, 
                     el.payload, el.timestamp, c.channel_id, c.channel_name, bs.title
              FROM event_logs el
-             LEFT JOIN users u ON el.user_id = u.user_id
              JOIN broadcast_sessions bs ON el.broadcast_id = bs.id
              JOIN channels c ON bs.channel_id = c.channel_id
              {}
@@ -595,19 +630,27 @@ impl<'a> CommandHandlers<'a> {
         all_params.push(&offset_str);
 
         let rows = stmt.query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+            let user_id: Option<String> = row.get(2)?;
+            let username: Option<String> = row.get(3)?;
+            let user_flag: Option<u32> = row.get(4)?;
+            
+            let user = match (user_id, username, user_flag) {
+                (Some(id), Some(name), Some(flag)) => Some(parse_user_from_flag(flag, id, name)),
+                _ => None,
+            };
+            
             Ok(EventLogResult {
                 id: row.get(0)?,
                 broadcast_id: row.get(1)?,
-                user_id: row.get(2)?,
-                username: row.get(3)?,
-                event_type: row.get(4)?,
-                payload: row.get(5)?,
-                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(6)?)
+                user,
+                event_type: row.get(5)?,
+                payload: row.get(6)?,
+                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
                     .unwrap()
                     .with_timezone(&Utc),
-                channel_id: row.get(7)?,
-                channel_name: row.get(8)?,
-                broadcast_title: row.get(9)?,
+                channel_id: row.get(8)?,
+                channel_name: row.get(9)?,
+                broadcast_title: row.get(10)?,
             })
         }).map_err(|e| e.to_string())?;
 
@@ -631,7 +674,7 @@ impl<'a> CommandHandlers<'a> {
                  JOIN chat_logs cl ON fts.chat_log_id = cl.id
                  JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
                  JOIN channels c ON bs.channel_id = c.channel_id
-                 WHERE fts.message_morph MATCH ?1 {}",
+                 WHERE fts.message_jamo MATCH ?1 {}",
                 additional_where
             )
         } else {

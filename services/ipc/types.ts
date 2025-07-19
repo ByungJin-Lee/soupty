@@ -1,4 +1,4 @@
-import { Emoji } from "~/types";
+import { Emoji, OGQ, User } from "~/types";
 
 // 요청 Payload가 없는 request 객체입니다
 export enum IpcRequestWithoutPayload {
@@ -164,14 +164,23 @@ export interface EventSearchResult {
   totalPages: number;
 }
 
+export interface ChatLogMetadata {
+  emoticon: OGQ;
+}
+
+export enum ChatLogMessageType {
+  Emotion = "EMOTICON",
+  Sticker = "STICKER",
+  Text = "TEXT",
+}
+
 export interface ChatLogResult {
   id: number;
   broadcastId: number;
-  userId: string;
-  username: string;
-  messageType: string;
+  user: User;
+  messageType: ChatLogMessageType;
   message: string;
-  metadata?: string;
+  metadata?: ChatLogMetadata;
   timestamp: string;
   channelId: string;
   channelName: string;

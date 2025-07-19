@@ -5,8 +5,6 @@ import { HistoryChatTab } from "~/features/history/components/history-chat-tab";
 import { HistoryTabSelector } from "~/features/history/components/history-tab-selector";
 import { ipcService } from "~/services/ipc";
 import type {
-  ChatSearchFilters,
-  ChatSearchResult,
   EventLogResult,
   EventSearchFilters,
   EventSearchResult,
@@ -15,16 +13,6 @@ import type {
 
 export default function HistoryPage() {
   const [activeTab, setActiveTab] = useState<"chat" | "event">("chat");
-
-  // Chat search states
-  const [chatFilters, setChatFilters] = useState<ChatSearchFilters>({});
-  const [chatPagination, setChatPagination] = useState<PaginationParams>({
-    page: 1,
-    pageSize: 20,
-  });
-  const [chatResults, setChatResults] = useState<ChatSearchResult | null>(null);
-  const [chatLoading, setChatLoading] = useState(false);
-  const [chatError, setChatError] = useState<string | null>(null);
 
   // Event search states
   const [eventFilters, setEventFilters] = useState<EventSearchFilters>({});
@@ -37,25 +25,6 @@ export default function HistoryPage() {
   );
   const [eventLoading, setEventLoading] = useState(false);
   const [eventError, setEventError] = useState<string | null>(null);
-
-  const handleChatSearch = async () => {
-    setChatLoading(true);
-    setChatError(null);
-
-    try {
-      const result = await ipcService.chatHistory.searchChatLogs(
-        chatFilters,
-        chatPagination
-      );
-      setChatResults(result);
-    } catch (err) {
-      setChatError(
-        err instanceof Error ? err.message : "검색 중 오류가 발생했습니다"
-      );
-    } finally {
-      setChatLoading(false);
-    }
-  };
 
   const handleEventSearch = async () => {
     setEventLoading(true);
@@ -73,28 +42,6 @@ export default function HistoryPage() {
       );
     } finally {
       setEventLoading(false);
-    }
-  };
-
-  const handleChatPageChange = async (newPage: number) => {
-    const newPagination = { ...chatPagination, page: newPage };
-    setChatPagination(newPagination);
-
-    setChatLoading(true);
-    try {
-      const result = await ipcService.chatHistory.searchChatLogs(
-        chatFilters,
-        newPagination
-      );
-      setChatResults(result);
-    } catch (err) {
-      setChatError(
-        err instanceof Error
-          ? err.message
-          : "페이지 로드 중 오류가 발생했습니다"
-      );
-    } finally {
-      setChatLoading(false);
     }
   };
 
@@ -125,7 +72,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="p-2 flex flex-col flex-1 overflow-y-scroll">
+    <div className="p-2 flex flex-col flex-1 overflow-y-scroll invisible-scrollbar">
       {/* 탭 네비게이션 */}
       <HistoryTabSelector currentTab={activeTab} onChange={setActiveTab} />
 

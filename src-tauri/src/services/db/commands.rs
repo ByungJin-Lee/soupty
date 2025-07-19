@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot;
 use chrono::{DateTime, Utc};
+use soup_sdk::chat::types::User;
 
 #[derive(Debug)]
 pub enum DBCommand {
@@ -23,11 +24,7 @@ pub enum DBCommand {
         reply_to: oneshot::Sender<Result<Vec<ChannelData>, String>>, 
     },
     
-    // 사용자 및 채널 정보
-    UpsertUsers {
-        users: Vec<UserData>,
-        reply_to: oneshot::Sender<Result<(), String>>,
-    },
+    // 채널 정보
     UpsertChannels {
         channels: Vec<ChannelData>,
         reply_to: oneshot::Sender<Result<(), String>>,
@@ -77,12 +74,6 @@ pub enum DBCommand {
     },
 }
 
-#[derive(Debug, Clone)]
-pub struct UserData {
-    pub user_id: String,
-    pub username: String,
-    pub last_seen: DateTime<Utc>,
-}
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -92,13 +83,28 @@ pub struct ChannelData {
     pub last_updated: DateTime<Utc>,
 }
 
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct ChatMetadata {
+    pub emoticon: Option<EmoticonMetadata>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct EmoticonMetadata {
+    pub id: String,
+    pub number: String,
+    pub ext: String,
+    pub version: String,
+}
+
 #[derive(Debug, Clone)]
 pub struct ChatLogData {
     pub broadcast_id: i64,
     pub user_id: String,
+    pub username: String,
+    pub user_flag: u32,
     pub message_type: String,
     pub message: String,
-    pub metadata: Option<String>,
+    pub metadata: Option<ChatMetadata>,
     pub timestamp: DateTime<Utc>,
 }
 
@@ -106,6 +112,8 @@ pub struct ChatLogData {
 pub struct EventLogData {
     pub broadcast_id: i64,
     pub user_id: Option<String>,
+    pub username: Option<String>,
+    pub user_flag: Option<u32>,
     pub event_type: String,
     pub payload: String,
     pub timestamp: DateTime<Utc>,
@@ -118,6 +126,7 @@ pub struct ChatSearchFilters {
     pub channel_id: Option<String>,
     pub user_id: Option<String>,
     pub message_contains: Option<String>,
+    pub message_type: Option<String>,
     pub start_date: Option<DateTime<Utc>>,
     pub end_date: Option<DateTime<Utc>>,
     pub broadcast_id: Option<i64>,
@@ -171,11 +180,10 @@ pub struct EventSearchResult {
 pub struct ChatLogResult {
     pub id: i64,
     pub broadcast_id: i64,
-    pub user_id: String,
-    pub username: String,
+    pub user: User,
     pub message_type: String,
     pub message: String,
-    pub metadata: Option<String>,
+    pub metadata: Option<ChatMetadata>,
     pub timestamp: DateTime<Utc>,
     pub channel_id: String,
     pub channel_name: String,
@@ -188,8 +196,7 @@ pub struct ChatLogResult {
 pub struct EventLogResult {
     pub id: i64,
     pub broadcast_id: i64,
-    pub user_id: Option<String>,
-    pub username: Option<String>,
+    pub user: Option<User>,
     pub event_type: String,
     pub payload: String,
     pub timestamp: DateTime<Utc>,

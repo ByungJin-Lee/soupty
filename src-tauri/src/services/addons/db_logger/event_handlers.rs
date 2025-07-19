@@ -1,13 +1,14 @@
 use chrono::{DateTime, Utc};
-use serde_json::json;
 
 use crate::{
     models::events::*,
     services::{
         addons::interface::AddonContext,
-        db::commands::{ChatLogData, EventLogData, UserData},
+        db::commands::{ChatLogData, EventLogData, ChatMetadata, EmoticonMetadata},
     },
 };
+
+use super::user_flag::create_user_flag;
 
 use super::{
     constants::*,
@@ -42,15 +43,8 @@ impl EventProcessor {
                 e
             })?;
 
-        // 사용자 정보 저장
-        buffer.users.insert(
-            event.user.id.clone(),
-            UserData {
-                user_id: event.user.id.clone(),
-                username: event.user.label.clone(),
-                last_seen: event.timestamp,
-            },
-        );
+        // 사용자 플래그 계산
+        let user_flag = create_user_flag(&event.user);
 
 
         // 채팅 로그 추가
@@ -60,17 +54,14 @@ impl EventProcessor {
         };
 
         let metadata = if let Some(ref emoticon) = event.ogq {
-            Some(
-                json!({
-                    "emoticon": {
-                        "id": emoticon.id,
-                        "number": emoticon.number,
-                        "ext": emoticon.ext,
-                        "version": emoticon.version
-                    }
-                })
-                .to_string(),
-            )
+            Some(ChatMetadata {
+                emoticon: Some(EmoticonMetadata {
+                    id: emoticon.id.clone(),
+                    number: emoticon.number.clone(),
+                    ext: emoticon.ext.clone(),
+                    version: emoticon.version.clone(),
+                }),
+            })
         } else {
             None
         };
@@ -78,6 +69,8 @@ impl EventProcessor {
         buffer.chat_logs.push(ChatLogData {
             broadcast_id,
             user_id: event.user.id.clone(),
+            username: event.user.label.clone(),
+            user_flag,
             message_type: message_type.to_string(),
             message: event.comment.clone(),
             metadata,
@@ -92,6 +85,8 @@ impl EventProcessor {
         ctx: &AddonContext,
         channel_id: &str,
         user_id: Option<&str>,
+        username: Option<&str>,
+        user_flag: Option<u32>,
         event_type: &str,
         event_data: &T,
         timestamp: DateTime<Utc>,
@@ -106,6 +101,8 @@ impl EventProcessor {
         buffer.event_logs.push(EventLogData {
             broadcast_id,
             user_id: user_id.map(|s| s.to_string()),
+            username: username.map(|s| s.to_string()),
+            user_flag,
             event_type: event_type.to_string(),
             payload: serde_json::to_string(event_data)?,
             timestamp,
@@ -123,7 +120,6 @@ impl EventProcessor {
             return Ok(());
         }
 
-        let users: Vec<UserData> = buffer.users.values().cloned().collect();
         let chat_logs = buffer.chat_logs.clone();
         let event_logs = buffer.event_logs.clone();
 
@@ -139,14 +135,6 @@ impl EventProcessor {
         if !has_broadcast_session {
             eprintln!("[EventProcessor] Skipping logs - no broadcast session");
             return Ok(());
-        }
-
-        // 사용자 정보 먼저 저장 (외래 키 제약 조건)
-        if !users.is_empty() {
-            ctx.db.upsert_users(users).await.map_err(|e| {
-                Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))
-                    as Box<dyn std::error::Error>
-            })?;
         }
 
 

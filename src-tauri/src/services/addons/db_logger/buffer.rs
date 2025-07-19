@@ -1,13 +1,12 @@
-use std::{collections::HashMap, time::Instant};
+use std::time::Instant;
 
-use crate::services::db::commands::{ChatLogData, EventLogData, UserData};
+use crate::services::db::commands::{ChatLogData, EventLogData};
 
 use super::constants::*;
 
 pub struct LogBuffer {
     pub chat_logs: Vec<ChatLogData>,
     pub event_logs: Vec<EventLogData>,
-    pub users: HashMap<String, UserData>,
     pub last_flush: Instant,
 }
 
@@ -16,7 +15,6 @@ impl Default for LogBuffer {
         Self {
             chat_logs: Vec::new(),
             event_logs: Vec::new(),
-            users: HashMap::new(),
             last_flush: Instant::now(),
         }
     }
@@ -33,7 +31,6 @@ impl LogBuffer {
     pub fn clear(&mut self) {
         self.chat_logs.clear();
         self.event_logs.clear();
-        self.users.clear();
         self.last_flush = Instant::now();
     }
 

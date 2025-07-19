@@ -56,7 +56,6 @@ impl DBActor {
                 ended_at,
                 reply_to,
             } => handlers.handle_end_broadcast_session(broadcast_id, ended_at, reply_to),
-            DBCommand::UpsertUsers { users, reply_to } => handlers.handle_upsert_users(users, reply_to),
             DBCommand::UpsertChannels { channels, reply_to } => {
                 handlers.handle_upsert_channels(channels, reply_to)
             }

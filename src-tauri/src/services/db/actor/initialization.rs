@@ -51,8 +51,8 @@ impl<'a> DBInitializer<'a> {
             "
             CREATE TRIGGER IF NOT EXISTS t_chat_logs_insert AFTER INSERT ON chat_logs
             BEGIN
-                INSERT INTO chat_logs_fts(rowid, message_morph, message_jamo, chat_log_id)
-                VALUES (new.id, new.message, DECOMPOSE_HANGUL(new.message), new.id);
+                INSERT INTO chat_logs_fts(rowid, message_jamo, chat_log_id)
+                VALUES (new.id, DECOMPOSE_HANGUL(new.message), new.id);
             END;
 
             CREATE TRIGGER IF NOT EXISTS t_chat_logs_delete AFTER DELETE ON chat_logs
@@ -62,10 +62,10 @@ impl<'a> DBInitializer<'a> {
 
             CREATE TRIGGER IF NOT EXISTS t_chat_logs_update AFTER UPDATE ON chat_logs
             BEGIN
-                INSERT INTO chat_logs_fts(chat_logs_fts, rowid, message_morph, message_jamo, chat_log_id)
-                VALUES ('delete', old.id, old.message, DECOMPOSE_HANGUL(old.message), old.id);
-                INSERT INTO chat_logs_fts(rowid, message_morph, message_jamo, chat_log_id)
-                VALUES (new.id, new.message, DECOMPOSE_HANGUL(new.message), new.id);
+                INSERT INTO chat_logs_fts(chat_logs_fts, rowid, message_jamo, chat_log_id)
+                VALUES ('delete', old.id, DECOMPOSE_HANGUL(old.message), old.id);
+                INSERT INTO chat_logs_fts(rowid, message_jamo, chat_log_id)
+                VALUES (new.id, DECOMPOSE_HANGUL(new.message), new.id);
             END;
             "
         )?;

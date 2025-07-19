@@ -4,7 +4,7 @@ use tokio::sync::{mpsc, oneshot};
 
 use crate::services::db::{
     actor::DBActor,
-    commands::{ChannelData, ChatLogData, DBCommand, EventLogData, UserData, ChatSearchFilters, EventSearchFilters, PaginationParams, ChatSearchResult, EventSearchResult},
+    commands::{ChannelData, ChatLogData, DBCommand, EventLogData, ChatSearchFilters, EventSearchFilters, PaginationParams, ChatSearchResult, EventSearchResult},
 };
 
 #[derive(Clone, Debug)]
@@ -83,19 +83,6 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
-    pub async fn upsert_users(&self, users: Vec<UserData>) -> Result<(), String> {
-        let (tx, rx) = oneshot::channel();
-        self.sender
-            .send(DBCommand::UpsertUsers {
-                users,
-                reply_to: tx,
-            })
-            .await
-            .map_err(|_| "Failed to send command".to_string())?;
-
-        rx.await
-            .map_err(|_| "Failed to receive response".to_string())?
-    }
 
     pub async fn upsert_channels(&self, channels: Vec<ChannelData>) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();
