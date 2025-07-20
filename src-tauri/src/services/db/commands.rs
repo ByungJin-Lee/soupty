@@ -1,12 +1,14 @@
-use serde::{Deserialize, Serialize};
-use tokio::sync::oneshot;
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 use soup_sdk::chat::types::User;
+use tokio::sync::oneshot;
+
+use crate::models::reports::ReportData;
 
 #[derive(Debug)]
 pub enum DBCommand {
     Initialize, // 마이그레이션 등 초기화 작업을 위한 커맨드
-    
+
     // 방송 세션 관리
     CreateBroadcastSession {
         channel_id: String,
@@ -21,15 +23,15 @@ pub enum DBCommand {
     },
 
     GetChannels {
-        reply_to: oneshot::Sender<Result<Vec<ChannelData>, String>>, 
+        reply_to: oneshot::Sender<Result<Vec<ChannelData>, String>>,
     },
-    
+
     // 채널 정보
     UpsertChannels {
         channels: Vec<ChannelData>,
         reply_to: oneshot::Sender<Result<(), String>>,
     },
-    
+
     DeleteChannel {
         channel_id: String,
         reply_to: oneshot::Sender<Result<(), String>>,
@@ -65,15 +67,77 @@ pub enum DBCommand {
         pagination: PaginationParams,
         reply_to: oneshot::Sender<Result<ChatSearchResult, String>>,
     },
-    
+
     // 이벤트 기록 검색
     SearchEventLogs {
         filters: EventSearchFilters,
         pagination: PaginationParams,
         reply_to: oneshot::Sender<Result<EventSearchResult, String>>,
     },
-}
 
+    // 방송 세션 관리
+    DeleteBroadcastSession {
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
+
+    // 방송 세션 검색
+    SearchBroadcastSessions {
+        filters: BroadcastSessionSearchFilters,
+        pagination: PaginationParams,
+        reply_to: oneshot::Sender<Result<BroadcastSessionSearchResult, String>>,
+    },
+
+    // 방송 세션 단일 조회
+    GetBroadcastSession {
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<Option<BroadcastSessionResult>, String>>,
+    },
+
+    // 리포트 관리
+    CreateReport {
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
+    UpdateReportStatus {
+        broadcast_id: i64,
+        status: String,
+        progress_percentage: Option<f64>,
+        error_message: Option<String>,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
+    UpdateReportData {
+        broadcast_id: i64,
+        report_data: String, // JSON 형태
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
+    GetReport {
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<Option<ReportInfo>, String>>,
+    },
+    DeleteReport {
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
+    GetReportStatus {
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<Option<ReportStatusInfo>, String>>,
+    },
+
+    // 리포트 생성을 위한 로그 조회 (청크 단위)
+    GetChatLogsForReport {
+        broadcast_id: i64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+        reply_to: oneshot::Sender<Result<Vec<ChatLogForReport>, String>>,
+    },
+    GetEventLogsForReport {
+        broadcast_id: i64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+        reply_to: oneshot::Sender<Result<Vec<EventLogForReport>, String>>,
+    },
+}
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -125,6 +189,7 @@ pub struct EventLogData {
 pub struct ChatSearchFilters {
     pub channel_id: Option<String>,
     pub user_id: Option<String>,
+    pub username: Option<String>,
     pub message_contains: Option<String>,
     pub message_type: Option<String>,
     pub start_date: Option<DateTime<Utc>>,
@@ -138,10 +203,20 @@ pub struct ChatSearchFilters {
 pub struct EventSearchFilters {
     pub channel_id: Option<String>,
     pub user_id: Option<String>,
+    pub username: Option<String>,
     pub event_type: Option<String>,
     pub start_date: Option<DateTime<Utc>>,
     pub end_date: Option<DateTime<Utc>>,
     pub broadcast_id: Option<i64>,
+}
+
+// 방송 세션 검색 필터
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BroadcastSessionSearchFilters {
+    pub channel_id: Option<String>,
+    pub start_date: Option<DateTime<Utc>>,
+    pub end_date: Option<DateTime<Utc>>,
 }
 
 // 페이지네이션 파라미터
@@ -174,6 +249,29 @@ pub struct EventSearchResult {
     pub total_pages: i64,
 }
 
+// 방송 세션 검색 결과
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BroadcastSessionSearchResult {
+    pub broadcast_sessions: Vec<BroadcastSessionResult>,
+    pub total_count: i64,
+    pub page: i64,
+    pub page_size: i64,
+    pub total_pages: i64,
+}
+
+// 방송 세션 결과
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct BroadcastSessionResult {
+    pub id: i64,
+    pub channel_id: String,
+    pub channel_name: String,
+    pub title: String,
+    pub started_at: DateTime<Utc>,
+    pub ended_at: Option<DateTime<Utc>>,
+}
+
 // 채팅 로그 결과
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -203,4 +301,48 @@ pub struct EventLogResult {
     pub channel_id: String,
     pub channel_name: String,
     pub broadcast_title: String,
+}
+
+// 리포트 관련 구조체
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportInfo {
+    pub broadcast_id: i64,
+    pub status: String,
+    pub report_data: Option<ReportData>,
+    pub version: i32,
+    pub error_message: Option<String>,
+    pub progress_percentage: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportStatusInfo {
+    pub broadcast_id: i64,
+    pub status: String,
+    pub progress_percentage: Option<f64>,
+    pub error_message: Option<String>,
+}
+
+// 리포트 생성용 로그 구조체 (간소화된 버전)
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChatLogForReport {
+    pub user_id: String,
+    pub username: String,
+    pub user_flag: u32,
+    pub message_type: String,
+    pub message: String,
+    pub timestamp: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventLogForReport {
+    pub user_id: Option<String>,
+    pub username: Option<String>,
+    pub user_flag: Option<u32>,
+    pub event_type: String,
+    pub payload: String,
+    pub timestamp: DateTime<Utc>,
 }

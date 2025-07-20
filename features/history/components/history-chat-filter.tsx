@@ -8,11 +8,13 @@ import {
   convertFilter,
   useHistoryChatFilter,
 } from "../hooks/history-chat-filter";
+import { HistoryBroadcastSessionCondition } from "./history-broadcast-session-condition";
 import { HistoryChannelCondition } from "./history-channel-condition";
 import { HistoryChatTypeCondition } from "./history-chat-type-condition";
 import { HistoryPeriodCondition } from "./history-period-condition";
 import { HistoryTextCondition } from "./history-text-condition";
 import { HistoryUserCondition } from "./history-user-condition";
+import { HistoryUsernameCondition } from "./history-username-condition";
 
 export const HistoryChatFilter: React.FC<PropsWithChildren> = ({
   children,
@@ -27,47 +29,50 @@ export const HistoryChatFilter: React.FC<PropsWithChildren> = ({
 
   return (
     <>
-      <div>
-        <div className="bg-gray-50 p-3 rounded-lg mb-3">
-          <div className="flex gap-2">
-            <HistoryChannelCondition
-              channel={w.channel}
-              onSelect={(c) => setValue("channel", c)}
-            />
-            <HistoryUserCondition
-              userId={w.userId}
-              onChange={(u) => setValue("userId", u)}
-            />
-            <HistoryPeriodCondition
-              startDate={w.startDate}
-              endDate={w.endDate}
-              onStartDateChange={(date) => setValue("startDate", date)}
-              onEndDateChange={(date) => setValue("endDate", date)}
-            />
-            <HistoryChatTypeCondition
-              chatType={w.messageType}
-              onChange={(ct) => setValue("messageType", ct)}
-            />
-            <HistoryTextCondition
-              text={w.messageContains}
-              onChange={(text) => setValue("messageContains", text)}
-            />
-          </div>
-
-          <div className="mt-2 flex gap-2 justify-end">
-            <button
-              onClick={() => reset()}
-              className="px-2 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
-            >
-              초기화
-            </button>
-            <button
-              onClick={handleSearch}
-              className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-gray-600"
-            >
-              검색
-            </button>
-          </div>
+      <div className="bg-gray-50 p-3 rounded-lg mb-3 flex gap-2 flex-wrap">
+        <HistoryChannelCondition
+          channel={w.channel}
+          onSelect={(c) => setValue("channel", c)}
+        />
+        <HistoryUserCondition
+          userId={w.userId}
+          onChange={(u) => setValue("userId", u)}
+        />
+        <HistoryUsernameCondition
+          username={w.username}
+          onChange={(u) => setValue("username", u)}
+        />
+        <HistoryPeriodCondition
+          startDate={w.startDate}
+          endDate={w.endDate}
+          onStartDateChange={(date) => setValue("startDate", date)}
+          onEndDateChange={(date) => setValue("endDate", date)}
+        />
+        <HistoryChatTypeCondition
+          chatType={w.messageType}
+          onChange={(ct) => setValue("messageType", ct)}
+        />
+        <HistoryTextCondition
+          text={w.messageContains}
+          onChange={(text) => setValue("messageContains", text)}
+        />
+        <HistoryBroadcastSessionCondition
+          broadcastSession={w.session}
+          onSelect={(s) => setValue("session", s)}
+        />
+        <div className="ml-auto">
+          <button
+            onClick={() => reset()}
+            className="px-2 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
+          >
+            초기화
+          </button>
+          <button
+            onClick={handleSearch}
+            className="px-2 py-1 ml-2 bg-blue-500 text-white rounded-md hover:bg-gray-600"
+          >
+            검색
+          </button>
         </div>
       </div>
       <HistoryChatFilterProvider value={convertFilter(w)}>

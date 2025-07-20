@@ -1,3 +1,4 @@
+import { broadcastSessionService } from "./broadcast-session";
 import { channel } from "./channel";
 import { chatHistoryService } from "./chat-history";
 import { soop } from "./soop";
@@ -11,6 +12,7 @@ export const ipcService = Object.freeze({
   channel,
   targetUsers,
   chatHistory: chatHistoryService,
+  broadcastSession: broadcastSessionService,
 });
 
 export default ipcService;

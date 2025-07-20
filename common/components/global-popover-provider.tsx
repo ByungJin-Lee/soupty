@@ -1,12 +1,12 @@
 "use client";
 
 import { Popover } from "~/common/ui/popover";
-import { ChatHeaderPopover } from "~/features/chat/components/chat-header-popover";
+import { UserPopover } from "~/features/popover/components/user-popover";
 
 export const GlobalPopoverProvider: React.FC = () => {
   return (
     <Popover>
-      <ChatHeaderPopover />
+      <UserPopover />
     </Popover>
   );
 };

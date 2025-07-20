@@ -1,5 +1,5 @@
-import { Fragment, useCallback } from "react";
-import { PopoverId, usePopoverStore } from "~/common/ui/popover";
+import { Fragment } from "react";
+import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { MessagePart, MessageType } from "~/types/chat";
 import { ChatEvent } from "~/types/event";
 import { ChatBadge } from "./chat-badge";
@@ -22,25 +22,18 @@ type HeaderProps = {
 };
 
 const Header: React.FC<HeaderProps> = ({ data }) => {
-  const { togglePopover } = usePopoverStore();
-
-  const handleClick = useCallback(
-    (event: React.MouseEvent) => {
-      togglePopover(PopoverId.ChatHeader, data.user.id, event, data);
-    },
-    [data, togglePopover]
-  );
+  const handleClick = useUserPopoverDispatch(data.user);
 
   return (
     <div
-      className="min-w-[120px] max-w-[120px] flex cursor-pointer hover:bg-gray-100 rounded px-1 py-0.5 transition-colors"
+      className="min-w-[120px] max-w-[120px] flex cursor-pointer hover:bg-gray-200 rounded px-1 py-0.5 transition-colors h-fit"
       onClick={handleClick}
     >
       {data.badges.map((b) => (
         <ChatBadge key={b} badge={b} />
       ))}
       <span
-        className="break-all font-medium ml-1"
+        className="break-all font-medium ml-1 inline-block h-fit"
         style={{ color: data.color }}
       >
         {data.user.label}

@@ -25,7 +25,7 @@ pub async fn stop_main_controller(
 ) -> Result<(), String> {
     let mut controller = state.main_controller.lock().await;
 
-    controller.stop(app_handle, state.db.clone()).await;
+    let _ = controller.stop(app_handle, state.db.clone()).await;
 
     Ok(())
 }
@@ -35,5 +35,9 @@ pub async fn get_main_controller_context(
     state: State<'_, AppState>,
 ) -> Result<Option<BroadcastMetadata>, String> {
     let controller = state.main_controller.lock().await;
-    Ok(controller.metadata_manager.get_metadata().await.map_err(|e| e.to_string())?)
+    Ok(controller
+        .metadata_manager
+        .get_metadata()
+        .await
+        .map_err(|e| e.to_string())?)
 }

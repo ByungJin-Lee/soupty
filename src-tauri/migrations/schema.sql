@@ -75,11 +75,12 @@ CREATE TABLE IF NOT EXISTS event_logs (
 -- 역할: 생성된 분석 리포트를 캐싱하여 재계산 비용을 절약합니다.
 --------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS reports (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
-    broadcast_id    INTEGER NOT NULL UNIQUE,
-    report_data     TEXT NOT NULL, -- 리포트 결과 (JSON)
-    version         INTEGER NOT NULL, -- 리포트 구조 버전
-    generated_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    broadcast_id        INTEGER PRIMARY KEY,
+    status              TEXT NOT NULL DEFAULT 'PENDING', -- PENDING, GENERATING, COMPLETED, FAILED
+    report_data         TEXT, -- 리포트 결과 (JSON)
+    version             INTEGER NOT NULL DEFAULT 1, -- 리포트 구조 버전
+    error_message       TEXT, -- 에러 메시지 (실패시)
+    progress_percentage REAL, -- 진행률 (0.0 ~ 100.0)
     FOREIGN KEY(broadcast_id) REFERENCES broadcast_sessions(id) ON DELETE CASCADE
 );
 

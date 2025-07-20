@@ -23,9 +23,9 @@ impl Stats for ActiveChatterRankingStats {
     fn evaluate(
         &self,
         chat_data: &VecDeque<EnrichedChatData>,
-        donation_data: &VecDeque<EnrichedDonationData>,
+        _donation_data: &VecDeque<EnrichedDonationData>,
     ) -> StatsMatrix {
-        let result = calculate_active_chatter_ranking(chat_data, donation_data);
+        let result = calculate_active_chatter_ranking(chat_data);
         StatsMatrix::ActiveChatterRanking(result)
     }
 }

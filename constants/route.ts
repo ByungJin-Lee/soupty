@@ -2,7 +2,7 @@ export const route = Object.freeze({
   home: "/",
   live: "/live",
   clip: "/clip",
-  report: "/report",
+  broadcast: "/broadcast",
   history: "/history",
   setting: "/setting",
 });

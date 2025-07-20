@@ -1,4 +1,6 @@
 import { useStatsEventStore } from "~/common/stores/stats-event-store";
+import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
+import { ActiveChatterRankingItem } from "~/types/stats";
 
 export const ActiveChatterRankChart = () => {
   const rankings = useStatsEventStore(
@@ -21,45 +23,58 @@ export const ActiveChatterRankChart = () => {
     <table className="w-full">
       <tbody className="divide-y divide-gray-200">
         {topRankings.map((ranking, index) => (
-          <tr
-            key={ranking.userId}
-            className={`hover:bg-gray-50 transition-colors ${
-              index < 3 ? "bg-gradient-to-r from-yellow-50 to-amber-50" : ""
-            }`}
-          >
-            <td className="px-4 py-3">
-              <span
-                className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold
+          <ActiveChatterRankItem key={index} rank={index + 1} data={ranking} />
+        ))}
+      </tbody>
+    </table>
+  );
+};
+
+type ItemProps = {
+  data: ActiveChatterRankingItem;
+  rank: number;
+};
+
+const ActiveChatterRankItem: React.FC<ItemProps> = ({ data, rank }) => {
+  const handleClick = useUserPopoverDispatch(data.user);
+
+  return (
+    <tr
+      key={data.user.id}
+      className={`hover:bg-gray-50 transition-colors ${
+        rank <= 3 ? "bg-gradient-to-r from-yellow-50 to-amber-50" : ""
+      }`}
+    >
+      <td className="px-2 py-2">
+        <span
+          className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold
                       ${
-                        index === 0
+                        rank === 1
                           ? "bg-yellow-500 text-white"
-                          : index === 1
+                          : rank === 2
                           ? "bg-gray-400 text-white"
-                          : index === 2
+                          : rank === 3
                           ? "bg-orange-600 text-white"
                           : "bg-gray-100 text-gray-600"
                       }
                     `}
-              >
-                {index + 1}
-              </span>
-            </td>
-            <td className="px-4 py-3">
-              <div className="font-medium text-gray-900 truncate max-w-32">
-                {ranking.nickname}
-              </div>
-              <div className="text-xs text-gray-500 truncate max-w-32">
-                {ranking.userId}
-              </div>
-            </td>
-            <td className="px-4 py-3 text-right">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                {ranking.chatCount}
-              </span>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+        >
+          {rank}
+        </span>
+      </td>
+      <td className="px-2 cursor-pointer">
+        <div
+          className="font-medium text-gray-900 w-fit px-2 truncate max-w-32 hover:bg-gray-200 rounded-md"
+          onClick={handleClick}
+        >
+          {data.user.label}
+        </div>
+      </td>
+      <td className="px-4 py-3 text-right">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+          {data.chatCount}
+        </span>
+      </td>
+    </tr>
   );
 };

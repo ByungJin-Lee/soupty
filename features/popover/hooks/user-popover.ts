@@ -1,35 +1,36 @@
 import { useCallback, useMemo, useState } from "react";
+import { PopoverId, usePopoverStore } from "~/common/stores/popover-store";
 import {
   addTargetUser,
   isTargetUser,
   removeTargetUser,
 } from "~/common/utils/target-users";
-import { ChatEvent } from "~/types";
+import { UserPopoverPayload } from "../types/user";
 
-export function useChatHeaderPopover(chatData: ChatEvent) {
+export const useUserPopover = (payload: UserPopoverPayload) => {
   const [isLoading, setIsLoading] = useState(false);
 
   // 계산된 값들을 메모화
   const userInfo = useMemo(() => {
-    const userId = chatData.user?.id || "";
-    const isManager = chatData.user?.status?.isManager || false;
+    const userId = payload.id;
+    const isManager = payload.status?.isManager || false;
 
     // 구독 관련 정보
-    const followStatus = chatData.user?.status?.follow;
+    const followStatus = payload.status?.follow || 0;
     const isFollower = followStatus && followStatus > 0;
     const isFollowPlus = followStatus === 2;
     const isFollowBasic = followStatus === 1;
 
     // 기타 사용자 상태
-    const isBj = chatData.user?.status?.isBj || false;
-    const isTopFan = chatData.user?.status?.isTopFan || false;
-    const isFan = chatData.user?.status?.isFan || false;
-    const isSupporter = chatData.user?.status?.isSupporter || false;
+    const isBj = payload.status?.isBj || false;
+    const isTopFan = payload.status?.isTopFan || false;
+    const isFan = payload.status?.isFan || false;
+    const isSupporter = payload.status?.isSupporter || false;
 
     return {
       userId,
       isManager,
-      label: chatData.user?.label || "",
+      label: payload.label,
       isFollower,
       isFollowPlus,
       isFollowBasic,
@@ -38,7 +39,7 @@ export function useChatHeaderPopover(chatData: ChatEvent) {
       isFan,
       isSupporter,
     };
-  }, [chatData]);
+  }, [payload]);
 
   const handleToggleTargetUser = useCallback(async () => {
     if (!userInfo.userId) return;
@@ -62,4 +63,15 @@ export function useChatHeaderPopover(chatData: ChatEvent) {
     isLoading,
     handleToggleTargetUser,
   };
-}
+};
+
+export const useUserPopoverDispatch = (user: UserPopoverPayload) => {
+  const togglePopover = usePopoverStore((t) => t.togglePopover);
+
+  return useCallback(
+    (event: React.MouseEvent) => {
+      togglePopover(PopoverId.UserInfo, user.id, event, user);
+    },
+    [user, togglePopover]
+  );
+};

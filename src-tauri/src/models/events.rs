@@ -3,23 +3,37 @@ use serde::Serialize;
 use soup_sdk::chat::types::{ChatType, DonationType, Emoticon, MissionType, User};
 
 // 이벤트 타입 상수
-pub const EVENT_TYPE_DONATION: &str = "DONATION";
-pub const EVENT_TYPE_SUBSCRIBE: &str = "SUBSCRIBE";
-pub const EVENT_TYPE_ENTER: &str = "ENTER";
-pub const EVENT_TYPE_EXIT: &str = "EXIT";
-pub const EVENT_TYPE_KICK: &str = "KICK";
-pub const EVENT_TYPE_KICK_CANCEL: &str = "KICK_CANCEL";
-pub const EVENT_TYPE_MUTE: &str = "MUTE";
-pub const EVENT_TYPE_BLACK: &str = "BLACK";
-pub const EVENT_TYPE_FREEZE: &str = "FREEZE";
-pub const EVENT_TYPE_NOTIFICATION: &str = "NOTIFICATION";
-pub const EVENT_TYPE_JOIN: &str = "JOIN";
-pub const EVENT_TYPE_MISSION_DONATION: &str = "MISSION_DONATION";
-pub const EVENT_TYPE_MISSION_TOTAL: &str = "MISSION_TOTAL";
-pub const EVENT_TYPE_BATTLE_MISSION_RESULT: &str = "BATTLE_MISSION_RESULT";
-pub const EVENT_TYPE_CHALLENGE_MISSION_RESULT: &str = "CHALLENGE_MISSION_RESULT";
-pub const EVENT_TYPE_SLOW: &str = "SLOW";
-pub const EVENT_TYPE_METADATA_UPDATE: &str = "METADATA_UPDATE";
+// Lifecycle events
+pub const EVENT_TYPE_CONNECTED: &str = "Connected";
+pub const EVENT_TYPE_DISCONNECTED: &str = "Disconnected";
+pub const EVENT_TYPE_BJ_STATE_CHANGE: &str = "BJStateChange";
+
+// Chat related events
+pub const EVENT_TYPE_CHAT: &str = "Chat";
+pub const EVENT_TYPE_DONATION: &str = "Donation";
+pub const EVENT_TYPE_SUBSCRIBE: &str = "Subscribe";
+
+// User events
+pub const EVENT_TYPE_ENTER: &str = "Enter";
+pub const EVENT_TYPE_EXIT: &str = "Exit";
+
+// Moderation events
+pub const EVENT_TYPE_KICK: &str = "Kick";
+pub const EVENT_TYPE_KICK_CANCEL: &str = "KickCancel";
+pub const EVENT_TYPE_MUTE: &str = "Mute";
+pub const EVENT_TYPE_BLACK: &str = "Black";
+pub const EVENT_TYPE_FREEZE: &str = "Freeze";
+pub const EVENT_TYPE_SLOW: &str = "Slow";
+
+// Mission events
+pub const EVENT_TYPE_MISSION_DONATION: &str = "MissionDonation";
+pub const EVENT_TYPE_MISSION_TOTAL: &str = "MissionTotal";
+pub const EVENT_TYPE_CHALLENGE_MISSION_RESULT: &str = "ChallengeMissionResult";
+pub const EVENT_TYPE_BATTLE_MISSION_RESULT: &str = "BattleMissionResult";
+
+// System events
+pub const EVENT_TYPE_NOTIFICATION: &str = "Notification";
+pub const EVENT_TYPE_METADATA_UPDATE: &str = "MetadataUpdate";
 
 // 전처리 과정을 거친 이벤트입니다.
 #[derive(Debug, Clone, Serialize)]

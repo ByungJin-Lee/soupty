@@ -1,4 +1,4 @@
-import { Emoji, OGQ, User } from "~/types";
+import { DomainEventType, Emoji, OGQ, User } from "~/types";
 
 // 요청 Payload가 없는 request 객체입니다
 export enum IpcRequestWithoutPayload {
@@ -22,6 +22,13 @@ export enum IpcRequestWithPayload {
   RemoveTargetUser = "remove_target_user",
   SearchChatLogs = "search_chat_logs",
   SearchEventLogs = "search_event_logs",
+  DeleteBroadcastSession = "delete_broadcast_session",
+  GetBroadcastSession = "get_broadcast_session",
+  SearchBroadcastSessions = "search_broadcast_sessions",
+  CreateReport = "create_report",
+  DeleteReport = "delete_report",
+  GetReport = "get_report",
+  GetReportStatus = "get_report_status",
 }
 
 export type IpcRequest = IpcRequestWithPayload | IpcRequestWithoutPayload;
@@ -66,6 +73,28 @@ export interface IpcPayloadMap {
     filters: EventSearchFilters;
     pagination: PaginationParams;
   };
+  [IpcRequestWithPayload.DeleteBroadcastSession]: {
+    broadcastId: number;
+  };
+  [IpcRequestWithPayload.GetBroadcastSession]: {
+    broadcastId: number;
+  };
+  [IpcRequestWithPayload.SearchBroadcastSessions]: {
+    filters: BroadcastSessionSearchFilters;
+    pagination: PaginationParams;
+  };
+  [IpcRequestWithPayload.CreateReport]: {
+    broadcastId: number;
+  };
+  [IpcRequestWithPayload.DeleteReport]: {
+    broadcastId: number;
+  };
+  [IpcRequestWithPayload.GetReport]: {
+    broadcastId: number;
+  };
+  [IpcRequestWithPayload.GetReportStatus]: {
+    broadcastId: number;
+  };
 }
 
 /**
@@ -93,6 +122,13 @@ export interface IpcResponseMap {
   [IpcRequestWithPayload.RemoveTargetUser]: void;
   [IpcRequestWithPayload.SearchChatLogs]: ChatSearchResult;
   [IpcRequestWithPayload.SearchEventLogs]: EventSearchResult;
+  [IpcRequestWithPayload.DeleteBroadcastSession]: void;
+  [IpcRequestWithPayload.GetBroadcastSession]: BroadcastSession | null;
+  [IpcRequestWithPayload.SearchBroadcastSessions]: BroadcastSessionSearchResult;
+  [IpcRequestWithPayload.CreateReport]: void;
+  [IpcRequestWithPayload.DeleteReport]: void;
+  [IpcRequestWithPayload.GetReport]: ReportInfo | null;
+  [IpcRequestWithPayload.GetReportStatus]: ReportStatusInfo | null;
 }
 
 export interface StreamerLive {
@@ -131,6 +167,7 @@ export interface ChatSearchFilters {
   startDate?: string;
   endDate?: string;
   broadcastId?: number;
+  username?: string;
 }
 
 // 이벤트 검색 관련 타입
@@ -141,6 +178,7 @@ export interface EventSearchFilters {
   startDate?: string;
   endDate?: string;
   broadcastId?: number;
+  username?: string;
 }
 
 export interface PaginationParams {
@@ -192,10 +230,132 @@ export interface EventLogResult {
   broadcastId: number;
   userId?: string;
   username?: string;
-  eventType: string;
+  eventType: DomainEventType;
   payload: string;
   timestamp: string;
   channelId: string;
   channelName: string;
   broadcastTitle: string;
+}
+
+// 방송 세션 검색 관련 타입
+export interface BroadcastSessionSearchFilters {
+  channelId?: string;
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface BroadcastSessionSearchResult {
+  broadcastSessions: BroadcastSession[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface BroadcastSession {
+  id: number;
+  channelId: string;
+  channelName: string;
+  title: string;
+  startedAt: string;
+  endedAt?: string;
+}
+
+// 리포트 관련 타입
+export interface ReportInfo {
+  broadcastId: number;
+  status: ReportStatus;
+  reportData?: ReportData;
+  version: number;
+  errorMessage?: string;
+  progressPercentage?: number;
+}
+
+export interface ReportStatusInfo {
+  broadcastId: number;
+  status: ReportStatus;
+  progressPercentage?: number;
+  errorMessage?: string;
+}
+
+export enum ReportStatus {
+  PENDING = "PENDING",
+  GENERATING = "GENERATING", 
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+}
+
+export interface ReportData {
+  summary: ReportSummary;
+  chatAnalysis: ChatAnalysis;
+  eventAnalysis: EventAnalysis;
+  timeAnalysis: TimeAnalysis;
+}
+
+export interface ReportSummary {
+  totalChatCount: number;
+  totalEventCount: number;
+  uniqueUsers: number;
+  durationSeconds: number;
+  startTime: string;
+  endTime?: string;
+}
+
+export interface ChatAnalysis {
+  messagesPerMinute: TimeSeriesPoint[];
+  topChatters: UserStats[];
+  chatSentiment: SentimentAnalysis;
+  popularWords: WordCount[];
+}
+
+export interface EventAnalysis {
+  donationTotal: number;
+  donationCount: number;
+  subscriptionCount: number;
+  userJoins: number;
+  userExits: number;
+  moderationActions: ModerationStats;
+}
+
+export interface TimeAnalysis {
+  activityByHour: TimeSeriesPoint[];
+  peakActivityTime: string;
+  quietPeriods: TimeRange[];
+}
+
+export interface TimeSeriesPoint {
+  timestamp: string;
+  value: number;
+}
+
+export interface UserStats {
+  userId: string;
+  username: string;
+  messageCount: number;
+  donationAmount: number;
+}
+
+export interface SentimentAnalysis {
+  positiveRatio: number;
+  negativeRatio: number;
+  neutralRatio: number;
+  overallSentiment: string;
+}
+
+export interface WordCount {
+  word: string;
+  count: number;
+}
+
+export interface ModerationStats {
+  kicks: number;
+  mutes: number;
+  bans: number;
+  freezes: number;
+}
+
+export interface TimeRange {
+  start: string;
+  end: string;
 }

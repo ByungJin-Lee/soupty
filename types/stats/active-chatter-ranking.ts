@@ -1,8 +1,8 @@
+import { User } from "../soop";
 import { BaseStats } from "./base";
 
 export interface ActiveChatterRankingItem {
-  userId: string;
-  nickname: string;
+  user: User;
   chatCount: number;
 }
 

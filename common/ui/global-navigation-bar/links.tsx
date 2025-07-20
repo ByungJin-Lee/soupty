@@ -9,12 +9,12 @@ const links: { href: string; label: string }[] = [
     label: "라이브",
   },
   {
-    href: route.clip,
-    label: "클립",
+    href: route.broadcast,
+    label: "방송",
   },
   {
-    href: route.report,
-    label: "리포트",
+    href: route.clip,
+    label: "클립",
   },
   {
     href: route.history,

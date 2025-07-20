@@ -5,7 +5,8 @@ use tokio::sync::oneshot;
 use crate::services::db::commands::{
     ChannelData, ChatLogData, EventLogData, ChatSearchFilters, EventSearchFilters,
     PaginationParams, ChatSearchResult, EventSearchResult, ChatLogResult, EventLogResult,
-    ChatMetadata
+    ChatMetadata, BroadcastSessionSearchFilters, BroadcastSessionSearchResult, BroadcastSessionResult,
+    ReportInfo, ReportStatusInfo, ChatLogForReport, EventLogForReport
 };
 use crate::services::addons::db_logger::user_flag::parse_user_from_flag;
 use crate::util::hangul::decompose_hangul_to_string;
@@ -361,6 +362,11 @@ impl<'a> CommandHandlers<'a> {
             param_values.push(user_id.clone());
         }
 
+        if let Some(username) = &filters.username {
+            where_conditions.push("cl.username = ?");
+            param_values.push(username.clone());
+        }
+
         if let Some(broadcast_id) = &filters.broadcast_id {
             where_conditions.push("cl.broadcast_id = ?");
             param_values.push(broadcast_id.to_string());
@@ -431,6 +437,11 @@ impl<'a> CommandHandlers<'a> {
             param_values.push(user_id.clone());
         }
 
+        if let Some(username) = &filters.username {
+            where_conditions.push("el.username = ?");
+            param_values.push(username.clone());
+        }
+
         if let Some(event_type) = &filters.event_type {
             where_conditions.push("el.event_type = ?");
             param_values.push(event_type.clone());
@@ -483,7 +494,13 @@ impl<'a> CommandHandlers<'a> {
         limit: i64,
         offset: i64,
     ) -> Result<Vec<ChatLogResult>, String> {
-        let message_contains = decompose_hangul_to_string(filters.message_contains.as_ref().unwrap());
+        let search_term = filters.message_contains.as_ref().unwrap();
+        let message_contains = if search_term.chars().count() == 1 {
+            // 단일 문자 검색의 경우 와일드카드 패턴 사용
+            format!("{}*", decompose_hangul_to_string(search_term))
+        } else {
+            decompose_hangul_to_string(search_term)
+        };
         
         let additional_where = if where_clause.is_empty() { 
             String::new() 
@@ -690,7 +707,13 @@ impl<'a> CommandHandlers<'a> {
         let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
         
         let count = if filters.message_contains.is_some() {
-            let message_contains = filters.message_contains.as_ref().unwrap();
+            let search_term = filters.message_contains.as_ref().unwrap();
+            let message_contains = if search_term.chars().count() == 1 {
+                // 단일 문자 검색의 경우 와일드카드 패턴 사용
+                format!("{}*", decompose_hangul_to_string(search_term))
+            } else {
+                decompose_hangul_to_string(search_term)
+            };
             let mut all_params = vec![message_contains.as_str()];
             all_params.extend(params);
             stmt.query_row(rusqlite::params_from_iter(all_params.iter()), |row| row.get::<_, i64>(0))
@@ -720,5 +743,495 @@ impl<'a> CommandHandlers<'a> {
             .map_err(|e| e.to_string())?;
 
         Ok(count)
+    }
+
+    // 방송 세션 삭제 핸들러
+    pub fn handle_delete_broadcast_session(
+        &self,
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self.delete_broadcast_session_impl(broadcast_id);
+        let _ = reply_to.send(result);
+    }
+
+    // 방송 세션 검색 핸들러
+    pub fn handle_search_broadcast_sessions(
+        &self,
+        filters: BroadcastSessionSearchFilters,
+        pagination: PaginationParams,
+        reply_to: oneshot::Sender<Result<BroadcastSessionSearchResult, String>>,
+    ) {
+        let result = self.search_broadcast_sessions_impl(filters, pagination);
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_get_broadcast_session(
+        &self,
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<Option<BroadcastSessionResult>, String>>,
+    ) {
+        let result = self.get_broadcast_session_impl(broadcast_id);
+        let _ = reply_to.send(result);
+    }
+
+    // 방송 세션 삭제 구현
+    fn delete_broadcast_session_impl(&self, broadcast_id: i64) -> Result<(), String> {
+        let query = "DELETE FROM broadcast_sessions WHERE id = ?1";
+        
+        let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
+        
+        let rows_affected = stmt.execute([broadcast_id]).map_err(|e| e.to_string())?;
+        
+        if rows_affected == 0 {
+            return Err(format!("Broadcast session with id {} not found", broadcast_id));
+        }
+        
+        Ok(())
+    }
+
+    // 방송 세션 검색 구현
+    fn search_broadcast_sessions_impl(
+        &self,
+        filters: BroadcastSessionSearchFilters,
+        pagination: PaginationParams,
+    ) -> Result<BroadcastSessionSearchResult, String> {
+        let offset = (pagination.page - 1) * pagination.page_size;
+        let limit = pagination.page_size;
+
+        let mut where_conditions = Vec::new();
+        let mut param_values = Vec::new();
+        
+        if let Some(channel_id) = &filters.channel_id {
+            where_conditions.push("bs.channel_id = ?");
+            param_values.push(channel_id.clone());
+        }
+
+        if let Some(start_date) = &filters.start_date {
+            where_conditions.push("bs.started_at >= ?");
+            param_values.push(start_date.to_rfc3339());
+        }
+
+        if let Some(end_date) = &filters.end_date {
+            where_conditions.push("bs.started_at <= ?");
+            param_values.push(end_date.to_rfc3339());
+        }
+
+        let params: Vec<&str> = param_values.iter().map(String::as_str).collect();
+
+        let where_clause = if where_conditions.is_empty() {
+            String::new()
+        } else {
+            format!("WHERE {}", where_conditions.join(" AND "))
+        };
+
+        // 방송 세션 검색
+        let broadcast_sessions = self.search_broadcast_sessions_only(&where_clause, &params, limit, offset)?;
+
+        // 총 개수 조회
+        let total_count = self.get_broadcast_sessions_total_count(&where_clause, &params)?;
+        let total_pages = (total_count + pagination.page_size - 1) / pagination.page_size;
+
+        Ok(BroadcastSessionSearchResult {
+            broadcast_sessions,
+            total_count,
+            page: pagination.page,
+            page_size: pagination.page_size,
+            total_pages,
+        })
+    }
+
+    // 방송 세션 검색 쿼리
+    fn search_broadcast_sessions_only(
+        &self,
+        where_clause: &str,
+        params: &[&str],
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<BroadcastSessionResult>, String> {
+        let query = format!(
+            "SELECT bs.id, bs.channel_id, c.channel_name, bs.title, bs.started_at, bs.ended_at
+             FROM broadcast_sessions bs
+             JOIN channels c ON bs.channel_id = c.channel_id
+             {}
+             ORDER BY bs.started_at DESC
+             LIMIT {} OFFSET {}",
+            where_clause, limit, offset
+        );
+
+        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
+        
+        let rows = stmt.query_map(rusqlite::params_from_iter(params.iter()), |row| {
+            let started_at_str: String = row.get(4)?;
+            let ended_at_opt: Option<String> = row.get(5)?;
+            
+            let started_at = DateTime::parse_from_rfc3339(&started_at_str)
+                .map_err(|e| rusqlite::Error::InvalidColumnType(4, "started_at".to_string(), rusqlite::types::Type::Text))?
+                .with_timezone(&Utc);
+                
+            let ended_at = if let Some(ended_at_str) = ended_at_opt {
+                Some(DateTime::parse_from_rfc3339(&ended_at_str)
+                    .map_err(|e| rusqlite::Error::InvalidColumnType(5, "ended_at".to_string(), rusqlite::types::Type::Text))?
+                    .with_timezone(&Utc))
+            } else {
+                None
+            };
+
+            Ok(BroadcastSessionResult {
+                id: row.get(0)?,
+                channel_id: row.get(1)?,
+                channel_name: row.get(2)?,
+                title: row.get(3)?,
+                started_at,
+                ended_at,
+            })
+        }).map_err(|e| e.to_string())?;
+
+        let mut broadcast_sessions = Vec::new();
+        for row in rows {
+            broadcast_sessions.push(row.map_err(|e| e.to_string())?);
+        }
+
+        Ok(broadcast_sessions)
+    }
+
+    // 방송 세션 총 개수 조회
+    fn get_broadcast_sessions_total_count(
+        &self,
+        where_clause: &str,
+        params: &[&str],
+    ) -> Result<i64, String> {
+        let query = format!(
+            "SELECT COUNT(*) FROM broadcast_sessions bs
+             JOIN channels c ON bs.channel_id = c.channel_id
+             {}",
+            where_clause
+        );
+
+        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
+        
+        let count = stmt.query_row(rusqlite::params_from_iter(params.iter()), |row| row.get::<_, i64>(0))
+            .map_err(|e| e.to_string())?;
+
+        Ok(count)
+    }
+
+    // 단일 방송 세션 조회 구현
+    fn get_broadcast_session_impl(&self, broadcast_id: i64) -> Result<Option<BroadcastSessionResult>, String> {
+        let query = r#"
+            SELECT 
+                bs.id,
+                bs.channel_id,
+                c.channel_name,
+                bs.title,
+                bs.started_at,
+                bs.ended_at
+            FROM broadcast_sessions bs
+            JOIN channels c ON bs.channel_id = c.channel_id
+            WHERE bs.id = ?1
+        "#;
+
+        let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
+        
+        let result = stmt.query_row([broadcast_id], |row| {
+            Ok(BroadcastSessionResult {
+                id: row.get(0)?,
+                channel_id: row.get(1)?,
+                channel_name: row.get(2)?,
+                title: row.get(3)?,
+                started_at: row.get::<_, String>(4)?
+                    .parse()
+                    .map_err(|_e| rusqlite::Error::InvalidColumnType(4, "started_at".to_string(), rusqlite::types::Type::Text))?,
+                ended_at: {
+                    let ended_at_str: Option<String> = row.get(5)?;
+                    match ended_at_str {
+                        Some(s) => Some(s.parse()
+                            .map_err(|_e| rusqlite::Error::InvalidColumnType(5, "ended_at".to_string(), rusqlite::types::Type::Text))?),
+                        None => None,
+                    }
+                },
+            })
+        });
+
+        match result {
+            Ok(session) => Ok(Some(session)),
+            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+            Err(e) => Err(e.to_string()),
+        }
+    }
+
+    // 리포트 관련 핸들러들
+    pub fn handle_create_report(
+        &mut self,
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self.create_report(broadcast_id);
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_update_report_status(
+        &mut self,
+        broadcast_id: i64,
+        status: String,
+        progress_percentage: Option<f64>,
+        error_message: Option<String>,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self.update_report_status(broadcast_id, status, progress_percentage, error_message);
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_update_report_data(
+        &mut self,
+        broadcast_id: i64,
+        report_data: String,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self.update_report_data(broadcast_id, report_data);
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_get_report(
+        &mut self,
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<Option<ReportInfo>, String>>,
+    ) {
+        let result = self.get_report(broadcast_id);
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_delete_report(
+        &mut self,
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self.delete_report(broadcast_id);
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_get_report_status(
+        &mut self,
+        broadcast_id: i64,
+        reply_to: oneshot::Sender<Result<Option<ReportStatusInfo>, String>>,
+    ) {
+        let result = self.get_report_status(broadcast_id);
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_get_chat_logs_for_report(
+        &mut self,
+        broadcast_id: i64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+        reply_to: oneshot::Sender<Result<Vec<ChatLogForReport>, String>>,
+    ) {
+        let result = self.get_chat_logs_for_report(broadcast_id, start_time, end_time);
+        let _ = reply_to.send(result);
+    }
+
+    pub fn handle_get_event_logs_for_report(
+        &mut self,
+        broadcast_id: i64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+        reply_to: oneshot::Sender<Result<Vec<EventLogForReport>, String>>,
+    ) {
+        let result = self.get_event_logs_for_report(broadcast_id, start_time, end_time);
+        let _ = reply_to.send(result);
+    }
+
+    // 실제 DB 작업 메서드들
+    fn create_report(&mut self, broadcast_id: i64) -> Result<(), String> {
+        let query = r#"
+            INSERT INTO reports (broadcast_id, status, version)
+            VALUES (?1, 'PENDING', 1)
+        "#;
+
+        self.conn
+            .execute(query, [broadcast_id])
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    fn update_report_status(
+        &mut self,
+        broadcast_id: i64,
+        status: String,
+        progress_percentage: Option<f64>,
+        error_message: Option<String>,
+    ) -> Result<(), String> {
+        let query = r#"
+            UPDATE reports 
+            SET status = ?1, progress_percentage = ?2, error_message = ?3
+            WHERE broadcast_id = ?4
+        "#;
+
+        self.conn
+            .execute(query, (status, progress_percentage, error_message, broadcast_id))
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    fn update_report_data(&mut self, broadcast_id: i64, report_data: String) -> Result<(), String> {
+        let query = r#"
+            UPDATE reports 
+            SET report_data = ?1, status = 'COMPLETED'
+            WHERE broadcast_id = ?2
+        "#;
+
+        self.conn
+            .execute(query, (report_data, broadcast_id))
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    fn get_report(&mut self, broadcast_id: i64) -> Result<Option<ReportInfo>, String> {
+        let query = r#"
+            SELECT broadcast_id, status, report_data, version, error_message, 
+                   progress_percentage
+            FROM reports 
+            WHERE broadcast_id = ?1
+            LIMIT 1
+        "#;
+
+        let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
+        
+        let result = stmt.query_row([broadcast_id], |row| {
+            Ok(ReportInfo {
+                broadcast_id: row.get(0)?,
+                status: row.get(1)?,
+                report_data: {
+                    let data: String = row.get(2)?;
+                    if data.is_empty() {
+                        None
+                    } else {
+                        serde_json::from_str(&data).ok()
+                    }
+                } ,
+                version: row.get(3)?,
+                error_message: row.get(4)?,
+                progress_percentage: row.get(5)?,
+            })
+        });
+
+        match result {
+            Ok(report) => Ok(Some(report)),
+            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+            Err(e) => Err(e.to_string()),
+        }
+    }
+
+    fn delete_report(&mut self, broadcast_id: i64) -> Result<(), String> {
+        let query = "DELETE FROM reports WHERE broadcast_id = ?1";
+
+        self.conn
+            .execute(query, [broadcast_id])
+            .map_err(|e| e.to_string())?;
+
+        Ok(())
+    }
+
+    fn get_report_status(&mut self, broadcast_id: i64) -> Result<Option<ReportStatusInfo>, String> {
+        let query = r#"
+            SELECT broadcast_id, status, progress_percentage, error_message
+            FROM reports 
+            WHERE broadcast_id = ?1
+            LIMIT 1
+        "#;
+
+        let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
+        
+        let result = stmt.query_row([broadcast_id], |row| {
+            Ok(ReportStatusInfo {
+                broadcast_id: row.get(0)?,
+                status: row.get(1)?,
+                progress_percentage: row.get(2)?,
+                error_message: row.get(3)?,
+            })
+        });
+
+        match result {
+            Ok(status) => Ok(Some(status)),
+            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+            Err(e) => Err(e.to_string()),
+        }
+    }
+
+    fn get_chat_logs_for_report(
+        &mut self,
+        broadcast_id: i64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+    ) -> Result<Vec<ChatLogForReport>, String> {
+        let query = r#"
+            SELECT user_id, username, user_flag, message_type, message, timestamp
+            FROM chat_logs
+            WHERE broadcast_id = ?1 AND timestamp >= ?2 AND timestamp < ?3
+            ORDER BY timestamp ASC
+        "#;
+
+        let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
+        
+        let rows = stmt.query_map(
+            (broadcast_id, start_time.to_rfc3339(), end_time.to_rfc3339()),
+            |row| {
+                Ok(ChatLogForReport {
+                    user_id: row.get(0)?,
+                    username: row.get(1)?,
+                    user_flag: row.get(2)?,
+                    message_type: row.get(3)?,
+                    message: row.get(4)?,
+                    timestamp: row.get::<_, String>(5)?.parse().map_err(|_| rusqlite::Error::InvalidColumnType(5, "timestamp".to_string(), rusqlite::types::Type::Text))?,
+                })
+            }
+        ).map_err(|e| e.to_string())?;
+
+        let mut logs = Vec::new();
+        for row in rows {
+            logs.push(row.map_err(|e| e.to_string())?);
+        }
+
+        Ok(logs)
+    }
+
+    fn get_event_logs_for_report(
+        &mut self,
+        broadcast_id: i64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+    ) -> Result<Vec<EventLogForReport>, String> {
+        let query = r#"
+            SELECT user_id, username, user_flag, event_type, payload, timestamp
+            FROM event_logs
+            WHERE broadcast_id = ?1 AND timestamp >= ?2 AND timestamp < ?3
+            ORDER BY timestamp ASC
+        "#;
+
+        let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
+        
+        let rows = stmt.query_map(
+            (broadcast_id, start_time.to_rfc3339(), end_time.to_rfc3339()),
+            |row| {
+                Ok(EventLogForReport {
+                    user_id: row.get(0)?,
+                    username: row.get(1)?,
+                    user_flag: row.get(2)?,
+                    event_type: row.get(3)?,
+                    payload: row.get(4)?,
+                    timestamp: row.get::<_, String>(5)?.parse().map_err(|_| rusqlite::Error::InvalidColumnType(5, "timestamp".to_string(), rusqlite::types::Type::Text))?,
+                })
+            }
+        ).map_err(|e| e.to_string())?;
+
+        let mut logs = Vec::new();
+        for row in rows {
+            logs.push(row.map_err(|e| e.to_string())?);
+        }
+
+        Ok(logs)
     }
 }

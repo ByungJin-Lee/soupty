@@ -7,14 +7,14 @@ import {
   withPopover,
 } from "~/common/ui/popover";
 import { isTargetUser } from "~/common/utils/target-users";
-import { ChatEvent } from "~/types";
-import { useChatHeaderPopover } from "../hooks";
+import { useUserPopover } from "../hooks/user-popover";
+import { UserPopoverPayload } from "../types/user";
 
-const ChatHeaderPopoverContent: React.FC<PopoverContentProps<ChatEvent>> = ({
+const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
   payload,
 }) => {
   const { userInfo, isLoading, handleToggleTargetUser } =
-    useChatHeaderPopover(payload);
+    useUserPopover(payload);
 
   const isTarget = userInfo.userId ? isTargetUser(userInfo.userId) : false;
 
@@ -87,7 +87,4 @@ const ChatHeaderPopoverContent: React.FC<PopoverContentProps<ChatEvent>> = ({
   );
 };
 
-export const ChatHeaderPopover = withPopover(
-  ChatHeaderPopoverContent,
-  PopoverId.ChatHeader
-);
+export const UserPopover = withPopover(UserPopoverContent, PopoverId.UserInfo);

@@ -4,7 +4,7 @@ use tokio::sync::{mpsc, oneshot};
 
 use crate::services::db::{
     actor::DBActor,
-    commands::{ChannelData, ChatLogData, DBCommand, EventLogData, ChatSearchFilters, EventSearchFilters, PaginationParams, ChatSearchResult, EventSearchResult},
+    commands::{ChannelData, ChatLogData, DBCommand, EventLogData, ChatSearchFilters, EventSearchFilters, PaginationParams, ChatSearchResult, EventSearchResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult, BroadcastSessionResult, ReportInfo, ReportStatusInfo, ChatLogForReport, EventLogForReport},
 };
 
 #[derive(Clone, Debug)]
@@ -203,6 +203,190 @@ impl DBService {
             .send(DBCommand::SearchEventLogs {
                 filters,
                 pagination,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn delete_broadcast_session(&self, broadcast_id: i64) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::DeleteBroadcastSession {
+                broadcast_id,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn search_broadcast_sessions(
+        &self,
+        filters: BroadcastSessionSearchFilters,
+        pagination: PaginationParams,
+    ) -> Result<BroadcastSessionSearchResult, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::SearchBroadcastSessions {
+                filters,
+                pagination,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn get_broadcast_session(&self, broadcast_id: i64) -> Result<Option<BroadcastSessionResult>, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::GetBroadcastSession {
+                broadcast_id,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    // 리포트 관련 메서드
+    pub async fn create_report(&self, broadcast_id: i64) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::CreateReport {
+                broadcast_id,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn update_report_status(
+        &self,
+        broadcast_id: i64,
+        status: String,
+        progress_percentage: Option<f64>,
+        error_message: Option<String>,
+    ) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::UpdateReportStatus {
+                broadcast_id,
+                status,
+                progress_percentage,
+                error_message,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn update_report_data(&self, broadcast_id: i64, report_data: String) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::UpdateReportData {
+                broadcast_id,
+                report_data,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn get_report(&self, broadcast_id: i64) -> Result<Option<ReportInfo>, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::GetReport {
+                broadcast_id,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn delete_report(&self, broadcast_id: i64) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::DeleteReport {
+                broadcast_id,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn get_report_status(&self, broadcast_id: i64) -> Result<Option<ReportStatusInfo>, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::GetReportStatus {
+                broadcast_id,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn get_chat_logs_for_report(
+        &self,
+        broadcast_id: i64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+    ) -> Result<Vec<ChatLogForReport>, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::GetChatLogsForReport {
+                broadcast_id,
+                start_time,
+                end_time,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn get_event_logs_for_report(
+        &self,
+        broadcast_id: i64,
+        start_time: DateTime<Utc>,
+        end_time: DateTime<Utc>,
+    ) -> Result<Vec<EventLogForReport>, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::GetEventLogsForReport {
+                broadcast_id,
+                start_time,
+                end_time,
                 reply_to: tx,
             })
             .await

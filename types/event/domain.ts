@@ -58,6 +58,29 @@ export enum DomainEventType {
   MetadataUpdate = "MetadataUpdate",
 }
 
+export const domainEventLabel: Record<DomainEventType, string> = {
+  [DomainEventType.Donation]: "후원",
+  [DomainEventType.Subscribe]: "구독",
+  [DomainEventType.Kick]: "킥",
+  [DomainEventType.KickCancel]: "킥 취소",
+  [DomainEventType.Mute]: "뮤트",
+  [DomainEventType.Black]: "블랙",
+  [DomainEventType.Freeze]: "프리즈",
+  [DomainEventType.Notification]: "알림",
+  [DomainEventType.MissionDonation]: "미션 후원",
+  [DomainEventType.MissionTotal]: "미션 합계",
+  [DomainEventType.BattleMissionResult]: "배틀 미션 결과",
+  [DomainEventType.ChallengeMissionResult]: "챌린지 미션 결과",
+  [DomainEventType.Slow]: "슬로우",
+  [DomainEventType.MetadataUpdate]: "메타데이터 업데이트",
+  [DomainEventType.Connected]: "",
+  [DomainEventType.Disconnected]: "",
+  [DomainEventType.BJStateChange]: "",
+  [DomainEventType.Chat]: "채팅",
+  [DomainEventType.Enter]: "",
+  [DomainEventType.Exit]: "",
+};
+
 export type RawDomainEvent = {
   type: DomainEventType;
   payload: {

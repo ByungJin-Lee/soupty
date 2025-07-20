@@ -1,8 +1,8 @@
 mod handlers;
 mod initialization;
 
-use std::path::PathBuf;
 use rusqlite::Connection;
+use std::path::PathBuf;
 use tokio::sync::mpsc;
 
 use crate::services::db::commands::DBCommand;
@@ -41,8 +41,8 @@ impl DBActor {
     }
 
     fn handle_command(&mut self, cmd: DBCommand) {
-        let handlers = CommandHandlers::new(&self.conn);
-        
+        let mut handlers = CommandHandlers::new(&self.conn);
+
         match cmd {
             DBCommand::Initialize => handlers.handle_initialize(),
             DBCommand::CreateBroadcastSession {
@@ -59,7 +59,10 @@ impl DBActor {
             DBCommand::UpsertChannels { channels, reply_to } => {
                 handlers.handle_upsert_channels(channels, reply_to)
             }
-            DBCommand::DeleteChannel { channel_id, reply_to } => handlers.handle_delete_channel(channel_id, reply_to),
+            DBCommand::DeleteChannel {
+                channel_id,
+                reply_to,
+            } => handlers.handle_delete_channel(channel_id, reply_to),
             DBCommand::InsertChatLogs { logs, reply_to } => {
                 handlers.handle_insert_chat_logs(logs, reply_to)
             }
@@ -68,18 +71,93 @@ impl DBActor {
             }
             DBCommand::GetChannels { reply_to } => handlers.handle_get_channels(reply_to),
             DBCommand::GetTargetUsers { reply_to } => handlers.handle_get_target_users(reply_to),
-            DBCommand::AddTargetUser { user_id, description, reply_to } => {
-                handlers.handle_add_target_user(user_id, description, reply_to)
-            }
+            DBCommand::AddTargetUser {
+                user_id,
+                description,
+                reply_to,
+            } => handlers.handle_add_target_user(user_id, description, reply_to),
             DBCommand::RemoveTargetUser { user_id, reply_to } => {
                 handlers.handle_remove_target_user(user_id, reply_to)
             }
-            DBCommand::SearchChatLogs { filters, pagination, reply_to } => {
-                handlers.handle_search_chat_logs(filters, pagination, reply_to)
-            }
-            DBCommand::SearchEventLogs { filters, pagination, reply_to } => {
-                handlers.handle_search_event_logs(filters, pagination, reply_to)
-            }
+            DBCommand::SearchChatLogs {
+                filters,
+                pagination,
+                reply_to,
+            } => handlers.handle_search_chat_logs(filters, pagination, reply_to),
+            DBCommand::SearchEventLogs {
+                filters,
+                pagination,
+                reply_to,
+            } => handlers.handle_search_event_logs(filters, pagination, reply_to),
+            DBCommand::DeleteBroadcastSession {
+                broadcast_id,
+                reply_to,
+            } => handlers.handle_delete_broadcast_session(broadcast_id, reply_to),
+            DBCommand::SearchBroadcastSessions {
+                filters,
+                pagination,
+                reply_to,
+            } => handlers.handle_search_broadcast_sessions(filters, pagination, reply_to),
+            DBCommand::GetBroadcastSession {
+                broadcast_id,
+                reply_to,
+            } => handlers.handle_get_broadcast_session(broadcast_id, reply_to),
+            DBCommand::CreateReport {
+                broadcast_id,
+                reply_to,
+            } => handlers.handle_create_report(broadcast_id, reply_to),
+            DBCommand::UpdateReportStatus {
+                broadcast_id,
+                status,
+                progress_percentage,
+                error_message,
+                reply_to,
+            } => handlers.handle_update_report_status(
+                broadcast_id,
+                status,
+                progress_percentage,
+                error_message,
+                reply_to,
+            ),
+            DBCommand::UpdateReportData {
+                broadcast_id,
+                report_data,
+                reply_to,
+            } => handlers.handle_update_report_data(broadcast_id, report_data, reply_to),
+            DBCommand::GetReport {
+                broadcast_id,
+                reply_to,
+            } => handlers.handle_get_report(broadcast_id, reply_to),
+            DBCommand::DeleteReport {
+                broadcast_id,
+                reply_to,
+            } => handlers.handle_delete_report(broadcast_id, reply_to),
+            DBCommand::GetReportStatus {
+                broadcast_id,
+                reply_to,
+            } => handlers.handle_get_report_status(broadcast_id, reply_to),
+            DBCommand::GetChatLogsForReport {
+                broadcast_id,
+                start_time,
+                end_time,
+                reply_to,
+            } => handlers.handle_get_chat_logs_for_report(
+                broadcast_id,
+                start_time,
+                end_time,
+                reply_to,
+            ),
+            DBCommand::GetEventLogsForReport {
+                broadcast_id,
+                start_time,
+                end_time,
+                reply_to,
+            } => handlers.handle_get_event_logs_for_report(
+                broadcast_id,
+                start_time,
+                end_time,
+                reply_to,
+            ),
         }
     }
 }

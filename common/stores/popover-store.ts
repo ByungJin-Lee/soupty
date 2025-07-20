@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 
 export enum PopoverId {
-  ChatHeader = "chat-header",
+  UserInfo = "user-info",
   // 추후 다른 popover 추가 시 여기에 enum 값 추가
 }
 

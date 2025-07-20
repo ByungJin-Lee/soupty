@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::Serialize;
+use soup_sdk::chat::types::User;
 
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,8 +26,7 @@ pub struct ActiveChatterRankingData {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatterRankingItem {
-    pub user_id: String,
-    pub nickname: String,
+    pub user: User,
     pub chat_count: u32,
 }
 

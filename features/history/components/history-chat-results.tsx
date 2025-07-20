@@ -1,4 +1,5 @@
 import { Pagination } from "~/common/ui/pagination";
+import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { ChatLogResult } from "~/services/ipc/types";
 import { useHistoryChatFilterCtx } from "../context/history-chat-filter-context";
 import { useHistoryChatSearchContext } from "../context/history-chat-search-context";
@@ -11,12 +12,17 @@ type Props = {
 };
 
 const ChatLogItem: React.FC<Props> = ({ chatLog }) => {
+  const handleClick = useUserPopoverDispatch(chatLog.user);
+
   return (
     <div className="border-b border-gray-200 p-2 hover:bg-gray-50">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-medium text-blue-600">
+            <span
+              className="font-medium text-blue-600 underline cursor-pointer"
+              onClick={handleClick}
+            >
               {chatLog.user.label}
             </span>
             <span className="text-sm text-gray-500">{chatLog.channelName}</span>
