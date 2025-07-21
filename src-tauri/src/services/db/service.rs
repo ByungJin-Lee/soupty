@@ -4,7 +4,12 @@ use tokio::sync::{mpsc, oneshot};
 
 use crate::services::db::{
     actor::DBActor,
-    commands::{ChannelData, ChatLogData, DBCommand, EventLogData, ChatSearchFilters, EventSearchFilters, PaginationParams, ChatSearchResult, EventSearchResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult, BroadcastSessionResult, ReportInfo, ReportStatusInfo, ChatLogForReport, EventLogForReport},
+    commands::{
+        BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult,
+        ChannelData, ChatLogData, ChatLogResult, ChatSearchFilters, ChatSearchResult, DBCommand,
+        EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams,
+        ReportInfo, ReportStatusInfo,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -83,7 +88,6 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
-
     pub async fn upsert_channels(&self, channels: Vec<ChannelData>) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();
         self.sender
@@ -145,7 +149,11 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
-    pub async fn add_target_user(&self, user_id: String, description: Option<String>) -> Result<(), String> {
+    pub async fn add_target_user(
+        &self,
+        user_id: String,
+        description: Option<String>,
+    ) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();
         self.sender
             .send(DBCommand::AddTargetUser {
@@ -192,7 +200,7 @@ impl DBService {
         rx.await
             .map_err(|_| "Failed to receive response".to_string())?
     }
-    
+
     pub async fn search_event_logs(
         &self,
         filters: EventSearchFilters,
@@ -245,7 +253,10 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
-    pub async fn get_broadcast_session(&self, broadcast_id: i64) -> Result<Option<BroadcastSessionResult>, String> {
+    pub async fn get_broadcast_session(
+        &self,
+        broadcast_id: i64,
+    ) -> Result<Option<BroadcastSessionResult>, String> {
         let (tx, rx) = oneshot::channel();
         self.sender
             .send(DBCommand::GetBroadcastSession {
@@ -297,7 +308,11 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
-    pub async fn update_report_data(&self, broadcast_id: i64, report_data: String) -> Result<(), String> {
+    pub async fn update_report_data(
+        &self,
+        broadcast_id: i64,
+        report_data: String,
+    ) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();
         self.sender
             .send(DBCommand::UpdateReportData {
@@ -340,7 +355,10 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
-    pub async fn get_report_status(&self, broadcast_id: i64) -> Result<Option<ReportStatusInfo>, String> {
+    pub async fn get_report_status(
+        &self,
+        broadcast_id: i64,
+    ) -> Result<Option<ReportStatusInfo>, String> {
         let (tx, rx) = oneshot::channel();
         self.sender
             .send(DBCommand::GetReportStatus {
@@ -359,7 +377,7 @@ impl DBService {
         broadcast_id: i64,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
-    ) -> Result<Vec<ChatLogForReport>, String> {
+    ) -> Result<Vec<ChatLogResult>, String> {
         let (tx, rx) = oneshot::channel();
         self.sender
             .send(DBCommand::GetChatLogsForReport {
@@ -380,7 +398,7 @@ impl DBService {
         broadcast_id: i64,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
-    ) -> Result<Vec<EventLogForReport>, String> {
+    ) -> Result<Vec<EventLogResult>, String> {
         let (tx, rx) = oneshot::channel();
         self.sender
             .send(DBCommand::GetEventLogsForReport {

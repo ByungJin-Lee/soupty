@@ -1,6 +1,6 @@
+use chrono::{DateTime, Utc};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use chrono::{DateTime, Utc};
 
 use crate::services::addons::interface::AddonContext;
 
@@ -34,16 +34,15 @@ impl SessionManager {
         } else {
             // fallback: 현재 시간 사용
             let now = chrono::Utc::now();
-            (format!("Live Stream - {}", now.format("%Y-%m-%d %H:%M:%S")), now)
+            (
+                format!("Live Stream - {}", now.format("%Y-%m-%d %H:%M:%S")),
+                now,
+            )
         };
 
         let broadcast_id = ctx
             .db
-            .create_broadcast_session(
-                channel_id.to_string(),
-                title,
-                started_at,
-            )
+            .create_broadcast_session(channel_id.to_string(), title, started_at)
             .await
             .map_err(|e| {
                 eprintln!("[SessionManager] Failed to create broadcast session: {}", e);
@@ -70,7 +69,11 @@ impl SessionManager {
         *broadcast_id_guard
     }
 
-    pub async fn end_session(&self, ctx: &AddonContext, ended_at: DateTime<Utc>) -> Result<(), String> {
+    pub async fn end_session(
+        &self,
+        ctx: &AddonContext,
+        ended_at: DateTime<Utc>,
+    ) -> Result<(), String> {
         let broadcast_id = {
             let broadcast_id_guard = self.current_broadcast_id.lock().await;
             *broadcast_id_guard

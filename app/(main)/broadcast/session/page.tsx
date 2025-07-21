@@ -270,7 +270,8 @@ export default function BroadcastSessionDetailPage() {
         {/* 완성된 리포트 */}
         {report &&
           report.status === ReportStatus.COMPLETED &&
-          report.reportData && (
+          report.reportData &&
+          false && (
             <div className="space-y-6">
               {/* 요약 정보 */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

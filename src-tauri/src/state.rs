@@ -6,5 +6,5 @@ use crate::{controllers::main_controller::MainController, services::db::service:
 
 pub struct AppState {
     pub db: Arc<DBService>,
-    pub main_controller: Mutex<MainController>,
+    pub main_controller: Arc<Mutex<MainController>>,
 }

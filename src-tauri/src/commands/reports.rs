@@ -1,14 +1,17 @@
-use chrono::{DateTime, Duration, Utc};
+use chrono::{Duration, Utc};
 use serde_json;
 use std::sync::Arc;
 use tauri::State;
 use tokio::task;
 
 use crate::{
-    models::reports::{ReportData, ReportStatus},
+    models::reports::{ReportChunk, ReportStatus},
     services::db::commands::{ReportInfo, ReportStatusInfo},
     state::AppState,
+    util::reports::{create_report_chunk, create_report_data},
 };
+
+const CHUNK_SIZE: u32 = 30;
 
 #[tauri::command]
 pub async fn create_report(broadcast_id: i64, state: State<'_, AppState>) -> Result<(), String> {
@@ -62,8 +65,13 @@ async fn generate_report_background(
     broadcast_id: i64,
 ) -> Result<(), String> {
     // 상태를 GENERATING으로 변경
-    db.update_report_status(broadcast_id, ReportStatus::Generating.into(), Some(0.0), None)
-        .await?;
+    db.update_report_status(
+        broadcast_id,
+        ReportStatus::Generating.into(),
+        Some(0.0),
+        None,
+    )
+    .await?;
 
     // 방송 세션 정보 조회
     let broadcast_session = db
@@ -74,15 +82,14 @@ async fn generate_report_background(
     let start_time = broadcast_session.started_at;
     let end_time = broadcast_session.ended_at.unwrap_or_else(|| Utc::now());
 
-    // 10초 단위로 청크 생성
-    let chunk_duration = Duration::seconds(10);
+    let chunk_duration = Duration::seconds(CHUNK_SIZE as i64);
     let total_duration = end_time.signed_duration_since(start_time);
-    let total_chunks = (total_duration.num_seconds() as f64 / 10.0).ceil() as usize;
+    let total_chunks = (total_duration.num_seconds() as f64 / CHUNK_SIZE as f64).ceil() as usize;
 
     let mut current_time = start_time;
     let mut chunk_index = 0;
-    let mut all_chat_logs = Vec::new();
-    let mut all_event_logs = Vec::new();
+
+    let mut chunks: Vec<ReportChunk> = Vec::new();
 
     while current_time < end_time {
         let chunk_end = std::cmp::min(current_time + chunk_duration, end_time);
@@ -106,9 +113,7 @@ async fn generate_report_background(
             .get_event_logs_for_report(broadcast_id, current_time, chunk_end)
             .await?;
 
-        // 메모리에 누적 (실제로는 여기서 분석 작업을 수행)
-        all_chat_logs.extend(chat_logs);
-        all_event_logs.extend(event_logs);
+        chunks.push(create_report_chunk(&chat_logs, &event_logs));
 
         // 다음 청크로 이동
         current_time = chunk_end;
@@ -121,7 +126,7 @@ async fn generate_report_background(
     }
 
     // 리포트 데이터 생성
-    let report_data = create_report_data(&all_chat_logs, &all_event_logs, start_time, end_time)?;
+    let report_data = create_report_data(chunks, start_time, end_time, CHUNK_SIZE)?;
 
     // 리포트 데이터를 JSON으로 직렬화
     let report_json = serde_json::to_string(&report_data)
@@ -131,133 +136,13 @@ async fn generate_report_background(
     db.update_report_data(broadcast_id, report_json).await?;
 
     // 완료 상태로 업데이트
-    db.update_report_status(broadcast_id, ReportStatus::Completed.into(), Some(100.0), None)
-        .await?;
+    db.update_report_status(
+        broadcast_id,
+        ReportStatus::Completed.into(),
+        Some(100.0),
+        None,
+    )
+    .await?;
 
     Ok(())
-}
-
-fn create_report_data(
-    chat_logs: &[crate::services::db::commands::ChatLogForReport],
-    event_logs: &[crate::services::db::commands::EventLogForReport],
-    start_time: DateTime<Utc>,
-    end_time: DateTime<Utc>,
-) -> Result<ReportData, String> {
-    use crate::models::reports::*;
-    use std::collections::HashMap;
-
-    // 기본 통계 계산
-    let total_chat_count = chat_logs.len() as u64;
-    let total_event_count = event_logs.len() as u64;
-
-    let unique_users = chat_logs
-        .iter()
-        .map(|log| &log.user_id)
-        .collect::<std::collections::HashSet<_>>()
-        .len() as u64;
-
-    let duration_seconds = end_time.signed_duration_since(start_time).num_seconds() as u64;
-
-    // 채팅 분석
-    let mut user_message_count = HashMap::new();
-    let mut word_count = HashMap::new();
-
-    for log in chat_logs {
-        *user_message_count.entry(log.user_id.clone()).or_insert(0) += 1;
-
-        // 간단한 단어 분석 (공백 기준 분할)
-        for word in log.message.split_whitespace() {
-            *word_count.entry(word.to_lowercase()).or_insert(0) += 1;
-        }
-    }
-
-    let top_chatters = user_message_count
-        .into_iter()
-        .map(|(user_id, count)| {
-            let username = chat_logs
-                .iter()
-                .find(|log| log.user_id == user_id)
-                .map(|log| log.username.clone())
-                .unwrap_or_default();
-
-            UserStats {
-                user_id,
-                username,
-                message_count: count,
-                donation_amount: 0, // TODO: 도네이션 정보 계산
-            }
-        })
-        .collect::<Vec<_>>();
-
-    let popular_words = word_count
-        .into_iter()
-        .map(|(word, count)| WordCount { word, count })
-        .collect::<Vec<_>>();
-
-    // 이벤트 분석
-    let donation_total = 0u64;
-    let mut donation_count = 0u64;
-    let mut subscription_count = 0u64;
-    let mut moderation_stats = ModerationStats {
-        kicks: 0,
-        mutes: 0,
-        bans: 0,
-        freezes: 0,
-    };
-
-    for log in event_logs {
-        match log.event_type.as_str() {
-            "Donation" => {
-                donation_count += 1;
-                // TODO: payload에서 실제 도네이션 금액 파싱
-            }
-            "Subscribe" => subscription_count += 1,
-            "Kick" => moderation_stats.kicks += 1,
-            "Mute" => moderation_stats.mutes += 1,
-            "Black" => moderation_stats.bans += 1,
-            "Freeze" => moderation_stats.freezes += 1,
-            _ => {}
-        }
-    }
-
-    Ok(ReportData {
-        summary: ReportSummary {
-            total_chat_count,
-            total_event_count,
-            unique_users,
-            duration_seconds,
-            start_time,
-            end_time: Some(end_time),
-        },
-        chat_analysis: ChatAnalysis {
-            messages_per_minute: Vec::new(), // TODO: 시간별 분석
-            top_chatters,
-            chat_sentiment: SentimentAnalysis {
-                positive_ratio: 0.0, // TODO: 감정 분석
-                negative_ratio: 0.0,
-                neutral_ratio: 1.0,
-                overall_sentiment: "neutral".to_string(),
-            },
-            popular_words,
-        },
-        event_analysis: EventAnalysis {
-            donation_total,
-            donation_count,
-            subscription_count,
-            user_joins: event_logs
-                .iter()
-                .filter(|log| log.event_type == "Enter")
-                .count() as u64,
-            user_exits: event_logs
-                .iter()
-                .filter(|log| log.event_type == "Exit")
-                .count() as u64,
-            moderation_actions: moderation_stats,
-        },
-        time_analysis: TimeAnalysis {
-            activity_by_hour: Vec::new(), // TODO: 시간대별 분석
-            peak_activity_time: start_time,
-            quiet_periods: Vec::new(),
-        },
-    })
 }

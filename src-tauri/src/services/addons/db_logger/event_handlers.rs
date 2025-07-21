@@ -1,27 +1,25 @@
+use std::sync::Arc;
+
 use chrono::{DateTime, Utc};
 
 use crate::{
     models::events::*,
     services::{
         addons::interface::AddonContext,
-        db::commands::{ChatLogData, EventLogData, ChatMetadata, EmoticonMetadata},
+        db::commands::{ChatLogData, ChatMetadata, EmoticonMetadata, EventLogData},
     },
 };
 
 use super::user_flag::create_user_flag;
 
-use super::{
-    constants::*,
-    buffer::LogBuffer,
-    session_manager::SessionManager,
-};
+use super::{buffer::LogBuffer, constants::*, session_manager::SessionManager};
 
 pub struct EventProcessor {
-    session_manager: SessionManager,
+    session_manager: Arc<SessionManager>,
 }
 
 impl EventProcessor {
-    pub fn new(session_manager: SessionManager) -> Self {
+    pub fn new(session_manager: Arc<SessionManager>) -> Self {
         Self { session_manager }
     }
 
@@ -45,7 +43,6 @@ impl EventProcessor {
 
         // 사용자 플래그 계산
         let user_flag = create_user_flag(&event.user);
-
 
         // 채팅 로그 추가
         let message_type = match event.chat_type {
@@ -97,7 +94,6 @@ impl EventProcessor {
             .ensure_broadcast_session(ctx, channel_id)
             .await?;
 
-
         buffer.event_logs.push(EventLogData {
             broadcast_id,
             user_id: user_id.map(|s| s.to_string()),
@@ -136,7 +132,6 @@ impl EventProcessor {
             eprintln!("[EventProcessor] Skipping logs - no broadcast session");
             return Ok(());
         }
-
 
         // 채팅 로그 저장
         if !chat_logs.is_empty() {

@@ -6,7 +6,7 @@ use crate::services::db::commands::{
     ChannelData, ChatLogData, EventLogData, ChatSearchFilters, EventSearchFilters,
     PaginationParams, ChatSearchResult, EventSearchResult, ChatLogResult, EventLogResult,
     ChatMetadata, BroadcastSessionSearchFilters, BroadcastSessionSearchResult, BroadcastSessionResult,
-    ReportInfo, ReportStatusInfo, ChatLogForReport, EventLogForReport
+    ReportInfo, ReportStatusInfo,  
 };
 use crate::services::addons::db_logger::user_flag::parse_user_from_flag;
 use crate::util::hangul::decompose_hangul_to_string;
@@ -688,18 +688,18 @@ impl<'a> CommandHandlers<'a> {
             };
             format!(
                 "SELECT COUNT(*) FROM chat_logs_fts fts
-                 JOIN chat_logs cl ON fts.chat_log_id = cl.id
-                 JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
-                 JOIN channels c ON bs.channel_id = c.channel_id
-                 WHERE fts.message_jamo MATCH ?1 {}",
+                JOIN chat_logs cl ON fts.chat_log_id = cl.id
+                JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+                JOIN channels c ON bs.channel_id = c.channel_id
+                WHERE fts.message_jamo MATCH ?1 {}",
                 additional_where
             )
         } else {
             format!(
                 "SELECT COUNT(*) FROM chat_logs cl
-                 JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
-                 JOIN channels c ON bs.channel_id = c.channel_id
-                 {}",
+                JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+                JOIN channels c ON bs.channel_id = c.channel_id
+                {}",
                 where_clause
             )
         };
@@ -1024,7 +1024,7 @@ impl<'a> CommandHandlers<'a> {
         broadcast_id: i64,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
-        reply_to: oneshot::Sender<Result<Vec<ChatLogForReport>, String>>,
+        reply_to: oneshot::Sender<Result<Vec<ChatLogResult>, String>>,
     ) {
         let result = self.get_chat_logs_for_report(broadcast_id, start_time, end_time);
         let _ = reply_to.send(result);
@@ -1035,7 +1035,7 @@ impl<'a> CommandHandlers<'a> {
         broadcast_id: i64,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
-        reply_to: oneshot::Sender<Result<Vec<EventLogForReport>, String>>,
+        reply_to: oneshot::Sender<Result<Vec<EventLogResult>, String>>,
     ) {
         let result = self.get_event_logs_for_report(broadcast_id, start_time, end_time);
         let _ = reply_to.send(result);
@@ -1166,12 +1166,15 @@ impl<'a> CommandHandlers<'a> {
         broadcast_id: i64,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
-    ) -> Result<Vec<ChatLogForReport>, String> {
+    ) -> Result<Vec<ChatLogResult>, String> {
         let query = r#"
-            SELECT user_id, username, user_flag, message_type, message, timestamp
-            FROM chat_logs
-            WHERE broadcast_id = ?1 AND timestamp >= ?2 AND timestamp < ?3
-            ORDER BY timestamp ASC
+            SELECT cl.id, cl.broadcast_id, cl.user_id, cl.username, cl.user_flag, cl.message_type, 
+                    cl.message, cl.metadata, cl.timestamp, c.channel_id, c.channel_name, bs.title
+            FROM chat_logs cl
+            JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+            JOIN channels c ON bs.channel_id = c.channel_id
+            WHERE cl.broadcast_id = ?1 AND cl.timestamp >= ?2 AND cl.timestamp < ?3
+            ORDER BY cl.timestamp ASC
         "#;
 
         let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
@@ -1179,23 +1182,34 @@ impl<'a> CommandHandlers<'a> {
         let rows = stmt.query_map(
             (broadcast_id, start_time.to_rfc3339(), end_time.to_rfc3339()),
             |row| {
-                Ok(ChatLogForReport {
-                    user_id: row.get(0)?,
-                    username: row.get(1)?,
-                    user_flag: row.get(2)?,
-                    message_type: row.get(3)?,
-                    message: row.get(4)?,
-                    timestamp: row.get::<_, String>(5)?.parse().map_err(|_| rusqlite::Error::InvalidColumnType(5, "timestamp".to_string(), rusqlite::types::Type::Text))?,
-                })
-            }
-        ).map_err(|e| e.to_string())?;
+            let user_id: String = row.get(2)?;
+            let username: String = row.get(3)?;
+            let user_flag: u32 = row.get(4)?;
+            
+            Ok(ChatLogResult {
+                id: row.get(0)?,
+                broadcast_id: row.get(1)?,
+                user: parse_user_from_flag(user_flag, user_id, username),
+                message_type: row.get(5)?,
+                message: row.get(6)?,
+                metadata: {
+                    let metadata_str: String = row.get(7)?;
+                    if metadata_str.is_empty() {
+                        None
+                    } else {
+                        serde_json::from_str(&metadata_str).ok()
+                    }
+                },
+                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?)
+                    .unwrap()
+                    .with_timezone(&Utc),
+                channel_id: row.get(9)?,
+                channel_name: row.get(10)?,
+                broadcast_title: row.get(11)?,
+            })
+        }).map_err(|e| e.to_string())?;
 
-        let mut logs = Vec::new();
-        for row in rows {
-            logs.push(row.map_err(|e| e.to_string())?);
-        }
-
-        Ok(logs)
+        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
     }
 
     fn get_event_logs_for_report(
@@ -1203,12 +1217,15 @@ impl<'a> CommandHandlers<'a> {
         broadcast_id: i64,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
-    ) -> Result<Vec<EventLogForReport>, String> {
+    ) -> Result<Vec<EventLogResult>, String> {
         let query = r#"
-            SELECT user_id, username, user_flag, event_type, payload, timestamp
-            FROM event_logs
-            WHERE broadcast_id = ?1 AND timestamp >= ?2 AND timestamp < ?3
-            ORDER BY timestamp ASC
+            SELECT el.id, el.broadcast_id, el.user_id, el.username, el.user_flag, el.event_type, 
+                    el.payload, el.timestamp, c.channel_id, c.channel_name, bs.title
+            FROM event_logs el
+            JOIN broadcast_sessions bs ON el.broadcast_id = bs.id
+            JOIN channels c ON bs.channel_id = c.channel_id
+            WHERE el.broadcast_id = ?1 AND el.timestamp >= ?2 AND el.timestamp < ?3
+            ORDER BY el.timestamp ASC
         "#;
 
         let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
@@ -1216,22 +1233,30 @@ impl<'a> CommandHandlers<'a> {
         let rows = stmt.query_map(
             (broadcast_id, start_time.to_rfc3339(), end_time.to_rfc3339()),
             |row| {
-                Ok(EventLogForReport {
-                    user_id: row.get(0)?,
-                    username: row.get(1)?,
-                    user_flag: row.get(2)?,
-                    event_type: row.get(3)?,
-                    payload: row.get(4)?,
-                    timestamp: row.get::<_, String>(5)?.parse().map_err(|_| rusqlite::Error::InvalidColumnType(5, "timestamp".to_string(), rusqlite::types::Type::Text))?,
-                })
-            }
-        ).map_err(|e| e.to_string())?;
+                let user_id: Option<String> = row.get(2)?;
+            let username: Option<String> = row.get(3)?;
+            let user_flag: Option<u32> = row.get(4)?;
+            
+            let user = match (user_id, username, user_flag) {
+                (Some(id), Some(name), Some(flag)) => Some(parse_user_from_flag(flag, id, name)),
+                _ => None,
+            };
+            
+            Ok(EventLogResult {
+                id: row.get(0)?,
+                broadcast_id: row.get(1)?,
+                user,
+                event_type: row.get(5)?,
+                payload: row.get(6)?,
+                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
+                    .unwrap()
+                    .with_timezone(&Utc),
+                channel_id: row.get(8)?,
+                channel_name: row.get(9)?,
+                broadcast_title: row.get(10)?,
+            })   
+        }).map_err(|e| e.to_string())?;
 
-        let mut logs = Vec::new();
-        for row in rows {
-            logs.push(row.map_err(|e| e.to_string())?);
-        }
-
-        Ok(logs)
+        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
     }
 }

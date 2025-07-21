@@ -1,6 +1,7 @@
 "use client";
 
 import { Star } from "react-feather";
+import { ClipboardButton } from "~/common/ui/clipboard-button";
 import {
   PopoverContentProps,
   PopoverId,
@@ -23,7 +24,10 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
       <div className="flex justify-between items-center">
         <div>
           <h3 className="font-semibold text-gray-900">{userInfo.label}</h3>
-          <p className="text-sm text-gray-500">{userInfo.userId}</p>
+          <p className="text-sm text-gray-500">
+            {userInfo.userId}
+            <ClipboardButton value={userInfo.userId} />
+          </p>
         </div>
         <button
           onClick={handleToggleTargetUser}

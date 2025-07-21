@@ -3,13 +3,13 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use uuid::Uuid;
 use tauri::async_runtime::spawn;
+use uuid::Uuid;
 
 use crate::{
     controllers::{
-        event_bus::{EventBusManager, SystemEvent},
         constants::ADDON_MANAGER_SUBSCRIBER,
+        event_bus::{EventBusManager, SystemEvent},
     },
     models::events::{DomainEvent, MetadataEvent},
     services::addons::interface::{Addon, AddonContext},
@@ -34,17 +34,17 @@ impl AddonManager {
             event_bus: None,
         }
     }
-    
+
     pub fn with_event_bus(mut self, event_bus: EventBusManager) -> Self {
         self.event_bus = Some(event_bus);
         self
     }
-    
+
     pub async fn start_event_listener(&self) {
         if let Some(event_bus) = &self.event_bus {
             let mut receiver = event_bus.subscribe(ADDON_MANAGER_SUBSCRIBER).await;
             let addons = self.addons.clone();
-            
+
             spawn(async move {
                 while let Some(event) = receiver.recv().await {
                     match event {
@@ -59,7 +59,7 @@ impl AddonManager {
                                     channel_id: metadata.channel_id.clone(),
                                     id: Uuid::new_v4(),
                                 };
-                                
+
                                 addon.on_metadata_update(&context, &event).await;
                             }
                         }
@@ -79,13 +79,6 @@ impl AddonManager {
         let name = addon.name();
         addons.insert(name.to_string(), addon);
         println!("[AddonManager] '{}' 애드온이 등록되었습니다.", name);
-    }
-
-    pub fn unregister(&self, name: &str) {
-        let mut addons = self.addons.lock().unwrap();
-        if addons.remove(name).is_some() {
-            println!("[AddonManager] '{}' 애드온이 해제되었습니다.", name);
-        }
     }
 
     // 이벤트를 모든 구독자에게 분배(dispatch)합니다.
@@ -122,25 +115,6 @@ impl AddonManager {
                 _ => {
                     log::warn!("Unhandled event: {:?}", event);
                 }
-            }
-        }
-    }
-
-    // 메타데이터 업데이트를 모든 애드온에게 알림
-    pub async fn notify_metadata_update(&self, context: &AddonContext) {
-        if let Some(metadata) = &context.broadcast_metadata {
-            let event = MetadataEvent {
-                title: metadata.title.clone(),
-                started_at: metadata.started_at,
-                viewer_count: metadata.viewer_count,
-                timestamp: metadata.timestamp,
-                channel_id: metadata.channel_id.clone(),
-                id: Uuid::new_v4(),
-            };
-
-            let addons_clone = self.addons.lock().unwrap().clone();
-            for addon in addons_clone.values() {
-                addon.on_metadata_update(context, &event).await;
             }
         }
     }

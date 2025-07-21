@@ -46,63 +46,103 @@ pub struct Report {
     pub version: i32,
     pub error_message: Option<String>,
     pub progress_percentage: Option<f64>,
-    pub generated_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportData {
-    pub summary: ReportSummary,
+    pub metadata: ReportMetadata,
+    pub user_analysis: UserAnalysis,
     pub chat_analysis: ChatAnalysis,
-    pub event_analysis: EventAnalysis,
-    pub time_analysis: TimeAnalysis,
+    // pub event_analysis: EventAnalysis,
+    // pub moderation_analysis: ModerationAnalysis,
+    pub chunks: Vec<ReportChunk>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct ReportSummary {
-    pub total_chat_count: u64,
-    pub total_event_count: u64,
-    pub unique_users: u64,
+pub struct ReportChunk {
+    pub user: UserVital,
+    pub chat: ChatVital,
+    // pub event: EventVital,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReportMetadata {
     pub duration_seconds: u64,
     pub start_time: DateTime<Utc>,
     pub end_time: Option<DateTime<Utc>>,
+    /**
+     * 한 청크당 몇 초인지를 의미합니다.
+     */
+    pub chunk_size: u32,
 }
+
+// #[derive(Debug, Clone, Serialize, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct EventAnalysis {
+//     /**
+//      * metadata updated 이벤트는 집계하지 않음
+//      */
+//     pub total_count: u64,
+//     pub donation_total: u64,
+//     pub donation_count: u64,
+//     pub subscription_count: u64,
+// }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatAnalysis {
-    pub messages_per_minute: Vec<TimeSeriesPoint>,
+    // pub summary: AnalysisSummary,
+    pub total_count: u64,
+    // pub top_chatters: Vec<UserStats>,
+    // pub popular_words: Vec<WordCount>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserAnalysis {
+    pub unique_count: u32,
+    pub subscriber_count: u32,
+    pub fan_count: u32,
+    pub normal_count: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ChatVital {
+    pub total_count: usize,
     pub top_chatters: Vec<UserStats>,
-    pub chat_sentiment: SentimentAnalysis,
+    // pub chat_sentiment: SentimentAnalysis,
     pub popular_words: Vec<WordCount>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EventAnalysis {
-    pub donation_total: u64,
-    pub donation_count: u64,
-    pub subscription_count: u64,
-    pub user_joins: u64,
-    pub user_exits: u64,
-    pub moderation_actions: ModerationStats,
+pub struct UserVital {
+    pub unique_count: u32,
+    pub subscriber_count: u32,
+    pub fan_count: u32,
+    pub normal_count: u32,
 }
+
+// #[derive(Debug, Clone, Serialize, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct EventVital {
+//     pub unique_count: u32,
+//     pub subscriber_count: u32,
+//     pub fan_count: u32,
+//     pub normal_count: u32,
+// }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TimeAnalysis {
-    pub activity_by_hour: Vec<TimeSeriesPoint>,
-    pub peak_activity_time: DateTime<Utc>,
-    pub quiet_periods: Vec<TimeRange>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TimeSeriesPoint {
-    pub timestamp: DateTime<Utc>,
-    pub value: f64,
+pub struct AnalysisSummary {
+    pub avg: f32,
+    pub max: f32,
+    pub min: f32,
+    pub total: f32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -135,13 +175,6 @@ pub struct ModerationStats {
     pub mutes: u64,
     pub bans: u64,
     pub freezes: u64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct TimeRange {
-    pub start: DateTime<Utc>,
-    pub end: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

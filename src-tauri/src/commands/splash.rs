@@ -99,8 +99,9 @@ pub async fn setup_app_state(app_handle: AppHandle) -> Result<(), String> {
     let db_service = app_handle.state::<Arc<DBService>>().inner().clone();
 
     // MainController 초기화
-    let main_controller =
-        tokio::sync::Mutex::new(crate::controllers::main_controller::MainController::new());
+    let main_controller = std::sync::Arc::new(
+        tokio::sync::Mutex::new(crate::controllers::main_controller::MainController::new())
+    );
 
     // AppState 생성
     let app_state = AppState {

@@ -21,14 +21,14 @@ use user_flag::create_user_flag;
 
 pub struct DBLoggerAddon {
     buffer: Arc<Mutex<LogBuffer>>,
-    session_manager: SessionManager,
+    session_manager: Arc<SessionManager>,
     event_processor: EventProcessor,
 }
 
 impl DBLoggerAddon {
     pub fn new() -> Self {
-        let session_manager = SessionManager::new();
-        let event_processor = EventProcessor::new(SessionManager::new());
+        let session_manager = Arc::new(SessionManager::new());
+        let event_processor = EventProcessor::new(session_manager.clone());
 
         Self {
             buffer: Arc::new(Mutex::new(LogBuffer::default())),
@@ -172,8 +172,8 @@ impl Addon for DBLoggerAddon {
             .process_event_log(
                 ctx,
                 &event.channel_id,
-                Some(&event.user.id),    // user_id
-                Some(&event.user.label), // username
+                Some(&event.user.id),                // user_id
+                Some(&event.user.label),             // username
                 Some(create_user_flag(&event.user)), // user_flag
                 EVENT_TYPE_MUTE,
                 event,

@@ -1,3 +1,4 @@
+import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import {
   BlackEvent,
   FreezeEvent,
@@ -67,6 +68,8 @@ export const KickCancelRow: React.FC<KickCancelProps> = ({ data }) => {
 };
 
 export const MuteRow: React.FC<MuteProps> = ({ data }) => {
+  const handleClick = useUserPopoverDispatch(data.user);
+
   return (
     <div className="my-1 mx-2 p-3 rounded-xl bg-gradient-to-r from-red-700 via-red-800 to-rose-800 shadow-lg shadow-red-400/30 border border-red-600 transform hover:scale-[1.02] transition-all duration-200">
       {/* 헤더 */}
@@ -91,7 +94,10 @@ export const MuteRow: React.FC<MuteProps> = ({ data }) => {
       <div className="flex flex-col justify-between">
         <div className="flex items-center gap-2">
           <span className="text-sm text-red-300">대상:</span>
-          <span className="font-semibold text-red-100 text-sm bg-red-600/70 px-3 py-0.5 rounded-lg">
+          <span
+            className="font-semibold underline cursor-pointer text-red-100 text-sm bg-red-600/70 px-3 py-0.5 rounded-lg"
+            onClick={handleClick}
+          >
             {data.user.label}
           </span>
         </div>
@@ -148,11 +154,20 @@ export const FreezeRow: React.FC<FreezeProps> = ({ data }) => {
         </div>
       </div>
       {data.freezed && (
-        <div className="text-center">
-          <span className="text-sm font-medium text-red-100 bg-red-600/70 px-2 py-1 rounded-lg mt-2">
+        <div className="text-center text-sm font-medium">
+          <span className="text-red-100 bg-red-600/70 px-2 py-1 rounded-lg mt-2">
             구독 {data.limitSubscriptionMonth}개월, 별풍선 {data.limitBalloons}
             개 이상
           </span>
+          {data.targets.length > 0 ? (
+            <div className="text-white-100 bg-blue-500/20 px-2 py-1 rounded-lg mt-2">
+              {data.targets.map((v) => (
+                <span className="p-1" key={v}>
+                  {v}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       )}
     </div>

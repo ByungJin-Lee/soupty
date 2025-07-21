@@ -129,13 +129,13 @@ pub enum DBCommand {
         broadcast_id: i64,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
-        reply_to: oneshot::Sender<Result<Vec<ChatLogForReport>, String>>,
+        reply_to: oneshot::Sender<Result<Vec<ChatLogResult>, String>>,
     },
     GetEventLogsForReport {
         broadcast_id: i64,
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
-        reply_to: oneshot::Sender<Result<Vec<EventLogForReport>, String>>,
+        reply_to: oneshot::Sender<Result<Vec<EventLogResult>, String>>,
     },
 }
 
@@ -322,27 +322,4 @@ pub struct ReportStatusInfo {
     pub status: String,
     pub progress_percentage: Option<f64>,
     pub error_message: Option<String>,
-}
-
-// 리포트 생성용 로그 구조체 (간소화된 버전)
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ChatLogForReport {
-    pub user_id: String,
-    pub username: String,
-    pub user_flag: u32,
-    pub message_type: String,
-    pub message: String,
-    pub timestamp: DateTime<Utc>,
-}
-
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EventLogForReport {
-    pub user_id: Option<String>,
-    pub username: Option<String>,
-    pub user_flag: Option<u32>,
-    pub event_type: String,
-    pub payload: String,
-    pub timestamp: DateTime<Utc>,
 }
