@@ -281,81 +281,50 @@ export interface ReportStatusInfo {
 
 export enum ReportStatus {
   PENDING = "PENDING",
-  GENERATING = "GENERATING", 
+  GENERATING = "GENERATING",
   COMPLETED = "COMPLETED",
   FAILED = "FAILED",
 }
 
 export interface ReportData {
-  summary: ReportSummary;
+  metadata: ReportMetadata;
+  chunks: ReportChunk[];
   chatAnalysis: ChatAnalysis;
-  eventAnalysis: EventAnalysis;
-  timeAnalysis: TimeAnalysis;
+  userAnalysis: UserAnalysis;
 }
 
-export interface ReportSummary {
-  totalChatCount: number;
-  totalEventCount: number;
-  uniqueUsers: number;
+export interface UserAnalysis {
+  uniqueCount: number;
+  normalCount: number;
+  subscriberCount: number;
+  fanCount: number;
+}
+
+export interface ChatAnalysis {
+  totalCount: number;
+}
+
+export interface ReportMetadata {
+  chunkSize: number;
   durationSeconds: number;
   startTime: string;
   endTime?: string;
 }
 
-export interface ChatAnalysis {
-  messagesPerMinute: TimeSeriesPoint[];
-  topChatters: UserStats[];
-  chatSentiment: SentimentAnalysis;
-  popularWords: WordCount[];
+export interface ReportChunk {
+  user: UserVital;
+  chat: ChatVital;
 }
 
-export interface EventAnalysis {
-  donationTotal: number;
-  donationCount: number;
-  subscriptionCount: number;
-  userJoins: number;
-  userExits: number;
-  moderationActions: ModerationStats;
+export interface ChatVital {
+  popularWords: unknown[];
+  topChatters: unknown[];
+  totalCount: number;
 }
 
-export interface TimeAnalysis {
-  activityByHour: TimeSeriesPoint[];
-  peakActivityTime: string;
-  quietPeriods: TimeRange[];
-}
-
-export interface TimeSeriesPoint {
-  timestamp: string;
-  value: number;
-}
-
-export interface UserStats {
-  userId: string;
-  username: string;
-  messageCount: number;
-  donationAmount: number;
-}
-
-export interface SentimentAnalysis {
-  positiveRatio: number;
-  negativeRatio: number;
-  neutralRatio: number;
-  overallSentiment: string;
-}
-
-export interface WordCount {
-  word: string;
-  count: number;
-}
-
-export interface ModerationStats {
-  kicks: number;
-  mutes: number;
-  bans: number;
-  freezes: number;
-}
-
-export interface TimeRange {
-  start: string;
-  end: string;
+export interface UserVital {
+  fanCount: number;
+  normalCount: number;
+  subscriberCount: number;
+  uniqueCount: number;
 }

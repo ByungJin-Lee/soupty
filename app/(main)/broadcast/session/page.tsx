@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { formatTimestamp } from "~/features/history/utils/format";
+import { UserDistributionChart } from "~/features/report/components/user-distribution-chart";
 import { getBroadcastSessionDetail } from "~/services/ipc/broadcast-session";
 import {
   createReport,
@@ -167,7 +168,7 @@ export default function BroadcastSessionDetailPage() {
   console.log(report);
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto flex-1 overflow-y-scroll invisible-scrollbar">
       {/* 헤더 */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -270,8 +271,7 @@ export default function BroadcastSessionDetailPage() {
         {/* 완성된 리포트 */}
         {report &&
           report.status === ReportStatus.COMPLETED &&
-          report.reportData &&
-          false && (
+          report.reportData && (
             <div className="space-y-6">
               {/* 요약 정보 */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -280,7 +280,7 @@ export default function BroadcastSessionDetailPage() {
                     총 채팅 수
                   </dt>
                   <dd className="mt-1 text-2xl font-semibold text-gray-900">
-                    {report.reportData.summary.totalChatCount.toLocaleString()}
+                    {report.reportData.chatAnalysis.totalCount}
                   </dd>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -288,7 +288,7 @@ export default function BroadcastSessionDetailPage() {
                     총 이벤트 수
                   </dt>
                   <dd className="mt-1 text-2xl font-semibold text-gray-900">
-                    {report.reportData.summary.totalEventCount.toLocaleString()}
+                    0
                   </dd>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -296,7 +296,7 @@ export default function BroadcastSessionDetailPage() {
                     참여 사용자
                   </dt>
                   <dd className="mt-1 text-2xl font-semibold text-gray-900">
-                    {report.reportData.summary.uniqueUsers.toLocaleString()}
+                    0
                   </dd>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -305,12 +305,14 @@ export default function BroadcastSessionDetailPage() {
                   </dt>
                   <dd className="mt-1 text-2xl font-semibold text-gray-900">
                     {Math.floor(
-                      report.reportData.summary.durationSeconds / 3600
+                      report.reportData.metadata.durationSeconds / 3600
                     )}
                     시간
                   </dd>
                 </div>
               </div>
+
+              <UserDistributionChart chunks={report.reportData.chunks} />
 
               {/* 이벤트 분석 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -321,24 +323,15 @@ export default function BroadcastSessionDetailPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-600">총 도네이션:</span>
-                      <span className="font-medium">
-                        {report.reportData.eventAnalysis.donationTotal.toLocaleString()}
-                        원
-                      </span>
+                      <span className="font-medium">0 원</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">도네이션 횟수:</span>
-                      <span className="font-medium">
-                        {report.reportData.eventAnalysis.donationCount.toLocaleString()}
-                        회
-                      </span>
+                      <span className="font-medium">0 회</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">구독자 수:</span>
-                      <span className="font-medium">
-                        {report.reportData.eventAnalysis.subscriptionCount.toLocaleString()}
-                        명
-                      </span>
+                      <span className="font-medium">0</span>
                     </div>
                   </div>
                 </div>
@@ -350,24 +343,18 @@ export default function BroadcastSessionDetailPage() {
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-gray-600">입장 사용자:</span>
-                      <span className="font-medium">
-                        {report.reportData.eventAnalysis.userJoins.toLocaleString()}
-                        명
-                      </span>
+                      <span className="font-medium">0 명</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">퇴장 사용자:</span>
-                      <span className="font-medium">
-                        {report.reportData.eventAnalysis.userExits.toLocaleString()}
-                        명
-                      </span>
+                      <span className="font-medium">0 명</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* 상위 채터 */}
-              {report.reportData.chatAnalysis.topChatters.length > 0 && (
+              {/* {report.reportData.chatAnalysis.topChatters.length > 0 && (
                 <div>
                   <h3 className="text-md font-medium text-gray-900 mb-3">
                     상위 채팅 사용자
@@ -395,7 +382,7 @@ export default function BroadcastSessionDetailPage() {
                       ))}
                   </div>
                 </div>
-              )}
+              )} */}
             </div>
           )}
 

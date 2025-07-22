@@ -150,7 +150,7 @@ pub fn create_report_data(
             end_time: Some(end_time),
             chunk_size,
         },
-        chat_analysis: ChatAnalysis { total_count: 0 },
+        chat_analysis: ChatAnalysis { total_count: chunks.iter().map(|c| c.chat.total_count as u64).sum() },
         user_analysis: UserAnalysis {
             unique_count: 0,
             subscriber_count: 0,
