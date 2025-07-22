@@ -54,8 +54,6 @@ pub struct ReportData {
     pub metadata: ReportMetadata,
     pub user_analysis: UserAnalysis,
     pub chat_analysis: ChatAnalysis,
-    // pub event_analysis: EventAnalysis,
-    // pub moderation_analysis: ModerationAnalysis,
     pub chunks: Vec<ReportChunk>,
 }
 
@@ -64,6 +62,7 @@ pub struct ReportData {
 pub struct ReportChunk {
     pub user: UserVital,
     pub chat: ChatVital,
+    pub viewer_count: Option<u64>,
     // pub event: EventVital,
 }
 
@@ -126,15 +125,6 @@ pub struct UserVital {
     pub fan_count: u32,
     pub normal_count: u32,
 }
-
-// #[derive(Debug, Clone, Serialize, Deserialize)]
-// #[serde(rename_all = "camelCase")]
-// pub struct EventVital {
-//     pub unique_count: u32,
-//     pub subscriber_count: u32,
-//     pub fan_count: u32,
-//     pub normal_count: u32,
-// }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

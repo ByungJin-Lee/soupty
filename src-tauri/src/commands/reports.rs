@@ -90,6 +90,7 @@ async fn generate_report_background(
     let mut chunk_index = 0;
 
     let mut chunks: Vec<ReportChunk> = Vec::new();
+    let mut all_chat_logs = Vec::new();
 
     while current_time < end_time {
         let chunk_end = std::cmp::min(current_time + chunk_duration, end_time);
@@ -114,6 +115,7 @@ async fn generate_report_background(
             .await?;
 
         chunks.push(create_report_chunk(&chat_logs, &event_logs));
+        all_chat_logs.extend(chat_logs);
 
         // 다음 청크로 이동
         current_time = chunk_end;
@@ -126,7 +128,7 @@ async fn generate_report_background(
     }
 
     // 리포트 데이터 생성
-    let report_data = create_report_data(chunks, start_time, end_time, CHUNK_SIZE)?;
+    let report_data = create_report_data(chunks, start_time, end_time, CHUNK_SIZE, &all_chat_logs)?;
 
     // 리포트 데이터를 JSON으로 직렬화
     let report_json = serde_json::to_string(&report_data)

@@ -1,14 +1,70 @@
 import { ChartOptions } from "chart.js";
 
-export const lineChartOptions = (xMax: number): ChartOptions<"line"> => ({
+// 공통 X축 틱 설정
+export const getCommonXAxisTicks = (xMax: number, startAt: Date) => ({
+  display: true,
+  maxRotation: 0,
+  color: "#6b7280",
+  autoSkip: true,
+  maxTicksLimit: 20,
+  stepSize: Math.max(1, Math.floor(xMax / 20)),
+  font: {
+    family: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+    size: 11,
+  },
+  callback: function (value: any) {
+    const chunkIndex = Number(value);
+    const timeFromStart = chunkIndex * 30 * 1000; // 30초 * 1000ms
+    const currentTime = new Date(startAt.getTime() + timeFromStart);
+    const hours = currentTime.getHours().toString().padStart(2, "0");
+    const minutes = currentTime.getMinutes().toString().padStart(2, "0");
+    const seconds = currentTime.getSeconds().toString().padStart(2, "0");
+    return `${hours}:${minutes}:${seconds}`;
+  },
+});
+
+// 공통 Y축 틱 설정
+export const getCommonYAxisTicks = () => ({
+  color: "#6b7280",
+  font: {
+    family: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+    size: 11,
+  },
+  maxTicksLimit: 8,
+});
+
+// 공통 tooltip 제목 콜백
+export const getCommonTooltipTitle = (startAt: Date) => (tooltipItems: any[]) => {
+  const chunkIndex = tooltipItems[0].dataIndex;
+  const timeFromStart = chunkIndex * 30 * 1000; // 30초 * 1000ms
+  const currentTime = new Date(startAt.getTime() + timeFromStart);
+  const hours = currentTime.getHours().toString().padStart(2, "0");
+  const minutes = currentTime.getMinutes().toString().padStart(2, "0");
+  const seconds = currentTime.getSeconds().toString().padStart(2, "0");
+  return `시간: ${hours}:${minutes}:${seconds}`;
+};
+
+// 공통 decimation 설정
+export const getCommonDecimation = (xMax: number) => ({
+  enabled: xMax > 1000,
+  algorithm: "lttb" as const,
+  samples: Math.min(1000, xMax),
+  threshold: Math.min(500, xMax / 2),
+});
+
+export const reportLineChartOptions = (
+  xMax: number,
+  startAt: Date,
+  borderColor: string = "#10b981"
+): ChartOptions<"line"> => ({
   responsive: false,
   animation: false,
   parsing: false,
-  // interaction: {
-  //   mode: "nearest",
-  //   axis: "x",
-  //   intersect: false,
-  // },
+  interaction: {
+    mode: "nearest",
+    axis: "x",
+    intersect: false,
+  },
   spanGaps: true,
   scales: {
     x: {
@@ -18,25 +74,23 @@ export const lineChartOptions = (xMax: number): ChartOptions<"line"> => ({
       grid: {
         display: false,
       },
-      ticks: {
-        // display: false,
-        maxRotation: 0,
-        color: "#6b7280",
-        autoSkip: true,
-        font: {
-          family: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-          size: 12,
-        },
-      },
+      ticks: getCommonXAxisTicks(xMax, startAt),
       max: xMax,
     },
     y: {
       type: "linear",
       beginAtZero: true,
-      display: false,
-      suggestedMax: (context) => {
+      display: true,
+      position: "left",
+      grid: {
+        display: true,
+        color: "rgba(0, 0, 0, 0.05)",
+        lineWidth: 1,
+      },
+      ticks: getCommonYAxisTicks(),
+      suggestedMax: (context: any) => {
         const max = Math.max(
-          ...(context.chart.data.datasets[0].data.map((d) => d.y) as number[])
+          ...(context.chart.data.datasets[0].data.map((d: any) => d.y) as number[])
         );
         return max * 1.1;
       },
@@ -52,39 +106,153 @@ export const lineChartOptions = (xMax: number): ChartOptions<"line"> => ({
     legend: {
       display: false,
     },
-    decimation: {
-      enabled: true,
-      algorithm: "min-max",
-    },
+    decimation: getCommonDecimation(xMax),
     datalabels: {
-      display: true,
+      display: (context: any) => {
+        const dataLength = context.chart.data.datasets[0].data.length;
+        const sampleRate = Math.max(1, Math.floor(dataLength / 50));
+        const yValue = context.dataset.data[context.dataIndex]?.y || 0;
+        return context.dataIndex % sampleRate === 0 && yValue > 0;
+      },
       anchor: "end",
       align: "top",
       font: {
         weight: "bold",
-        size: 12,
-        // family: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
+        size: 10,
+        family: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
       },
       color: "#374151",
-      formatter: ({ y }: { y: number }) => {
-        return y > 0 ? y : "";
+      formatter: (_value: any, context: any) => {
+        const yValue = context.dataset.data[context.dataIndex]?.y || 0;
+        return yValue > 0 ? yValue.toLocaleString() : "";
       },
+      offset: 4,
     },
     tooltip: {
-      enabled: false,
+      enabled: true,
+      mode: "nearest",
+      intersect: false,
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      titleColor: "#ffffff",
+      bodyColor: "#ffffff",
+      borderColor,
+      borderWidth: 1,
+      cornerRadius: 6,
+      displayColors: false,
+      callbacks: {
+        title: getCommonTooltipTitle(startAt),
+        label: (context: any) => {
+          const value = context.dataset.data[context.dataIndex]?.y || 0;
+          return `값: ${value.toLocaleString()}`;
+        },
+      },
     },
   },
   elements: {
     point: {
-      // radius: 0,
-      // radius: 6,
-      // hoverRadius: 8,
-      // borderWidth: 3,
-      // backgroundColor: "#ffffff",
+      radius: 0,
+      hoverRadius: 4,
+      borderWidth: 2,
+      backgroundColor: "#ffffff",
+      hoverBackgroundColor: "#ffffff",
+      hoverBorderWidth: 2,
     },
     line: {
-      tension: 0.4,
-      // borderWidth: 3,
+      tension: 0.3,
+      borderWidth: 2,
+    },
+  },
+});
+
+export const userDistributionChartOptions = (
+  xMax: number,
+  startAt: Date
+): ChartOptions<"line"> => ({
+  responsive: false,
+  animation: false,
+  parsing: false,
+  interaction: {
+    mode: "index",
+    intersect: false,
+  },
+  spanGaps: true,
+  scales: {
+    x: {
+      offset: false,
+      type: "linear",
+      display: true,
+      grid: {
+        display: false,
+      },
+      ticks: getCommonXAxisTicks(xMax, startAt),
+      max: xMax,
+    },
+    y: {
+      type: "linear",
+      beginAtZero: true,
+      display: true,
+      position: "left",
+      grid: {
+        display: true,
+        color: "rgba(0, 0, 0, 0.05)",
+        lineWidth: 1,
+      },
+      ticks: getCommonYAxisTicks(),
+    },
+  },
+  layout: {
+    padding: {
+      top: 20,
+      bottom: 10,
+    },
+  },
+  plugins: {
+    legend: {
+      display: false,
+    },
+    decimation: getCommonDecimation(xMax),
+    datalabels: {
+      display: false,
+    },
+    tooltip: {
+      enabled: true,
+      mode: "index",
+      intersect: false,
+      backgroundColor: "rgba(0, 0, 0, 0.8)",
+      titleColor: "#ffffff",
+      bodyColor: "#ffffff",
+      borderColor: "#6366f1",
+      borderWidth: 1,
+      cornerRadius: 6,
+      displayColors: true,
+      callbacks: {
+        title: getCommonTooltipTitle(startAt),
+        label: (context: any) => {
+          const value = context.dataset.data[context.dataIndex]?.y || 0;
+          const labelMap: { [key: string]: string } = {
+            "전체 유니크": "총합",
+            "구독자": "구독자",
+            "팬": "팬",
+            "일반": "일반",
+          };
+          const label = labelMap[context.dataset.label] || context.dataset.label;
+          return `${label}: ${value.toLocaleString()}`;
+        },
+      },
+    },
+  },
+  elements: {
+    point: {
+      radius: 0,
+      hoverRadius: 4,
+      borderWidth: 2,
+      backgroundColor: "#ffffff",
+      hoverBackgroundColor: "#ffffff",
+      hoverBorderWidth: 2,
+    },
+    line: {
+      tension: 0.3,
+      borderWidth: 2,
     },
   },
 });

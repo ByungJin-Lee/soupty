@@ -314,6 +314,7 @@ export interface ReportMetadata {
 export interface ReportChunk {
   user: UserVital;
   chat: ChatVital;
+  viewerCount?: number;
 }
 
 export interface ChatVital {

@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { formatTimestamp } from "~/features/history/utils/format";
+import { ReportLineChart } from "~/features/report/components/report-line-chart";
 import { UserDistributionChart } from "~/features/report/components/user-distribution-chart";
 import { getBroadcastSessionDetail } from "~/services/ipc/broadcast-session";
 import {
@@ -312,7 +313,23 @@ export default function BroadcastSessionDetailPage() {
                 </div>
               </div>
 
-              <UserDistributionChart chunks={report.reportData.chunks} />
+              <ReportLineChart
+                startAt={report.reportData.metadata.startTime}
+                chunks={report.reportData.chunks}
+                getter={(v) => v.chat.totalCount}
+              />
+
+              <ReportLineChart
+                startAt={report.reportData.metadata.startTime}
+                chunks={report.reportData.chunks}
+                getter={(v) => v.viewerCount || 0}
+                color="red"
+              />
+
+              <UserDistributionChart
+                startAt={report.reportData.metadata.startTime}
+                chunks={report.reportData.chunks}
+              />
 
               {/* 이벤트 분석 */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

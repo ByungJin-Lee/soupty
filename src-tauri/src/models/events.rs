@@ -75,7 +75,7 @@ pub struct ChatEvent {
     pub ogq: Option<Emoticon>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MetadataEvent {
     pub title: String,
