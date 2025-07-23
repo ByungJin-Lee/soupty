@@ -2,9 +2,8 @@
 
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { formatTimestamp } from "~/features/history/utils/format";
-import { ReportLineChart } from "~/features/report/components/report-line-chart";
-import { UserDistributionChart } from "~/features/report/components/user-distribution-chart";
+import { BroadcastSessionHeader } from "~/features/report/components/broadcast-session-header";
+import { Report } from "~/features/report/components/report";
 import { getBroadcastSessionDetail } from "~/services/ipc/broadcast-session";
 import {
   createReport,
@@ -166,57 +165,9 @@ export default function BroadcastSessionDetailPage() {
     );
   }
 
-  console.log(report);
-
   return (
-    <div className="p-6 max-w-4xl mx-auto flex-1 overflow-y-scroll invisible-scrollbar">
-      {/* 헤더 */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">{session.title}</h1>
-          {!session.endedAt && (
-            <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-              진행 중
-            </span>
-          )}
-        </div>
-        <div className="text-gray-600">
-          <span className="font-medium">채널:</span> {session.channelName}
-        </div>
-      </div>
-
-      {/* 기본 정보 */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">기본 정보</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <dt className="text-sm font-medium text-gray-500">세션 ID</dt>
-            <dd className="mt-1 text-sm text-gray-900 font-mono">
-              {session.id}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-500">채널명</dt>
-            <dd className="mt-1 text-sm text-gray-900">
-              {session.channelName}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-500">시작 시간</dt>
-            <dd className="mt-1 text-sm text-gray-900">
-              {formatTimestamp(session.startedAt)}
-            </dd>
-          </div>
-          {session.endedAt && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">종료 시간</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {formatTimestamp(session.endedAt)}
-              </dd>
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="py-2 max-w-4xl mx-auto flex-1 overflow-y-scroll invisible-scrollbar">
+      <BroadcastSessionHeader session={session} />
 
       {/* 리포트 섹션 */}
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
@@ -272,136 +223,7 @@ export default function BroadcastSessionDetailPage() {
         {/* 완성된 리포트 */}
         {report &&
           report.status === ReportStatus.COMPLETED &&
-          report.reportData && (
-            <div className="space-y-6">
-              {/* 요약 정보 */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <dt className="text-sm font-medium text-gray-500">
-                    총 채팅 수
-                  </dt>
-                  <dd className="mt-1 text-2xl font-semibold text-gray-900">
-                    {report.reportData.chatAnalysis.totalCount}
-                  </dd>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <dt className="text-sm font-medium text-gray-500">
-                    총 이벤트 수
-                  </dt>
-                  <dd className="mt-1 text-2xl font-semibold text-gray-900">
-                    0
-                  </dd>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <dt className="text-sm font-medium text-gray-500">
-                    참여 사용자
-                  </dt>
-                  <dd className="mt-1 text-2xl font-semibold text-gray-900">
-                    0
-                  </dd>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <dt className="text-sm font-medium text-gray-500">
-                    방송 시간
-                  </dt>
-                  <dd className="mt-1 text-2xl font-semibold text-gray-900">
-                    {Math.floor(
-                      report.reportData.metadata.durationSeconds / 3600
-                    )}
-                    시간
-                  </dd>
-                </div>
-              </div>
-
-              <ReportLineChart
-                startAt={report.reportData.metadata.startTime}
-                chunks={report.reportData.chunks}
-                getter={(v) => v.chat.totalCount}
-              />
-
-              <ReportLineChart
-                startAt={report.reportData.metadata.startTime}
-                chunks={report.reportData.chunks}
-                getter={(v) => v.viewerCount || 0}
-                color="red"
-              />
-
-              <UserDistributionChart
-                startAt={report.reportData.metadata.startTime}
-                chunks={report.reportData.chunks}
-              />
-
-              {/* 이벤트 분석 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-3">
-                    도네이션 분석
-                  </h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">총 도네이션:</span>
-                      <span className="font-medium">0 원</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">도네이션 횟수:</span>
-                      <span className="font-medium">0 회</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">구독자 수:</span>
-                      <span className="font-medium">0</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-3">
-                    사용자 활동
-                  </h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">입장 사용자:</span>
-                      <span className="font-medium">0 명</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">퇴장 사용자:</span>
-                      <span className="font-medium">0 명</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* 상위 채터 */}
-              {/* {report.reportData.chatAnalysis.topChatters.length > 0 && (
-                <div>
-                  <h3 className="text-md font-medium text-gray-900 mb-3">
-                    상위 채팅 사용자
-                  </h3>
-                  <div className="space-y-2">
-                    {report.reportData.chatAnalysis.topChatters
-                      .slice(0, 5)
-                      .map((chatter, index) => (
-                        <div
-                          key={chatter.userId}
-                          className="flex items-center justify-between p-2 bg-gray-50 rounded"
-                        >
-                          <div className="flex items-center">
-                            <span className="w-6 h-6 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center mr-3">
-                              {index + 1}
-                            </span>
-                            <span className="font-medium">
-                              {chatter.username}
-                            </span>
-                          </div>
-                          <span className="text-gray-600">
-                            {chatter.messageCount.toLocaleString()}회
-                          </span>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )} */}
-            </div>
-          )}
+          report.reportData && <Report data={report.reportData} />}
 
         {/* 리포트가 없는 경우 */}
         {!report && !reportStatus && !reportError && (

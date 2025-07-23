@@ -294,10 +294,10 @@ export interface ReportData {
 }
 
 export interface UserAnalysis {
-  uniqueCount: number;
-  normalCount: number;
-  subscriberCount: number;
-  fanCount: number;
+  unique: Matrix;
+  normal: Matrix;
+  subscriber: Matrix;
+  fan: Matrix;
 }
 
 export interface ChatAnalysis {
@@ -315,6 +315,13 @@ export interface ReportChunk {
   user: UserVital;
   chat: ChatVital;
   viewerCount?: number;
+}
+
+export interface Matrix {
+  min: number;
+  avg: number;
+  total: number;
+  max: number;
 }
 
 export interface ChatVital {

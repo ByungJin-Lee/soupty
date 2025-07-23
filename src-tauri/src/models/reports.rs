@@ -60,6 +60,7 @@ pub struct ReportData {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportChunk {
+    pub timestamp: DateTime<Utc>,
     pub user: UserVital,
     pub chat: ChatVital,
     pub viewer_count: Option<u64>,
@@ -102,11 +103,21 @@ pub struct ChatAnalysis {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserAnalysis {
-    pub unique_count: u32,
-    pub subscriber_count: u32,
-    pub fan_count: u32,
-    pub normal_count: u32,
+    pub unique: Matrix,
+    pub subscriber: Matrix,
+    pub fan: Matrix,
+    pub normal: Matrix,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Matrix {
+    pub total: u32,
+    pub min: u32,
+    pub max: u32,
+    pub avg: f32,
+}
+
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

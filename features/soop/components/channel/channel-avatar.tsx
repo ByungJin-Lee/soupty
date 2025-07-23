@@ -2,7 +2,7 @@ import { formatChannelImage } from "~/common/utils/format";
 import { Channel } from "~/types";
 
 interface ChannelAvatarProps {
-  channel: Channel;
+  channel: Omit<Channel, "label">;
   size: number;
   className?: string;
 }
@@ -14,7 +14,7 @@ export const ChannelAvatar: React.FC<ChannelAvatarProps> = ({
 }) => {
   return (
     <img
-      src={formatChannelImage(channel)}
+      src={formatChannelImage(channel.id)}
       alt={channel.id}
       className={`block aspect-square ${className}`}
       style={{ width: size, height: size }}

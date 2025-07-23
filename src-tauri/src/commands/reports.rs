@@ -114,7 +114,7 @@ async fn generate_report_background(
             .get_event_logs_for_report(broadcast_id, current_time, chunk_end)
             .await?;
 
-        chunks.push(create_report_chunk(&chat_logs, &event_logs));
+        chunks.push(create_report_chunk(current_time.clone(), &chat_logs, &event_logs));
         all_chat_logs.extend(chat_logs);
 
         // 다음 청크로 이동

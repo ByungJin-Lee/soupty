@@ -6,8 +6,7 @@ use crate::{
     models::{
         events::MetadataEvent,
         reports::{
-            ChatAnalysis, ChatVital, ReportChunk, ReportData, ReportMetadata, UserAnalysis,
-            UserVital,
+            ChatAnalysis, ChatVital, Matrix, ReportChunk, ReportData, ReportMetadata, UserAnalysis, UserVital
         },
     },
     services::db::commands::{ChatLogResult, EventLogResult},
@@ -54,12 +53,14 @@ fn classify_user_group(user_stats: &UserStatus) -> u8 {
 }
 
 pub fn create_report_chunk(
+    timestamp: DateTime<Utc>,
     chat_logs: &[ChatLogResult],
     event_logs: &[EventLogResult],
 ) -> ReportChunk {
     let viewer_count = extract_viewer_count_from_events(event_logs);
 
     ReportChunk {
+        timestamp,
         user: create_user_vital(chat_logs),
         chat: ChatVital {
             total_count: chat_logs.len(),
@@ -78,7 +79,7 @@ pub fn create_report_data(
     all_chat_logs: &[ChatLogResult],
 ) -> Result<ReportData, String> {
     let duration_seconds = end_time.signed_duration_since(start_time).num_seconds() as u64;
-    let user_analysis = create_overall_user_analysis(all_chat_logs);
+    let user_analysis = create_user_analysis(&chunks, all_chat_logs);
 
     Ok(ReportData {
         metadata: ReportMetadata {
@@ -107,7 +108,7 @@ fn extract_viewer_count_from_events(event_logs: &[EventLogResult]) -> Option<u64
         .last() // 가장 최근 viewer_count 사용
 }
 
-fn create_overall_user_analysis(chat_logs: &[ChatLogResult]) -> UserAnalysis {
+fn get_overall_user_counts(chat_logs: &[ChatLogResult]) -> [u32; 3] {
     let mut user_set = HashSet::with_capacity(chat_logs.len());
     let mut counts = [0u32; 3]; // [subscriber, fan, normal]
 
@@ -120,11 +121,71 @@ fn create_overall_user_analysis(chat_logs: &[ChatLogResult]) -> UserAnalysis {
             }
         }
     }
+    return counts;
+}
+
+fn create_user_analysis(chunks: &[ReportChunk], chat_logs: &[ChatLogResult]) -> UserAnalysis {
+    let overall = get_overall_user_counts(chat_logs);
+
+    let unique = create_chunk_matrix(chunks, |c| c.user.unique_count);
+    let fan = create_chunk_matrix(chunks, |c| c.user.fan_count);
+    let subscriber = create_chunk_matrix(chunks, |c| c.user.subscriber_count);
+    let normal = create_chunk_matrix(chunks, |c| c.user.normal_count);
 
     UserAnalysis {
-        unique_count: counts.iter().sum(),
-        subscriber_count: counts[0],
-        fan_count: counts[1],
-        normal_count: counts[2],
+        unique: Matrix {
+            total: overall.iter().sum(),
+            min: unique.0,
+            max: unique.1,
+            avg: unique.2,
+        },
+        subscriber: Matrix {
+            total: overall[0],
+            min: subscriber.0,
+            max: subscriber.1,
+            avg: subscriber.2,
+        },
+        fan: Matrix {
+            total: overall[1],
+            min: fan.0,
+            max: fan.1,
+            avg: fan.2,
+        },
+        normal: Matrix {
+            total: overall[2],
+            min: normal.0,
+            max: normal.1,
+            avg: normal.2,
+        },
+        
     }
+}
+
+// min, max, avg
+fn create_chunk_matrix(chunks: &[ReportChunk], getter: fn(&ReportChunk) -> u32) -> (u32, u32, f32) {
+    // min, max
+    let mut length = 0; // 0이 아닌 아이템 갯수, 0 인경우는 데이터가 없는 것으로 간주한다.
+    let mut counter: (u32, u32) = (u32::MAX, 0);
+    let mut sum = 0;
+
+    chunks.iter().for_each(|chunk| {
+        let v = getter(chunk);
+
+        // 0 확인
+        if v == 0 {
+            return;
+        }
+        length += 1;
+        sum += v;
+
+        // min
+        if v < counter.0 {
+            counter.0 = v;
+        }
+        if v > counter.1 {
+            counter.1 = v;
+        }
+    });
+
+    (counter.0, counter.1, sum as f32 / length as f32)
 }
