@@ -1,24 +1,21 @@
 import { ReportData } from "~/services/ipc/types";
-import { ReportLineChart } from "./report-line-chart";
+import { ChatReport } from "./chat/chat-report";
 import { ReportSummary } from "./report-summary";
-import { UserReport } from "./user-report";
+import { UserReport } from "./user/user-report";
 
 type Props = {
   data: ReportData;
 };
 
 export const Report: React.FC<Props> = ({ data }) => {
+  console.log(data);
   return (
     <div className="space-y-6">
       <ReportSummary data={data} />
 
       <UserReport data={data} />
 
-      <ReportLineChart
-        startAt={data.metadata.startTime}
-        chunks={data.chunks}
-        getter={(v) => v.chat.totalCount}
-      />
+      <ChatReport data={data} />
     </div>
   );
 };

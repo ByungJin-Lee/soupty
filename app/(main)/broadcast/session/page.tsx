@@ -7,6 +7,7 @@ import { Report } from "~/features/report/components/report";
 import { getBroadcastSessionDetail } from "~/services/ipc/broadcast-session";
 import {
   createReport,
+  deleteReport,
   getReport,
   getReportStatus,
   pollReportStatus,
@@ -112,6 +113,22 @@ export default function BroadcastSessionDetailPage() {
     }
   };
 
+  // 리포트 삭제
+  const handleDeleteReport = async () => {
+    if (!session || !report) return;
+
+    try {
+      await deleteReport(session.id);
+      setReport(null);
+      setReportStatus(null);
+      setReportError(null);
+      console.log("Report deleted for session:", session.id);
+    } catch (err) {
+      setReportError("리포트 삭제에 실패했습니다.");
+      console.error("Failed to delete report:", err);
+    }
+  };
+
   // 리포트 상태 폴링
   const startReportPolling = (broadcastId: number) => {
     const cleanup = pollReportStatus(
@@ -173,15 +190,25 @@ export default function BroadcastSessionDetailPage() {
       <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">분석 리포트</h2>
-          {!report && !reportStatus && (
-            <button
-              onClick={handleCreateReport}
-              disabled={reportLoading}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {reportLoading ? "생성 중..." : "리포트 생성"}
-            </button>
-          )}
+          <div className="flex gap-2">
+            {!report && !reportStatus && (
+              <button
+                onClick={handleCreateReport}
+                disabled={reportLoading}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {reportLoading ? "생성 중..." : "리포트 생성"}
+              </button>
+            )}
+            {report && (
+              <button
+                onClick={handleDeleteReport}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+              >
+                리포트 삭제
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 리포트 에러 */}

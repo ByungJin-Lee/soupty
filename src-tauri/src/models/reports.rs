@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use soup_sdk::chat::types::User;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -54,6 +55,7 @@ pub struct ReportData {
     pub metadata: ReportMetadata,
     pub user_analysis: UserAnalysis,
     pub chat_analysis: ChatAnalysis,
+    pub event_analysis: EventAnalysis,
     pub chunks: Vec<ReportChunk>,
 }
 
@@ -63,8 +65,8 @@ pub struct ReportChunk {
     pub timestamp: DateTime<Utc>,
     pub user: UserVital,
     pub chat: ChatVital,
+    pub event: EventVital,
     pub viewer_count: Option<u64>,
-    // pub event: EventVital,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -94,10 +96,22 @@ pub struct ReportMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatAnalysis {
-    // pub summary: AnalysisSummary,
     pub total_count: u64,
-    // pub top_chatters: Vec<UserStats>,
-    // pub popular_words: Vec<WordCount>,
+    pub top_chatters: Vec<ChatterRank>,
+    pub popular_words: Vec<WordCount>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventAnalysis {
+    pub total_donation_count: u64,
+    pub total_donation_amount: u64,
+    pub total_mission_donation_count: u64,
+    pub total_mission_donation_amount: u64,
+    pub average_donation_amount: f64,
+    pub total_subscribe_count: u64,
+    pub total_subscribe_renew_count: u64,
+    pub top_donators: Vec<DonatorRank>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -118,14 +132,25 @@ pub struct Matrix {
     pub avg: f32,
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatVital {
     pub total_count: usize,
-    pub top_chatters: Vec<UserStats>,
-    // pub chat_sentiment: SentimentAnalysis,
+    #[serde(skip)]
+    pub top_chatters: Vec<ChatterRank>,
+    #[serde(skip)]
     pub popular_words: Vec<WordCount>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EventVital {
+    pub donation_count: u32,
+    pub donation_amount: u64,
+    pub mission_donation_count: u32,
+    pub mission_donation_amount: u64,
+    pub subscribe_count: u32,
+    pub subscribe_renew_count: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -148,11 +173,9 @@ pub struct AnalysisSummary {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UserStats {
-    pub user_id: String,
-    pub username: String,
+pub struct ChatterRank {
+    pub user: User,
     pub message_count: u64,
-    pub donation_amount: u64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -168,6 +191,16 @@ pub struct SentimentAnalysis {
 pub struct WordCount {
     pub word: String,
     pub count: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DonatorRank {
+    pub user_id: String,
+    pub user_label: String,
+    pub donation_count: u64,
+    pub total_amount: u64,
+    pub mission_amount: u64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

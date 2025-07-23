@@ -6,7 +6,10 @@ use tokio::task;
 
 use crate::{
     models::reports::{ReportChunk, ReportStatus},
-    services::db::commands::{ReportInfo, ReportStatusInfo},
+    services::{
+        addons::data_enrichment::token_analyzer::TokenAnalyzer,
+        db::commands::{ReportInfo, ReportStatusInfo},
+    },
     state::AppState,
     util::reports::{create_report_chunk, create_report_data},
 };
@@ -64,6 +67,7 @@ async fn generate_report_background(
     db: Arc<crate::services::db::service::DBService>,
     broadcast_id: i64,
 ) -> Result<(), String> {
+    let token_analyzer = TokenAnalyzer::global();
     // 상태를 GENERATING으로 변경
     db.update_report_status(
         broadcast_id,
@@ -91,6 +95,7 @@ async fn generate_report_background(
 
     let mut chunks: Vec<ReportChunk> = Vec::new();
     let mut all_chat_logs = Vec::new();
+    let mut all_event_logs = Vec::new();
 
     while current_time < end_time {
         let chunk_end = std::cmp::min(current_time + chunk_duration, end_time);
@@ -114,8 +119,9 @@ async fn generate_report_background(
             .get_event_logs_for_report(broadcast_id, current_time, chunk_end)
             .await?;
 
-        chunks.push(create_report_chunk(current_time.clone(), &chat_logs, &event_logs));
+        chunks.push(create_report_chunk(current_time.clone(), &chat_logs, &event_logs, token_analyzer));
         all_chat_logs.extend(chat_logs);
+        all_event_logs.extend(event_logs);
 
         // 다음 청크로 이동
         current_time = chunk_end;
@@ -128,7 +134,7 @@ async fn generate_report_background(
     }
 
     // 리포트 데이터 생성
-    let report_data = create_report_data(chunks, start_time, end_time, CHUNK_SIZE, &all_chat_logs)?;
+    let report_data = create_report_data(chunks, start_time, end_time, CHUNK_SIZE, &all_chat_logs, &all_event_logs, token_analyzer)?;
 
     // 리포트 데이터를 JSON으로 직렬화
     let report_json = serde_json::to_string(&report_data)

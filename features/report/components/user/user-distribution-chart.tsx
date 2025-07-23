@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { Line } from "~/common/ui/chart";
 import { ReportChunk, UserAnalysis } from "~/services/ipc/types";
-import { userDistributionChartOptions } from "./fixtures";
+import { userDistributionChartOptions } from "../fixtures";
 
 type Props = {
   chunks: ReportChunk[];

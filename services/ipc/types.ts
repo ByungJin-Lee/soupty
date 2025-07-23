@@ -291,6 +291,7 @@ export interface ReportData {
   chunks: ReportChunk[];
   chatAnalysis: ChatAnalysis;
   userAnalysis: UserAnalysis;
+  eventAnalysis: EventAnalysis;
 }
 
 export interface UserAnalysis {
@@ -302,6 +303,18 @@ export interface UserAnalysis {
 
 export interface ChatAnalysis {
   totalCount: number;
+  topChatters: ChatterRank[];
+  popularWords: WordCount[];
+}
+
+export interface WordCount {
+  word: string;
+  count: number;
+}
+
+export interface ChatterRank {
+  user: User;
+  messageCount: number;
 }
 
 export interface ReportMetadata {
@@ -314,6 +327,7 @@ export interface ReportMetadata {
 export interface ReportChunk {
   user: UserVital;
   chat: ChatVital;
+  event: EventVital;
   viewerCount?: number;
 }
 
@@ -325,8 +339,8 @@ export interface Matrix {
 }
 
 export interface ChatVital {
-  popularWords: unknown[];
-  topChatters: unknown[];
+  popularWords: WordCount[];
+  topChatters: ChatterRank[];
   totalCount: number;
 }
 
@@ -335,4 +349,32 @@ export interface UserVital {
   normalCount: number;
   subscriberCount: number;
   uniqueCount: number;
+}
+
+export interface EventAnalysis {
+  totalDonationCount: number;
+  totalDonationAmount: number;
+  totalMissionDonationCount: number;
+  totalMissionDonationAmount: number;
+  averageDonationAmount: number;
+  totalSubscribeCount: number;
+  totalSubscribeRenewCount: number;
+  topDonators: DonatorRank[];
+}
+
+export interface EventVital {
+  donationCount: number;
+  donationAmount: number;
+  missionDonationCount: number;
+  missionDonationAmount: number;
+  subscribeCount: number;
+  subscribeRenewCount: number;
+}
+
+export interface DonatorRank {
+  userId: string;
+  userLabel: string;
+  donationCount: number;
+  totalAmount: number;
+  missionAmount: number;
 }

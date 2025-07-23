@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use soup_sdk::chat::types::{ChatType, DonationType, Emoticon, MissionType, User};
 
 // 이벤트 타입 상수
@@ -75,7 +75,7 @@ pub struct ChatEvent {
     pub ogq: Option<Emoticon>,
 }
 
-#[derive(Debug, Clone, Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MetadataEvent {
     pub title: String,
@@ -86,7 +86,7 @@ pub struct MetadataEvent {
     pub id: uuid::Uuid,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DonationEvent {
     pub id: uuid::Uuid,
@@ -101,7 +101,7 @@ pub struct DonationEvent {
     pub message: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MissionEvent {
     pub id: uuid::Uuid,
@@ -144,7 +144,7 @@ pub struct BattleMissionResultEvent {
     pub title: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SubscribeEvent {
     pub id: uuid::Uuid,
