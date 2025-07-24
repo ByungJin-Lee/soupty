@@ -195,7 +195,7 @@ pub struct FreezeEvent {
     pub targets: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MuteEvent {
     pub id: uuid::Uuid,

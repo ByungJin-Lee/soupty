@@ -241,7 +241,7 @@ export default function BroadcastSessionDetailPage() {
               )}
               {reportStatus.progressPercentage !== undefined && (
                 <div className="text-sm text-blue-600 mt-1">
-                  {reportStatus.progressPercentage.toFixed(1)}% 완료
+                  {reportStatus.progressPercentage?.toFixed(1)}% 완료
                 </div>
               )}
             </div>

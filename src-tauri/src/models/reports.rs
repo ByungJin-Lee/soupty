@@ -56,6 +56,7 @@ pub struct ReportData {
     pub user_analysis: UserAnalysis,
     pub chat_analysis: ChatAnalysis,
     pub event_analysis: EventAnalysis,
+    pub moderation_analysis: ModerationAnalysis,
     pub chunks: Vec<ReportChunk>,
 }
 
@@ -66,6 +67,7 @@ pub struct ReportChunk {
     pub user: UserVital,
     pub chat: ChatVital,
     pub event: EventVital,
+    pub moderation: ModerationVital,
     pub viewer_count: Option<u64>,
 }
 
@@ -80,18 +82,6 @@ pub struct ReportMetadata {
      */
     pub chunk_size: u32,
 }
-
-// #[derive(Debug, Clone, Serialize, Deserialize)]
-// #[serde(rename_all = "camelCase")]
-// pub struct EventAnalysis {
-//     /**
-//      * metadata updated 이벤트는 집계하지 않음
-//      */
-//     pub total_count: u64,
-//     pub donation_total: u64,
-//     pub donation_count: u64,
-//     pub subscription_count: u64,
-// }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -151,6 +141,28 @@ pub struct EventVital {
     pub mission_donation_amount: u64,
     pub subscribe_count: u32,
     pub subscribe_renew_count: u32,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModerationVital {
+    pub mute_count: u32,
+    pub mute_histories: Vec<UserHistory>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserHistory {
+    pub user: User,
+    pub timestamp: DateTime<Utc>,
+    pub by: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ModerationAnalysis {
+    pub total_mute_count: u32,
+    pub total_mute_histories: Vec<UserHistory>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

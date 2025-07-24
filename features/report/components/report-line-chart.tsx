@@ -8,6 +8,7 @@ type Props = {
   getter: (chunk: ReportChunk) => number;
   startAt: string;
   color?: "red" | "green" | "blue" | "yellow";
+  hideSum?: boolean;
 };
 
 export const ReportLineChart: React.FC<Props> = ({
@@ -15,6 +16,7 @@ export const ReportLineChart: React.FC<Props> = ({
   getter,
   startAt,
   color = "green",
+  hideSum = false,
 }) => {
   const values = useMemo(
     () => chunks.map((v, i) => ({ x: i, y: getter(v) })),
@@ -40,16 +42,15 @@ export const ReportLineChart: React.FC<Props> = ({
     const nonZeroValues = values.filter((v) => v.y > 0).map((v) => v.y);
 
     if (nonZeroValues.length === 0) {
-      return { min: 0, max: 0, avg: 0 };
+      return { min: 0, max: 0, avg: 0, sum: 0 };
     }
 
     const min = Math.min(...nonZeroValues);
     const max = Math.max(...nonZeroValues);
-    const avg = Math.round(
-      nonZeroValues.reduce((sum, val) => sum + val, 0) / nonZeroValues.length
-    );
+    const sum = nonZeroValues.reduce((acc, v) => acc + v);
+    const avg = Math.round(sum / nonZeroValues.length);
 
-    return { min, max, avg };
+    return { min, max, avg, sum };
   }, [values]);
 
   const dynamicDataset = useMemo(
@@ -102,6 +103,17 @@ export const ReportLineChart: React.FC<Props> = ({
           </div>
           <div className="text-xs">최댓값</div>
         </div>
+        {!hideSum && (
+          <div className="text-center">
+            <div
+              className="font-semibold  text-lg"
+              style={{ color: colorMap.border }}
+            >
+              {stats.sum.toLocaleString()}
+            </div>
+            <div className="text-xs">총합</div>
+          </div>
+        )}
       </div>
 
       {/* 차트 */}

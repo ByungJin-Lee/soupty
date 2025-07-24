@@ -292,6 +292,7 @@ export interface ReportData {
   chatAnalysis: ChatAnalysis;
   userAnalysis: UserAnalysis;
   eventAnalysis: EventAnalysis;
+  moderationAnalysis: ModerationAnalysis;
 }
 
 export interface UserAnalysis {
@@ -328,6 +329,7 @@ export interface ReportChunk {
   user: UserVital;
   chat: ChatVital;
   event: EventVital;
+  moderation: ModerationVital;
   viewerCount?: number;
 }
 
@@ -369,6 +371,22 @@ export interface EventVital {
   missionDonationAmount: number;
   subscribeCount: number;
   subscribeRenewCount: number;
+}
+
+export interface ModerationAnalysis {
+  totalMuteCount: number;
+  totalMuteHistories: UserHistory[];
+}
+
+export interface ModerationVital {
+  muteCount: number;
+  muteHistories: UserHistory[];
+}
+
+export interface UserHistory {
+  by?: string;
+  user: User;
+  timestamp: string;
 }
 
 export interface DonatorRank {

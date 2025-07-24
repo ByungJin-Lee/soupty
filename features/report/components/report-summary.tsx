@@ -23,7 +23,7 @@ export const ReportSummary: React.FC<Props> = ({ data }) => {
               총 채팅 수
             </dt>
           </div>
-          <dd className="text-3xl font-bold text-blue-900">
+          <dd className="text-2xl font-bold text-blue-900">
             {data.chatAnalysis.totalCount.toLocaleString()}
           </dd>
         </div>
@@ -35,8 +35,8 @@ export const ReportSummary: React.FC<Props> = ({ data }) => {
               총 후원 금액
             </dt>
           </div>
-          <dd className="text-3xl font-bold text-purple-900">
-            {data.eventAnalysis.totalDonationAmount.toLocaleString()}
+          <dd className="text-2xl font-bold text-purple-900">
+            {(data.eventAnalysis.totalDonationAmount * 100).toLocaleString()}
             <span className="text-lg font-medium text-purple-700 ml-1">원</span>
           </dd>
         </div>
@@ -48,7 +48,7 @@ export const ReportSummary: React.FC<Props> = ({ data }) => {
               활성 시청자
             </dt>
           </div>
-          <dd className="text-3xl font-bold text-green-900">
+          <dd className="text-2xl font-bold text-green-900">
             {data.userAnalysis.unique.total.toLocaleString()}
             <span className="text-lg font-medium text-green-700 ml-1">명</span>
           </dd>
@@ -63,6 +63,30 @@ export const ReportSummary: React.FC<Props> = ({ data }) => {
           </div>
           <dd className="text-2xl font-bold text-orange-900">
             {formatDuration(data.metadata.durationSeconds)}
+          </dd>
+        </div>
+        <div className="bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 p-6 rounded-xl shadow-sm">
+          <div className="flex items-center mb-2">
+            <span className="text-2xl mr-2">💬</span>
+            <dt className="text-sm font-semibold text-rose-700 uppercase tracking-wide">
+              총 구독 수
+            </dt>
+          </div>
+          <dd className="text-2xl font-bold text-rose-900">
+            {data.eventAnalysis.totalSubscribeCount.toLocaleString()}
+            <span className="text-lg font-medium text-rose-700 ml-1">번</span>
+          </dd>
+        </div>
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 p-6 rounded-xl shadow-sm">
+          <div className="flex items-center mb-2">
+            <span className="text-2xl mr-2">🤬</span>
+            <dt className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+              총 채팅금지 수
+            </dt>
+          </div>
+          <dd className="text-2xl font-bold text-gray-900">
+            {data.moderationAnalysis.totalMuteCount.toLocaleString()}
+            <span className="text-lg font-medium text-gray-700 ml-1">번</span>
           </dd>
         </div>
       </div>

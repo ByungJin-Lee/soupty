@@ -4,10 +4,9 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     models::{
-        events::{DonationEvent, MetadataEvent, MissionEvent, SubscribeEvent},
+        events::{DonationEvent, MetadataEvent, MissionEvent, MuteEvent, SubscribeEvent},
         reports::{
-            ChatAnalysis, ChatVital, ChatterRank, DonatorRank, EventAnalysis, EventVital, Matrix, 
-            ReportChunk, ReportData, ReportMetadata, UserAnalysis, UserVital, WordCount,
+            ChatAnalysis, ChatVital, ChatterRank, DonatorRank, EventAnalysis, EventVital, Matrix, ModerationAnalysis, ModerationVital, ReportChunk, ReportData, ReportMetadata, UserAnalysis, UserHistory, UserVital, WordCount
         },
     },
     services::{
@@ -149,6 +148,27 @@ fn create_event_vital(event_logs: &[EventLogResult]) -> EventVital {
     }
 }
 
+
+fn create_moderation_vital(event_logs: &[EventLogResult]) -> ModerationVital {
+    let mut mute_count: u32 = 0;
+    let mut mute_histories: Vec<UserHistory> = Vec::new();
+
+    for event in event_logs {
+        match event.event_type.as_str() {
+            "Mute" => {
+                if let Ok(e) = serde_json::from_str::<MuteEvent>(&event.payload) {
+                    mute_count += 1;
+                    mute_histories.push(UserHistory { user: e.user, timestamp: e.timestamp, by: Some(e.by) });
+                }
+            }
+            _ => {}
+        }
+    }
+
+    ModerationVital { mute_count, mute_histories }
+}
+
+
 pub fn create_report_chunk(
     timestamp: DateTime<Utc>,
     chat_logs: &[ChatLogResult],
@@ -166,6 +186,7 @@ pub fn create_report_chunk(
             popular_words: create_popular_words(chat_logs, token_analyzer),
         },
         event: create_event_vital(event_logs),
+        moderation: create_moderation_vital(event_logs),
         viewer_count,
     }
 }
@@ -244,6 +265,16 @@ fn create_event_analysis(chunks: &[ReportChunk], all_event_logs: &[EventLogResul
     }
 }
 
+fn create_moderation_analysis(chunks: &[ReportChunk]) -> ModerationAnalysis {
+    let total_mute_count = chunks.iter().map(|c| c.moderation.mute_count).sum();
+    let total_mute_histories = chunks.iter().fold(Vec::new(), |mut acc, chunk| {
+        acc.extend(chunk.moderation.mute_histories.iter().cloned());
+        acc
+    });
+
+    ModerationAnalysis { total_mute_count, total_mute_histories }
+}
+
 pub fn create_report_data(
     chunks: Vec<ReportChunk>,
     start_time: DateTime<Utc>,
@@ -257,6 +288,7 @@ pub fn create_report_data(
     let user_analysis = create_user_analysis(&chunks, all_chat_logs);
     let chat_analysis = create_chat_analysis(&chunks, all_chat_logs, token_analyzer);
     let event_analysis = create_event_analysis(&chunks, all_event_logs);
+    let moderation_analysis = create_moderation_analysis(&chunks);
 
     Ok(ReportData {
         metadata: ReportMetadata {
@@ -268,6 +300,7 @@ pub fn create_report_data(
         user_analysis,
         chat_analysis,
         event_analysis,
+        moderation_analysis,
         chunks,
     })
 }
