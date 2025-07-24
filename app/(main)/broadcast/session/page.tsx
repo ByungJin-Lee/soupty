@@ -1,5 +1,6 @@
 "use client";
 
+import { connect } from "echarts";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { BroadcastSessionHeader } from "~/features/report/components/broadcast-session-header";
@@ -18,6 +19,8 @@ import {
   ReportStatus,
   ReportStatusInfo,
 } from "~/services/ipc/types";
+
+connect("report");
 
 export default function BroadcastSessionDetailPage() {
   const searchParams = useSearchParams();
@@ -183,81 +186,83 @@ export default function BroadcastSessionDetailPage() {
   }
 
   return (
-    <div className="py-2 max-w-4xl mx-auto flex-1 overflow-y-scroll invisible-scrollbar">
-      <BroadcastSessionHeader session={session} />
+    <div className="py-2  flex-1 overflow-y-scroll invisible-scrollbar">
+      <div className="max-w-4xl mx-auto">
+        <BroadcastSessionHeader session={session} />
 
-      {/* 리포트 섹션 */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">분석 리포트</h2>
-          <div className="flex gap-2">
-            {!report && !reportStatus && (
-              <button
-                onClick={handleCreateReport}
-                disabled={reportLoading}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {reportLoading ? "생성 중..." : "리포트 생성"}
-              </button>
-            )}
-            {report && (
-              <button
-                onClick={handleDeleteReport}
-                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
-              >
-                리포트 삭제
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* 리포트 에러 */}
-        {reportError && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-            <div className="text-red-700 text-sm">{reportError}</div>
-          </div>
-        )}
-
-        {/* 리포트 상태 (진행 중) */}
-        {reportStatus &&
-          (reportStatus.status === ReportStatus.PENDING ||
-            reportStatus.status === ReportStatus.GENERATING) && (
-            <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-              <div className="flex items-center mb-2">
-                <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full mr-3"></div>
-                <span className="text-blue-700 font-medium">
-                  {reportStatus.status === ReportStatus.PENDING
-                    ? "리포트 생성 대기 중..."
-                    : "리포트 생성 중..."}
-                </span>
-              </div>
-              {reportStatus.progressPercentage !== undefined && (
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${reportStatus.progressPercentage}%` }}
-                  ></div>
-                </div>
+        {/* 리포트 섹션 */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">분석 리포트</h2>
+            <div className="flex gap-2">
+              {!report && !reportStatus && (
+                <button
+                  onClick={handleCreateReport}
+                  disabled={reportLoading}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {reportLoading ? "생성 중..." : "리포트 생성"}
+                </button>
               )}
-              {reportStatus.progressPercentage !== undefined && (
-                <div className="text-sm text-blue-600 mt-1">
-                  {reportStatus.progressPercentage?.toFixed(1)}% 완료
-                </div>
+              {report && (
+                <button
+                  onClick={handleDeleteReport}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+                >
+                  리포트 삭제
+                </button>
               )}
+            </div>
+          </div>
+
+          {/* 리포트 에러 */}
+          {reportError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="text-red-700 text-sm">{reportError}</div>
             </div>
           )}
 
-        {/* 완성된 리포트 */}
-        {report &&
-          report.status === ReportStatus.COMPLETED &&
-          report.reportData && <Report data={report.reportData} />}
+          {/* 리포트 상태 (진행 중) */}
+          {reportStatus &&
+            (reportStatus.status === ReportStatus.PENDING ||
+              reportStatus.status === ReportStatus.GENERATING) && (
+              <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <div className="flex items-center mb-2">
+                  <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full mr-3"></div>
+                  <span className="text-blue-700 font-medium">
+                    {reportStatus.status === ReportStatus.PENDING
+                      ? "리포트 생성 대기 중..."
+                      : "리포트 생성 중..."}
+                  </span>
+                </div>
+                {reportStatus.progressPercentage !== undefined && (
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${reportStatus.progressPercentage}%` }}
+                    ></div>
+                  </div>
+                )}
+                {reportStatus.progressPercentage !== undefined && (
+                  <div className="text-sm text-blue-600 mt-1">
+                    {reportStatus.progressPercentage?.toFixed(1)}% 완료
+                  </div>
+                )}
+              </div>
+            )}
 
-        {/* 리포트가 없는 경우 */}
-        {!report && !reportStatus && !reportError && (
-          <div className="text-gray-500 text-center py-8">
-            리포트를 생성하여 방송의 상세한 분석 정보를 확인하세요.
-          </div>
-        )}
+          {/* 완성된 리포트 */}
+          {report &&
+            report.status === ReportStatus.COMPLETED &&
+            report.reportData && <Report data={report.reportData} />}
+
+          {/* 리포트가 없는 경우 */}
+          {!report && !reportStatus && !reportError && (
+            <div className="text-gray-500 text-center py-8">
+              리포트를 생성하여 방송의 상세한 분석 정보를 확인하세요.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

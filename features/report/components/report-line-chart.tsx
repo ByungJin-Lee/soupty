@@ -1,7 +1,7 @@
+import ReactECharts from "echarts-for-react";
 import { useMemo } from "react";
-import { Line } from "~/common/ui/chart";
 import { ReportChunk } from "~/services/ipc/types";
-import { reportLineChartOptions } from "./fixtures";
+import { connectGrouper } from "./fixtures";
 
 type Props = {
   chunks: ReportChunk[];
@@ -14,19 +14,13 @@ type Props = {
 export const ReportLineChart: React.FC<Props> = ({
   chunks,
   getter,
-  startAt,
   color = "green",
   hideSum = false,
 }) => {
-  const values = useMemo(
-    () => chunks.map((v, i) => ({ x: i, y: getter(v) })),
+  const chartData = useMemo(
+    () => chunks.map((chunk) => [chunk.timestamp, getter(chunk)]),
     [chunks, getter]
   );
-
-  const chartWidth = useMemo(() => {
-    const baseWidth = Math.max(1600, values.length * 9);
-    return Math.min(baseWidth, values.length * 45);
-  }, [values.length]);
 
   const colorMap = useMemo(() => {
     const colors = {
@@ -39,7 +33,8 @@ export const ReportLineChart: React.FC<Props> = ({
   }, [color]);
 
   const stats = useMemo(() => {
-    const nonZeroValues = values.filter((v) => v.y > 0).map((v) => v.y);
+    const values = chartData.map(([, value]) => value as number);
+    const nonZeroValues = values.filter((v) => v > 0);
 
     if (nonZeroValues.length === 0) {
       return { min: 0, max: 0, avg: 0, sum: 0 };
@@ -51,26 +46,88 @@ export const ReportLineChart: React.FC<Props> = ({
     const avg = Math.round(sum / nonZeroValues.length);
 
     return { min, max, avg, sum };
-  }, [values]);
+  }, [chartData]);
 
-  const dynamicDataset = useMemo(
-    () => ({
-      data: values,
-      borderColor: colorMap.border,
-      backgroundColor: colorMap.background,
-      pointBorderColor: colorMap.border,
-      pointHoverBackgroundColor: colorMap.border,
-      pointBackgroundColor: "#ffffff",
-      pointHoverBorderColor: "#ffffff",
-      tension: 0.3,
-      borderWidth: values.length > 1000 ? 1.5 : 2,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-      fill: true,
-      cubicInterpolationMode: "monotone" as const,
-    }),
-    [values, colorMap]
-  );
+  const echartsOption = useMemo(() => {
+    return {
+      tooltip: {
+        trigger: "axis",
+        position: function (pt: [number, string]) {
+          return [pt[0], "10%"];
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        formatter: function (params: any) {
+          const param = params[0];
+          const time = new Date(param.data[0]).toLocaleTimeString();
+          const value = param.data[1];
+          return `시간: ${time}<br/>값: ${value.toLocaleString()}`;
+        },
+      },
+      toolbox: {
+        feature: {
+          dataZoom: {
+            yAxisIndex: "none",
+          },
+          restore: {},
+          saveAsImage: {},
+        },
+      },
+      xAxis: {
+        type: "category",
+        boundaryGap: false,
+        axisLabel: {
+          formatter: function (value: number) {
+            return new Date(value).toLocaleTimeString();
+          },
+        },
+      },
+      yAxis: {
+        type: "value",
+      },
+      dataZoom: [
+        {
+          type: "inside",
+          start: 0,
+          end: chartData.length > 1000 ? 10 : 100,
+        },
+        {
+          start: 0,
+          end: chartData.length > 1000 ? 10 : 100,
+        },
+      ],
+      series: [
+        {
+          name: "Data",
+          type: "line",
+          symbol: "none",
+          sampling: "lttb",
+          itemStyle: {
+            color: colorMap.border,
+          },
+          areaStyle: {
+            color: {
+              type: "linear",
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0,
+                  color: colorMap.border,
+                },
+                {
+                  offset: 1,
+                  color: colorMap.background,
+                },
+              ],
+            },
+          },
+          data: chartData,
+        },
+      ],
+    };
+  }, [chartData, colorMap]);
 
   return (
     <div className="w-full space-y-4">
@@ -117,21 +174,13 @@ export const ReportLineChart: React.FC<Props> = ({
       </div>
 
       {/* 차트 */}
-      <div className="overflow-x-auto w-full">
-        <div className="min-w-full" style={{ width: chartWidth }}>
-          <Line
-            data={{
-              datasets: [dynamicDataset],
-            }}
-            width={chartWidth}
-            height={250}
-            options={reportLineChartOptions(
-              values.length,
-              new Date(startAt),
-              colorMap.border
-            )}
-          />
-        </div>
+      <div className="w-full">
+        <ReactECharts
+          onChartReady={connectGrouper}
+          option={echartsOption}
+          style={{ height: 250 }}
+          opts={{ renderer: "canvas" }}
+        />
       </div>
     </div>
   );

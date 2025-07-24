@@ -1,7 +1,7 @@
+import ReactECharts from "echarts-for-react";
 import { useMemo } from "react";
-import { Line } from "~/common/ui/chart";
 import { ReportChunk, UserAnalysis } from "~/services/ipc/types";
-import { userDistributionChartOptions } from "../fixtures";
+import { connectGrouper } from "../fixtures";
 
 type Props = {
   chunks: ReportChunk[];
@@ -11,101 +11,139 @@ type Props = {
 
 export const UserDistributionChart: React.FC<Props> = ({
   chunks,
-  startAt,
   analysis,
 }) => {
-  const chartData = useMemo(() => {
-    // 채팅 참여자들의 유형별 분포 (viewerCount와는 별개)
-    const uniqueData = chunks.map((chunk, i) => ({
-      x: i,
-      y: chunk.user.uniqueCount,
-    }));
-    const subscriberData = chunks.map((chunk, i) => ({
-      x: i,
-      y: chunk.user.subscriberCount,
-    }));
-    const fanData = chunks.map((chunk, i) => ({
-      x: i,
-      y: chunk.user.fanCount,
-    }));
-    const normalData = chunks.map((chunk, i) => ({
-      x: i,
-      y: chunk.user.normalCount,
-    }));
+  const chartData = useMemo(
+    () =>
+      chunks.reduce(
+        (acc, chunk) => {
+          acc.fan.push(chunk.user.fanCount);
+          acc.labels.push(chunk.timestamp);
+          acc.unique.push(chunk.user.uniqueCount);
+          acc.normal.push(chunk.user.normalCount);
+          acc.subscriber.push(chunk.user.subscriberCount);
 
-    return { uniqueData, subscriberData, fanData, normalData };
-  }, [chunks]);
-
-  const chartWidth = useMemo(() => {
-    const baseWidth = Math.max(1600, chunks.length * 9);
-    return Math.min(baseWidth, chunks.length * 45);
-  }, [chunks.length]);
-
-  const datasets = useMemo(
-    () => [
-      {
-        label: "전체 유니크",
-        data: chartData.uniqueData,
-        borderColor: "#6366f1",
-        backgroundColor: "rgba(99, 102, 241, 0.1)",
-        pointBackgroundColor: "#ffffff",
-        pointBorderColor: "#6366f1",
-        pointHoverBackgroundColor: "#6366f1",
-        pointHoverBorderColor: "#ffffff",
-        tension: 0.3,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        fill: false,
-      },
-      {
-        label: "구독자",
-        data: chartData.subscriberData,
-        borderColor: "#10b981",
-        backgroundColor: "rgba(16, 185, 129, 0.1)",
-        pointBackgroundColor: "#ffffff",
-        pointBorderColor: "#10b981",
-        pointHoverBackgroundColor: "#10b981",
-        pointHoverBorderColor: "#ffffff",
-        tension: 0.3,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        fill: false,
-      },
-      {
-        label: "팬",
-        data: chartData.fanData,
-        borderColor: "#f59e0b",
-        backgroundColor: "rgba(245, 158, 11, 0.1)",
-        pointBackgroundColor: "#ffffff",
-        pointBorderColor: "#f59e0b",
-        pointHoverBackgroundColor: "#f59e0b",
-        pointHoverBorderColor: "#ffffff",
-        tension: 0.3,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        fill: false,
-      },
-      {
-        label: "일반",
-        data: chartData.normalData,
-        borderColor: "#6b7280",
-        backgroundColor: "rgba(107, 114, 128, 0.1)",
-        pointBackgroundColor: "#ffffff",
-        pointBorderColor: "#6b7280",
-        pointHoverBackgroundColor: "#6b7280",
-        pointHoverBorderColor: "#ffffff",
-        tension: 0.3,
-        borderWidth: 2,
-        pointRadius: 0,
-        pointHoverRadius: 4,
-        fill: false,
-      },
-    ],
-    [chartData]
+          return acc;
+        },
+        { labels: [], unique: [], subscriber: [], fan: [], normal: [] } as {
+          labels: string[];
+          unique: number[];
+          subscriber: number[];
+          fan: number[];
+          normal: number[];
+        }
+      ),
+    [chunks]
   );
+
+  const echartsOption = useMemo(() => {
+    return {
+      tooltip: {
+        trigger: "axis",
+        position: function (pt: [number, string]) {
+          return [pt[0], "10%"];
+        },
+        formatter: function (params: any) {
+          const time = new Date(params[0].axisValue).toLocaleTimeString();
+          let result = `시간: ${time}<br/>`;
+          params.forEach((param: any) => {
+            result += `${
+              param.seriesName
+            }: ${param.value.toLocaleString()}<br/>`;
+          });
+          return result;
+        },
+      },
+      legend: {
+        data: ["구독자", "팬", "일반", "채팅 참여자"],
+        bottom: 0,
+      },
+      toolbox: {
+        feature: {
+          dataZoom: {
+            yAxisIndex: "none",
+          },
+          restore: {},
+          saveAsImage: {},
+        },
+      },
+      xAxis: {
+        type: "category",
+        boundaryGap: false,
+        data: chartData.labels,
+        axisLabel: {
+          formatter: function (value: number) {
+            return new Date(value).toLocaleTimeString();
+          },
+        },
+      },
+      yAxis: {
+        type: "value",
+      },
+      dataZoom: [
+        {
+          type: "inside",
+          start: 0,
+          end: chunks.length > 1000 ? 10 : 100,
+        },
+        {
+          start: 0,
+          end: chunks.length > 1000 ? 10 : 100,
+        },
+      ],
+      series: [
+        {
+          name: "구독자",
+          type: "line",
+          stack: "Total",
+          symbol: "none",
+          sampling: "lttb",
+          itemStyle: {
+            color: "#10b981",
+          },
+          areaStyle: {},
+          data: chartData.subscriber,
+        },
+        {
+          name: "팬",
+          type: "line",
+          stack: "Total",
+          symbol: "none",
+          sampling: "lttb",
+          itemStyle: {
+            color: "#f59e0b",
+          },
+          areaStyle: {},
+          data: chartData.fan,
+        },
+        {
+          name: "일반",
+          type: "line",
+          stack: "Total",
+          symbol: "none",
+          sampling: "lttb",
+          itemStyle: {
+            color: "#6b7280",
+          },
+          areaStyle: {},
+          data: chartData.normal,
+        },
+        {
+          name: "총합",
+          type: "line",
+          symbol: "none",
+          sampling: "lttb",
+          itemStyle: {
+            color: "#6366f1",
+          },
+          lineStyle: {
+            width: 1,
+          },
+          data: chartData.unique,
+        },
+      ],
+    };
+  }, [chartData, chunks.length]);
 
   return (
     <div className="w-full space-y-4">
@@ -177,20 +215,13 @@ export const UserDistributionChart: React.FC<Props> = ({
       </div>
 
       {/* 차트 */}
-      <div className="overflow-x-auto w-full">
-        <div className="min-w-full" style={{ width: chartWidth }}>
-          <Line
-            data={{
-              datasets,
-            }}
-            width={chartWidth}
-            height={300}
-            options={userDistributionChartOptions(
-              chunks.length,
-              new Date(startAt)
-            )}
-          />
-        </div>
+      <div className="w-full">
+        <ReactECharts
+          onChartReady={connectGrouper}
+          option={echartsOption}
+          style={{ height: 300 }}
+          opts={{ renderer: "canvas" }}
+        />
       </div>
     </div>
   );

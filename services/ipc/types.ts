@@ -326,6 +326,7 @@ export interface ReportMetadata {
 }
 
 export interface ReportChunk {
+  timestamp: string;
   user: UserVital;
   chat: ChatVital;
   event: EventVital;

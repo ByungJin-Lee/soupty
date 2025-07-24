@@ -7,8 +7,8 @@ type Props = {
 
 export const ViewerTrendChart: React.FC<Props> = ({ data }) => {
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-      <h4 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+    <div className="bg-white border border-gray-200 rounded-xl  shadow-sm">
+      <h4 className="text-lg font-semibold mb-4 text-gray-800 flex p-6 items-center">
         <span className="bg-red-100 text-red-800 px-2 py-1 rounded-md text-sm mr-2">
           📈
         </span>
