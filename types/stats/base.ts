@@ -4,6 +4,7 @@ export enum StatsType {
   ChatPerMinute = "ChatPerMinute",
   WordCount = "WordCount",
   ActiveChatterRanking = "ActiveChatterRanking",
+  Sentiment = "Sentiment",
 }
 
 export interface BaseStats {

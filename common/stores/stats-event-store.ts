@@ -3,6 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 import {
   ActiveChatterRankingStats,
   ActiveViewerStats,
+  SentimentStats,
   Stats,
   StatsType,
   WordCountStats,
@@ -20,6 +21,7 @@ interface StatsEventState {
   cpm: StatsDatasource<CircularQueue<NumericValue>>;
   activeChatterRanking: StatsDatasource<ActiveChatterRankingStats>;
   wordCount: StatsDatasource<WordCountStats>;
+  sentiment: StatsDatasource<SentimentStats>;
 }
 
 interface StatsDatasource<T> {
@@ -92,6 +94,20 @@ export const useStatsEventStore = create<StatsEventState & StatsEventActions>()(
         },
         lastUpdated: now,
       },
+      sentiment: {
+        data: {
+          positiveCount: 0,
+          negativeCount: 0,
+          neutralCount: 0,
+          totalCount: 0,
+          positiveRatio: 0,
+          negativeRatio: 0,
+          neutralRatio: 0,
+          averageScore: 0,
+          timestamp: "",
+        },
+        lastUpdated: now,
+      },
       handleStatsEvent(e) {
         switch (e.type) {
           case StatsType.LOL:
@@ -116,6 +132,9 @@ export const useStatsEventStore = create<StatsEventState & StatsEventActions>()(
             break;
           case StatsType.ActiveChatterRanking:
             update("activeChatterRanking", e.payload);
+            break;
+          case StatsType.Sentiment:
+            update("sentiment", e.payload);
             break;
           default:
             console.log(e);

@@ -12,13 +12,11 @@ use crate::{
             add_target_user, check_for_updates, connect_database, get_target_users, remove_target_user, setup_ai, setup_app_state, show_main_window,
         },
     },
-    sentiment_analyzer::analyze_chat,
 };
 
 mod commands;
 mod controllers;
 mod models;
-mod sentiment_analyzer;
 mod services;
 mod state;
 mod util;
@@ -37,7 +35,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(generate_handler![
-            analyze_chat,
             fetch_streamer_live,
             fetch_streamer_station,
             fetch_streamer_emoticon,

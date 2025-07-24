@@ -2,6 +2,8 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use soup_sdk::chat::types::User;
 
+use super::sentiment_stats::SentimentSummary;
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatPerMinuteData {
@@ -53,6 +55,7 @@ pub enum StatsMatrix {
     ActiveViewer(ActiveViewerData),
     ActiveChatterRanking(ActiveChatterRankingData),
     WordCount(WordCountData),
+    Sentiment(SentimentSummary),
 }
 
 // 전처리 과정을 거친 이벤트입니다.

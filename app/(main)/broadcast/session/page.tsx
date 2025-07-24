@@ -3,6 +3,7 @@
 import { connect } from "echarts";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BackButton, PrintButton } from "~/common/ui";
 import { BroadcastSessionHeader } from "~/features/report/components/broadcast-session-header";
 import { Report } from "~/features/report/components/report";
 import { getBroadcastSessionDetail } from "~/services/ipc/broadcast-session";
@@ -186,8 +187,12 @@ export default function BroadcastSessionDetailPage() {
   }
 
   return (
-    <div className="py-2  flex-1 overflow-y-scroll invisible-scrollbar">
-      <div className="max-w-4xl mx-auto">
+    <div className="py-2 flex-1 print:!block overflow-y-scroll invisible-scrollbar print:!overflow-visible">
+      <div className="max-w-4xl mx-auto print:!p-6">
+        <div className="flex items-center justify-between mb-4 print:!hidden">
+          <BackButton />
+          <PrintButton />
+        </div>
         <BroadcastSessionHeader session={session} />
 
         {/* 리포트 섹션 */}

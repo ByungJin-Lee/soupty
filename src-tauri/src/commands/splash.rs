@@ -80,12 +80,9 @@ pub async fn setup_ai(app_handle: AppHandle) -> Result<(), String> {
             .map_err(|e| format!("ONNX Runtime 초기화 실패: {}", e))?;
     }
 
-    // ONNX 세션 생성
-    let onnx_session = crate::sentiment_analyzer::OnnxSession::new(model_dir)
-        .map_err(|e| format!("ONNX 세션 생성 실패: {}", e))?;
-
-    // 글로벌 상태에 ONNX 세션 저장
-    app_handle.manage(onnx_session);
+    // 감정분석 모델 초기화
+    crate::services::ai::SentimentAnalyzer::initialize(model_dir)
+        .map_err(|e| format!("감정분석 모델 초기화 실패: {}", e))?;
 
     println!("AI 설정 완료");
     Ok(())

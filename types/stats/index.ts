@@ -6,6 +6,7 @@ import { ActiveViewerStats } from "./active-viewer";
 import { StatsType } from "./base";
 import { CPMStats } from "./cpm";
 import { LOLStats } from "./lol";
+import { SentimentStats } from "./sentiment";
 import { WordCountItem, WordCountStats } from "./word-count";
 
 export * from "./base";
@@ -20,7 +21,8 @@ export type Stats =
   | _StatsMap<StatsType.LOL, LOLStats>
   | _StatsMap<StatsType.ChatPerMinute, CPMStats>
   | _StatsMap<StatsType.WordCount, WordCountStats>
-  | _StatsMap<StatsType.ActiveChatterRanking, ActiveChatterRankingStats>;
+  | _StatsMap<StatsType.ActiveChatterRanking, ActiveChatterRankingStats>
+  | _StatsMap<StatsType.Sentiment, SentimentStats>;
 
 export type {
   ActiveChatterRankingItem,
@@ -28,6 +30,7 @@ export type {
   ActiveViewerStats,
   CPMStats,
   LOLStats,
+  SentimentStats,
   WordCountItem,
   WordCountStats,
 };

@@ -44,4 +44,10 @@ export const StatsDescriptions: Record<StatsType, Description> = {
     dataRange: "최근 1분",
     cycle: 1,
   },
+  [StatsType.Sentiment]: {
+    text: "감정 분석",
+    description: "AI가 분석한 채팅의 감정 상태를 실시간으로 보여줍니다. 긍정, 중립, 부정 비율과 평균 감정 점수를 확인할 수 있습니다.",
+    dataRange: "최근 15초",
+    cycle: 1,
+  },
 };

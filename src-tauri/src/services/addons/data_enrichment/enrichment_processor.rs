@@ -1,15 +1,18 @@
 use super::token_analyzer::TokenAnalyzer;
 use crate::models::events::*;
+use crate::services::ai::SentimentAnalyzer;
 use crate::services::stats::models::*;
 
 pub struct EnrichmentProcessor {
     token_analyzer: &'static TokenAnalyzer,
+    sentiment_analyzer: Option<&'static SentimentAnalyzer>,
 }
 
 impl EnrichmentProcessor {
     pub fn new() -> Self {
         Self {
             token_analyzer: TokenAnalyzer::global(),
+            sentiment_analyzer: SentimentAnalyzer::global(),
         }
     }
 
@@ -23,6 +26,10 @@ impl EnrichmentProcessor {
         let word_count = tokens.len();
         let character_count = event.comment.chars().count();
 
+        // 감정 분석 수행 (실시간이므로 성능 문제 없음)
+        let sentiment_analysis = self.sentiment_analyzer
+            .and_then(|analyzer| analyzer.analyze(&event.comment).ok());
+
         Some(EnrichedChatData {
             event_id: event.id,
             channel_id: event.channel_id.clone(),
@@ -33,6 +40,7 @@ impl EnrichmentProcessor {
             word_count,
             character_count,
             is_lol: self.is_lol(&event.comment),
+            sentiment_analysis,
         })
     }
 

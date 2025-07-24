@@ -4,6 +4,7 @@ import { ActiveChatterRankChart } from "./active-chatter-rank-chart";
 import { ActiveViewerChart } from "./active-viewer-chart";
 import { CPMChart } from "./cpm-chart";
 import { LOLChart } from "./lol-chart";
+import { SentimentChart } from "./sentiment-chart";
 import { WordCloud } from "./word-cloud";
 
 type Props = {
@@ -61,6 +62,8 @@ const StatsContent = ({ type }: { type: StatsType }) => {
       return <ActiveChatterRankChart />;
     case StatsType.ChatPerMinute:
       return <CPMChart />;
+    case StatsType.Sentiment:
+      return <SentimentChart />;
     default:
       return <div>Unknown Stats Type</div>;
   }

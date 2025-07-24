@@ -41,7 +41,7 @@ export const BroadcastSessionList: React.FC = () => {
     <div className="flex flex-col flex-1">
       {/* 헤더 */}
       <div className="mt-2">
-        <h1 className="text-xl font-bold text-gray-900 mb-2">방송 세션</h1>
+        <h1 className="text-xl  font-bold text-gray-900 mb-2">방송 세션</h1>
       </div>
 
       {/* 필터 */}

@@ -6,5 +6,6 @@ pub mod interface;
 pub mod lol_stats;
 pub mod matrix;
 pub mod models;
+pub mod sentiment_stats;
 pub mod stats_trait;
 pub mod word_count_stats;

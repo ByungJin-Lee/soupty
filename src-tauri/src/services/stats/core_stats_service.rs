@@ -10,6 +10,7 @@ use crate::services::stats::active_chatter_ranking_stats::ActiveChatterRankingSt
 use crate::services::stats::active_viewer_stats::ActiveViewerStats;
 use crate::services::stats::interface::StatsMatrix;
 use crate::services::stats::lol_stats::LOLStats;
+use crate::services::stats::sentiment_stats::SentimentStats;
 use crate::services::stats::word_count_stats::WordCountStats;
 
 use super::chat_per_minute_stats::ChatPerMinuteStats;
@@ -54,6 +55,7 @@ impl CoreStatsService {
         service.add_stats_processor(Box::new(ActiveViewerStats::new()));
         service.add_stats_processor(Box::new(ActiveChatterRankingStats::new()));
         service.add_stats_processor(Box::new(WordCountStats::new()));
+        service.add_stats_processor(Box::new(SentimentStats::new()));
         service
     }
 
