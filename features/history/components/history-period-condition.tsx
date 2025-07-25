@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Calendar, X } from "react-feather";
+import { formatDate } from "~/common/utils";
 
 type Props = {
   startDate?: string;
@@ -20,15 +21,6 @@ export const HistoryPeriodCondition: React.FC<Props> = ({
     e.stopPropagation();
     onStartDateChange();
     onEndDateChange();
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
   };
 
   const getPeriodText = () => {

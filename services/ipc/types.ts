@@ -25,6 +25,7 @@ export enum IpcRequestWithPayload {
   DeleteBroadcastSession = "delete_broadcast_session",
   GetBroadcastSession = "get_broadcast_session",
   SearchBroadcastSessions = "search_broadcast_sessions",
+  UpdateBroadcastSessionEndTime = "update_broadcast_session_end_time",
   CreateReport = "create_report",
   DeleteReport = "delete_report",
   GetReport = "get_report",
@@ -82,6 +83,10 @@ export interface IpcPayloadMap {
   [IpcRequestWithPayload.SearchBroadcastSessions]: {
     filters: BroadcastSessionSearchFilters;
     pagination: PaginationParams;
+  };
+  [IpcRequestWithPayload.UpdateBroadcastSessionEndTime]: {
+    broadcastId: number;
+    endedAt: string;
   };
   [IpcRequestWithPayload.CreateReport]: {
     broadcastId: number;

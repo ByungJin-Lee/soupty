@@ -94,6 +94,13 @@ pub enum DBCommand {
         reply_to: oneshot::Sender<Result<Option<BroadcastSessionResult>, String>>,
     },
 
+    // 방송 세션 종료 시간 업데이트
+    UpdateBroadcastSessionEndTime {
+        broadcast_id: i64,
+        ended_at: DateTime<Utc>,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
+
     // 리포트 관리
     CreateReport {
         broadcast_id: i64,

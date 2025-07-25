@@ -8,6 +8,9 @@ export { PromptModal } from "./prompt-modal";
 export { Pagination } from "./pagination";
 export { PaginationProvider } from "./pagination-provider";
 
+// Feedback components
+export { LoadingSpinner, ErrorMessage, NotFound } from "./feedback";
+
 // Modal components
 export { Modal } from "./modal/modal";
 export { ModalHeader } from "./modal/modal-header";

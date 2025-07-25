@@ -48,7 +48,20 @@ export const broadcastSessionService = {
       return null;
     }
   },
+
+  /**
+   * 방송 세션의 종료 시간을 업데이트합니다.
+   */
+  async updateBroadcastSessionEndTime(
+    broadcastId: number,
+    endedAt: string
+  ): Promise<void> {
+    return await ipcClient(IpcRequestWithPayload.UpdateBroadcastSessionEndTime, {
+      broadcastId,
+      endedAt,
+    });
+  },
 };
 
 // Export individual functions for convenience
-export const { deleteBroadcastSession, searchBroadcastSessions, getBroadcastSessionDetail } = broadcastSessionService;
+export const { deleteBroadcastSession, searchBroadcastSessions, getBroadcastSessionDetail, updateBroadcastSessionEndTime } = broadcastSessionService;

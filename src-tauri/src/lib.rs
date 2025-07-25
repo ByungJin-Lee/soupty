@@ -2,7 +2,7 @@ use tauri::generate_handler;
 
 use crate::{
     commands::{
-        broadcast_session::{delete_broadcast_session, get_broadcast_session, search_broadcast_sessions},
+        broadcast_session::{delete_broadcast_session, get_broadcast_session, search_broadcast_sessions, update_broadcast_session_end_time},
         channel::{delete_channel, get_channels, upsert_channel},
         chat_history::{search_chat_logs, search_event_logs},
         main_controller::{get_main_controller_context, start_main_controller, stop_main_controller},
@@ -54,6 +54,7 @@ pub fn run() {
             delete_broadcast_session,
             get_broadcast_session,
             search_broadcast_sessions,
+            update_broadcast_session_end_time,
             create_report,
             delete_report,
             get_report,

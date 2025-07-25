@@ -102,6 +102,11 @@ impl DBActor {
                 broadcast_id,
                 reply_to,
             } => handlers.handle_get_broadcast_session(broadcast_id, reply_to),
+            DBCommand::UpdateBroadcastSessionEndTime {
+                broadcast_id,
+                ended_at,
+                reply_to,
+            } => handlers.handle_update_broadcast_session_end_time(broadcast_id, ended_at, reply_to),
             DBCommand::CreateReport {
                 broadcast_id,
                 reply_to,

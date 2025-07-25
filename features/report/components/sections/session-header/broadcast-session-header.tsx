@@ -1,4 +1,5 @@
 import { formatTimestamp } from "~/common/utils/format";
+import { useBroadcastSessionEndTime } from "~/features/report/hooks";
 import { ChannelAvatar } from "~/features/soop/components/channel/channel-avatar";
 import { BroadcastSession } from "~/services/ipc/types";
 
@@ -7,6 +8,15 @@ type Props = {
 };
 
 export const BroadcastSessionHeader: React.FC<Props> = ({ session }) => {
+  const {
+    isEditingEndTime,
+    endTime,
+    setEndTime,
+    handleSetEndTime,
+    handleSaveEndTime,
+    handleCancelEdit,
+  } = useBroadcastSessionEndTime(session);
+
   return (
     <div className="space-y-4  mb-4">
       {/* 헤더 */}
@@ -73,18 +83,53 @@ export const BroadcastSessionHeader: React.FC<Props> = ({ session }) => {
               </span>
             </dd>
           </div>
-          {session.endedAt && (
-            <div className="space-y-1">
-              <dt className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-                종료 시간
-              </dt>
+          <div className="space-y-1">
+            <dt className="text-sm font-semibold text-gray-600 uppercase tracking-wide flex items-center justify-between">
+              종료 시간
+              {!isEditingEndTime && (
+                <button
+                  onClick={handleSetEndTime}
+                  className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-md transition-colors"
+                >
+                  {session.endedAt ? "수정" : "설정"}
+                </button>
+              )}
+            </dt>
+            {session.endedAt || isEditingEndTime ? (
               <dd className="text-lg text-gray-900 bg-red-50 px-3 py-1 rounded-md border border-red-200">
-                <span className="font-medium">
-                  🕐 {formatTimestamp(session.endedAt)}
-                </span>
+                {isEditingEndTime ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="datetime-local"
+                      value={endTime.slice(0, 16)}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      className="text-sm border border-gray-300 rounded px-2 py-1 flex-1"
+                    />
+                    <button
+                      onClick={handleSaveEndTime}
+                      className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded transition-colors"
+                    >
+                      저장
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded transition-colors"
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <span className="font-medium">
+                    🕐 {formatTimestamp(session.endedAt!)}
+                  </span>
+                )}
               </dd>
-            </div>
-          )}
+            ) : (
+              <dd className="text-lg text-gray-500 bg-gray-50 px-3 py-1 rounded-md border border-gray-200">
+                <span className="font-medium italic">미설정</span>
+              </dd>
+            )}
+          </div>
         </div>
       </div>
     </div>

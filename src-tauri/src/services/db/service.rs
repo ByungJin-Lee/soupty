@@ -270,6 +270,25 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
+    pub async fn update_broadcast_session_end_time(
+        &self,
+        broadcast_id: i64,
+        ended_at: DateTime<Utc>,
+    ) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::UpdateBroadcastSessionEndTime {
+                broadcast_id,
+                ended_at,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
     // 리포트 관련 메서드
     pub async fn create_report(&self, broadcast_id: i64) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();

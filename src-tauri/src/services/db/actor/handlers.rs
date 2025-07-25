@@ -775,6 +775,16 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
+    pub fn handle_update_broadcast_session_end_time(
+        &self,
+        broadcast_id: i64,
+        ended_at: DateTime<Utc>,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self.update_broadcast_session_end_time_impl(broadcast_id, ended_at);
+        let _ = reply_to.send(result);
+    }
+
     // 방송 세션 삭제 구현
     fn delete_broadcast_session_impl(&self, broadcast_id: i64) -> Result<(), String> {
         let query = "DELETE FROM broadcast_sessions WHERE id = ?1";
@@ -958,6 +968,25 @@ impl<'a> CommandHandlers<'a> {
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
             Err(e) => Err(e.to_string()),
         }
+    }
+
+    fn update_broadcast_session_end_time_impl(
+        &self,
+        broadcast_id: i64,
+        ended_at: DateTime<Utc>,
+    ) -> Result<(), String> {
+        let query = "UPDATE broadcast_sessions SET ended_at = ?1 WHERE id = ?2";
+        
+        let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
+        
+        let rows_affected = stmt.execute([ended_at.to_rfc3339(), broadcast_id.to_string()])
+            .map_err(|e| e.to_string())?;
+
+        if rows_affected == 0 {
+            return Err(format!("No broadcast session found with id: {}", broadcast_id));
+        }
+
+        Ok(())
     }
 
     // 리포트 관련 핸들러들
