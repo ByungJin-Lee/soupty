@@ -1,5 +1,6 @@
 import { ReportData } from "~/services/ipc/types";
 import { MuteTrendChart } from "./mute-trend-chart";
+import { MuteUsersTable } from "./mute-users-table";
 
 type Props = {
   data: ReportData;
@@ -16,6 +17,7 @@ export const ModerationReport: React.FC<Props> = ({ data }) => {
       </h3>
 
       <MuteTrendChart data={data} />
+      <MuteUsersTable histories={data.moderationAnalysis.totalMuteHistories} />
     </div>
   );
 };

@@ -65,11 +65,13 @@ export const useUserPopover = (payload: UserPopoverPayload) => {
   };
 };
 
-export const useUserPopoverDispatch = (user: UserPopoverPayload) => {
+export const useUserPopoverDispatch = (user?: UserPopoverPayload | null) => {
   const togglePopover = usePopoverStore((t) => t.togglePopover);
 
   return useCallback(
     (event: React.MouseEvent) => {
+      if (!user) return;
+
       togglePopover(PopoverId.UserInfo, user.id, event, user);
     },
     [user, togglePopover]

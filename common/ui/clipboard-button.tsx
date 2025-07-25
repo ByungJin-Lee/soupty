@@ -11,8 +11,8 @@ export const ClipboardButton: React.FC<Props> = ({ value, size = 16 }) => {
   };
 
   return (
-    <div className="inline-flex cursor-pointer hover:bg-gray-200 p-1 rounded-full">
+    <button className="inline-flex cursor-pointer hover:bg-gray-200 p-1 rounded-full">
       <Clipboard className="inline" size={size} onClick={handleClick} />
-    </div>
+    </button>
   );
 };

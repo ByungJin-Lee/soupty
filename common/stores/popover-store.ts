@@ -3,6 +3,7 @@ import { subscribeWithSelector } from "zustand/middleware";
 
 export enum PopoverId {
   UserInfo = "user-info",
+  MuteLog = "mute-log",
   // 추후 다른 popover 추가 시 여기에 enum 값 추가
 }
 
