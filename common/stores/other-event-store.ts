@@ -24,15 +24,19 @@ export const useOtherEventStore = create<OtherEventState & OtherEventActions>()(
       lastUpdate: Date.now(),
 
       handleOtherEvent(e) {
-        // Other 이벤트 처리 로직
-        const processed: DomainEvent = {
-          id: e.payload.id,
-          type: e.type,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          payload: e.payload as any,
-        };
-        get().otherQueue.push(processed);
-        forceUpdate();
+        try {
+          // Other 이벤트 처리 로직
+          const processed: DomainEvent = {
+            id: e.payload.id,
+            type: e.type,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            payload: e.payload as any,
+          };
+          get().otherQueue.push(processed);
+          forceUpdate();
+        } catch (err) {
+          console.error(e, err);
+        }
       },
 
       addEvent(event) {

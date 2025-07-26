@@ -787,16 +787,134 @@ impl<'a> CommandHandlers<'a> {
 
     // 방송 세션 삭제 구현
     fn delete_broadcast_session_impl(&self, broadcast_id: i64) -> Result<(), String> {
-        let query = "DELETE FROM broadcast_sessions WHERE id = ?1";
+        // 먼저 CASCADE DELETE 시도
+        match self.try_cascade_delete(broadcast_id) {
+            Ok(()) => Ok(()),
+            Err(_) => {
+                // CASCADE 실패 시 수동 삭제로 폴백
+                self.manual_cascade_delete(broadcast_id)
+            }
+        }
+    }
+
+    // CASCADE DELETE 시도
+    fn try_cascade_delete(&self, broadcast_id: i64) -> Result<(), String> {
+        // 외래 키 무결성 검사
+        let has_violations = self.check_foreign_key_violations()?;
         
-        let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
-        
-        let rows_affected = stmt.execute([broadcast_id]).map_err(|e| e.to_string())?;
-        
+        if has_violations {
+            return Err("Foreign key violations detected".to_string());
+        }
+
+        // 정상적인 CASCADE DELETE 시도
+        let rows_affected = self.conn.execute("DELETE FROM broadcast_sessions WHERE id = ?1", [broadcast_id])
+            .map_err(|e| format!("CASCADE DELETE failed: {}", e))?;
+
         if rows_affected == 0 {
             return Err(format!("Broadcast session with id {} not found", broadcast_id));
         }
+
+        Ok(())
+    }
+
+    // 외래 키 무결성 검사
+    fn check_foreign_key_violations(&self) -> Result<bool, String> {
+        let mut stmt = self.conn.prepare("PRAGMA foreign_key_check")
+            .map_err(|e| e.to_string())?;
         
+        let violations = stmt.query_map([], |_| Ok(()))
+            .map_err(|e| e.to_string())?;
+        
+        // 하나라도 위반이 있으면 true 반환
+        for _ in violations {
+            return Ok(true);
+        }
+        
+        Ok(false)
+    }
+
+    // 수동 CASCADE 삭제 (FTS 트리거 문제 해결)
+    fn manual_cascade_delete(&self, broadcast_id: i64) -> Result<(), String> {
+        // 트랜잭션으로 안전하게 처리
+        self.conn.execute("BEGIN IMMEDIATE", [])
+            .map_err(|e| format!("Transaction start failed: {}", e))?;
+
+        let result = self.execute_manual_cascade(broadcast_id);
+
+        match result {
+            Ok(()) => {
+                self.conn.execute("COMMIT", [])
+                    .map_err(|e| format!("Commit failed: {}", e))?;
+                self.recreate_fts_triggers()?;
+                Ok(())
+            }
+            Err(e) => {
+                let _ = self.conn.execute("ROLLBACK", []);
+                let _ = self.recreate_fts_triggers();
+                Err(e)
+            }
+        }
+    }
+
+    // 실제 수동 삭제 작업
+    fn execute_manual_cascade(&self, broadcast_id: i64) -> Result<(), String> {
+        // 1. FTS 트리거 임시 비활성화
+        self.disable_fts_triggers()?;
+
+        // 2. FTS 레코드 삭제
+        self.conn.execute(
+            "DELETE FROM chat_logs_fts WHERE chat_log_id IN (SELECT id FROM chat_logs WHERE broadcast_id = ?1)",
+            [broadcast_id]
+        ).map_err(|e| format!("FTS deletion failed: {}", e))?;
+
+        // 3. 관련 테이블 순차 삭제
+        self.conn.execute("DELETE FROM chat_logs WHERE broadcast_id = ?1", [broadcast_id])
+            .map_err(|e| format!("Chat logs deletion failed: {}", e))?;
+
+        self.conn.execute("DELETE FROM event_logs WHERE broadcast_id = ?1", [broadcast_id])
+            .map_err(|e| format!("Event logs deletion failed: {}", e))?;
+
+        self.conn.execute("DELETE FROM reports WHERE broadcast_id = ?1", [broadcast_id])
+            .map_err(|e| format!("Reports deletion failed: {}", e))?;
+
+        // 4. 방송 세션 삭제
+        let rows_affected = self.conn.execute("DELETE FROM broadcast_sessions WHERE id = ?1", [broadcast_id])
+            .map_err(|e| format!("Broadcast session deletion failed: {}", e))?;
+
+        if rows_affected == 0 {
+            return Err(format!("Broadcast session with id {} not found", broadcast_id));
+        }
+
+        Ok(())
+    }
+
+    // FTS 트리거 비활성화
+    fn disable_fts_triggers(&self) -> Result<(), String> {
+        self.conn.execute("DROP TRIGGER IF EXISTS t_chat_logs_delete", [])
+            .map_err(|e| format!("Failed to drop delete trigger: {}", e))?;
+        self.conn.execute("DROP TRIGGER IF EXISTS t_chat_logs_update", [])
+            .map_err(|e| format!("Failed to drop update trigger: {}", e))?;
+        Ok(())
+    }
+
+    // FTS 트리거 재생성
+    fn recreate_fts_triggers(&self) -> Result<(), String> {
+        self.conn.execute_batch(
+            "
+            CREATE TRIGGER IF NOT EXISTS t_chat_logs_delete AFTER DELETE ON chat_logs
+            BEGIN
+                INSERT INTO chat_logs_fts(chat_logs_fts, rowid) VALUES ('delete', old.id);
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS t_chat_logs_update AFTER UPDATE ON chat_logs
+            BEGIN
+                INSERT INTO chat_logs_fts(chat_logs_fts, rowid, message_jamo, chat_log_id)
+                VALUES ('delete', old.id, DECOMPOSE_HANGUL(old.message), old.id);
+                INSERT INTO chat_logs_fts(rowid, message_jamo, chat_log_id)
+                VALUES (new.id, DECOMPOSE_HANGUL(new.message), new.id);
+            END;
+            "
+        ).map_err(|e| format!("Failed to recreate triggers: {}", e))?;
         Ok(())
     }
 

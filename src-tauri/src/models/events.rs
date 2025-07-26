@@ -49,7 +49,7 @@ pub enum DomainEvent {
     Chat(ChatEvent),
     Donation(DonationEvent),
     Subscribe(SubscribeEvent),
-    // Kick(UserEvent),
+    Kick(UserEvent),
     KickCancel(SimplifiedUserEvent),
     Mute(MuteEvent),
     Black(SimplifiedUserEvent),
@@ -170,7 +170,6 @@ pub struct UserEvent {
     pub id: uuid::Uuid,
     pub timestamp: DateTime<Utc>,
     pub channel_id: String,
-    #[serde(flatten)]
     pub user: User,
 }
 

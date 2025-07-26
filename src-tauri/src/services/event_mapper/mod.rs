@@ -95,6 +95,13 @@ fn map_sdk_to_domain_legacy(channel_id: &str, sdk_event: &SdkEvent) -> Option<Do
         // Chat은 새로운 EventMapper에서 처리하므로 제외
         SdkEvent::Chat(_) => None,
 
+        SdkEvent::Kick(sdk_kick) => Some(DomainEvent::Kick(UserEvent {
+            id: Uuid::new_v4(),
+            timestamp: sdk_kick.meta.received_time,
+            channel_id: channel_id.to_string(),
+            user: sdk_kick.user.clone(),
+        })),
+
         // Donation은 새로운 EventMapper에서 처리하므로 제외
         SdkEvent::Donation(_) => None,
 

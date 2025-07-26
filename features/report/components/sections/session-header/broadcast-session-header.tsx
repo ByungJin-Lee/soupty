@@ -1,6 +1,10 @@
+import { useRouter } from "next/navigation";
+import { confirm } from "~/common/stores/confirm-modal-store";
 import { formatTimestamp } from "~/common/utils/format";
+import { route } from "~/constants";
 import { useBroadcastSessionEndTime } from "~/features/report/hooks";
 import { ChannelAvatar } from "~/features/soop/components/channel/channel-avatar";
+import { deleteBroadcastSession } from "~/services/ipc/broadcast-session";
 import { BroadcastSession } from "~/services/ipc/types";
 
 type Props = {
@@ -17,6 +21,26 @@ export const BroadcastSessionHeader: React.FC<Props> = ({ session }) => {
     handleCancelEdit,
   } = useBroadcastSessionEndTime(session);
 
+  const router = useRouter();
+
+  const handleDeleteSession = async () => {
+    const confirmed = await confirm(
+      "방송 세션 삭제",
+      "이 방송 세션을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+    );
+
+    if (confirmed) {
+      try {
+        deleteBroadcastSession(session.id).then(() => {
+          router.push(route.broadcast);
+        });
+      } catch (error) {
+        console.error("Failed to delete session:", error);
+        alert("세션 삭제에 실패했습니다.");
+      }
+    }
+  };
+
   return (
     <div className="space-y-4  mb-4">
       {/* 헤더 */}
@@ -28,18 +52,26 @@ export const BroadcastSessionHeader: React.FC<Props> = ({ session }) => {
             </span>
             {session.title}
           </h1>
-          {!session.endedAt && (
-            <span className="px-4 py-2 bg-green-100 text-green-800 text-sm font-semibold rounded-full border border-green-200 flex items-center">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-              진행 중
-            </span>
-          )}
-          {session.endedAt && (
-            <span className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full border border-gray-200 flex items-center">
-              <span className="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
-              종료됨
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            {!session.endedAt && (
+              <span className="px-4 py-2 bg-green-100 text-green-800 text-sm font-semibold rounded-full border border-green-200 flex items-center">
+                <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                진행 중
+              </span>
+            )}
+            {session.endedAt && (
+              <span className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full border border-gray-200 flex items-center">
+                <span className="w-2 h-2 bg-gray-500 rounded-full mr-2"></span>
+                종료됨
+              </span>
+            )}
+            <button
+              onClick={handleDeleteSession}
+              className="px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 text-sm font-semibold rounded-lg border border-red-200 transition-colors flex items-center"
+            >
+              🗑️ 삭제
+            </button>
+          </div>
         </div>
       </div>
 

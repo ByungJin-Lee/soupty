@@ -33,13 +33,15 @@ export const broadcastSessionService = {
   /**
    * 특정 방송 세션의 상세 정보를 가져옵니다.
    */
-  async getBroadcastSessionDetail(sessionId: string): Promise<BroadcastSession | null> {
+  async getBroadcastSessionDetail(
+    sessionId: string
+  ): Promise<BroadcastSession | null> {
     try {
       const broadcastId = parseInt(sessionId, 10);
       if (isNaN(broadcastId)) {
         throw new Error("Invalid session ID");
       }
-      
+
       return await ipcClient(IpcRequestWithPayload.GetBroadcastSession, {
         broadcastId,
       });
@@ -55,13 +57,21 @@ export const broadcastSessionService = {
   async updateBroadcastSessionEndTime(
     broadcastId: number,
     endedAt: string
-  ): Promise<void> {
-    return await ipcClient(IpcRequestWithPayload.UpdateBroadcastSessionEndTime, {
-      broadcastId,
-      endedAt,
-    });
+  ): Promise<unknown> {
+    return await ipcClient(
+      IpcRequestWithPayload.UpdateBroadcastSessionEndTime,
+      {
+        broadcastId,
+        endedAt,
+      }
+    );
   },
 };
 
 // Export individual functions for convenience
-export const { deleteBroadcastSession, searchBroadcastSessions, getBroadcastSessionDetail, updateBroadcastSessionEndTime } = broadcastSessionService;
+export const {
+  deleteBroadcastSession,
+  searchBroadcastSessions,
+  getBroadcastSessionDetail,
+  updateBroadcastSessionEndTime,
+} = broadcastSessionService;
