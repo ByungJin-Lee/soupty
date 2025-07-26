@@ -3,6 +3,7 @@ import { GlobalPopoverProvider } from "~/common/components/global-popover-provid
 import { GlobalNavigationBar } from "~/common/ui/global-navigation-bar";
 import { PromptModal } from "~/common/ui/prompt-modal";
 import { WindowTitlebar } from "~/common/ui/window-titlebar/window-titlebar";
+import { LiveUserHistoryModal } from "~/features/live/components/live-user-history";
 
 export default function MainLayout({
   children,
@@ -13,6 +14,7 @@ export default function MainLayout({
     <main className="flex flex-col h-full">
       <GlobalEventProvider />
       <PromptModal />
+      <LiveUserHistoryModal />
       <GlobalPopoverProvider />
       <WindowTitlebar>
         <GlobalNavigationBar />

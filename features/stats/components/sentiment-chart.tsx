@@ -5,8 +5,6 @@ export const SentimentChart = () => {
   useStatsEventStore((v) => v.sentiment.lastUpdated);
   const sentimentData = useStatsEventStore((v) => v.sentiment.data);
 
-  console.log(sentimentData);
-
   const data = {
     labels: ["긍정", "중립", "부정"],
     datasets: [

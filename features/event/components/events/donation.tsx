@@ -1,3 +1,4 @@
+import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { DonationEvent, DonationType } from "~/types";
 import {
   getAmountColor,
@@ -10,6 +11,10 @@ type Props = {
 
 export const DonationRow: React.FC<Props> = ({ data }) => {
   const isSpecialEvent = data.becomeTopFan || data.fanClubOrdinal > 0;
+  const handleClick = useUserPopoverDispatch({
+    id: data.from,
+    label: data.fromLabel,
+  });
 
   return (
     <div
@@ -46,7 +51,10 @@ export const DonationRow: React.FC<Props> = ({ data }) => {
       <div className="flex items-center">
         <div className="flex items-center gap-2">
           <span className="text-sm text-orange-700 font-medium">후원자:</span>
-          <span className=" text-orange-800 text-md bg-yellow-200/60 px-2 py-0.5 rounded-lg">
+          <span
+            onClick={handleClick}
+            className="cursor-pointer text-orange-800 text-md bg-yellow-200/60 px-2 py-0.5 rounded-lg"
+          >
             {data.fromLabel}
           </span>
         </div>

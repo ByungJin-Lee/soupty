@@ -8,6 +8,7 @@ import {
   withPopover,
 } from "~/common/ui/popover";
 import { isTargetUser } from "~/common/utils/target-users";
+import { useLiveUserHistoryStore } from "~/features/live/stores/live-user-history";
 import { useUserPopover } from "../hooks/user-popover";
 import { UserPopoverPayload } from "../types/user";
 
@@ -16,6 +17,7 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
 }) => {
   const { userInfo, isLoading, handleToggleTargetUser } =
     useUserPopover(payload);
+  const openLiveUserHistory = useLiveUserHistoryStore((v) => v.open);
 
   const isTarget = userInfo.userId ? isTargetUser(userInfo.userId) : false;
 
@@ -86,6 +88,14 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
             </span>
           )}
         </div>
+      </div>
+      <div className="border-t border-gray-200 mt-2">
+        <p
+          className="cursor-pointer py-1 px-0.5 text-sm text-gray-600 hover:bg-gray-200 rounded-md"
+          onClick={() => openLiveUserHistory(userInfo.userId)}
+        >
+          라이브 기록
+        </p>
       </div>
     </div>
   );

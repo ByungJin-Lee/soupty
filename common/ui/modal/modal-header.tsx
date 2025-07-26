@@ -15,7 +15,7 @@ export function ModalHeader({
 
   return (
     <div className="mb-2 flex items-center justify-between">
-      {title && <h2 className="text-lg">{title}</h2>}
+      {title && <h2 className="text-md font-semibold mr-2">{title}</h2>}
       {showCloseButton && <CloseButton onClick={onClose} />}
     </div>
   );

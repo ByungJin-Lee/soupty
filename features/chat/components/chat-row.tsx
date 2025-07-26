@@ -46,7 +46,7 @@ type MessageProps = {
   parts: MessagePart[];
 };
 
-const ChatMessage: React.FC<MessageProps> = ({ parts }) => {
+export const ChatMessage: React.FC<MessageProps> = ({ parts }) => {
   return (
     <div className="break-all">
       {parts.map((p, i) => {

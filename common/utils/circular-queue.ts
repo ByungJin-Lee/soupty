@@ -42,6 +42,23 @@ export default class CircularQueue<T> {
     return result;
   }
 
+  public getFiltered(filter: (item: T) => boolean) {
+    if (this.size === 0) return [];
+
+    const result: T[] = [];
+    const start = this.size < this.capacity ? 0 : this.head;
+
+    for (let i = 0; i < this.size; i++) {
+      const index = (start + i) % this.capacity;
+      const item = this.buffer[index];
+      if (item !== undefined && filter(item)) {
+        result.push(item);
+      }
+    }
+
+    return result;
+  }
+
   public getLatest(n: number): T[] {
     // 0 이하의 값을 요청하면 빈 배열을 반환합니다.
     if (n <= 0) {

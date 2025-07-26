@@ -1,3 +1,4 @@
+import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import {
   BattleMissionResultEvent,
   ChallengeMissionResultEvent,
@@ -25,6 +26,11 @@ type BattleMissionResultProps = {
 export const MissionDonationRow: React.FC<MissionDonationProps> = ({
   data,
 }) => {
+  const handleClick = useUserPopoverDispatch({
+    id: data.from,
+    label: data.fromLabel,
+  });
+
   return (
     <div className="my-1 mx-2 p-3 rounded-xl bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 shadow-lg shadow-purple-200/50 border border-purple-300 transform hover:scale-[1.02] transition-all duration-200">
       <div className="flex items-center justify-between">
@@ -36,7 +42,10 @@ export const MissionDonationRow: React.FC<MissionDonationProps> = ({
               : "도전 미션 후원"}
           </span>
         </div>
-        <span className="font-bold text-purple-100 text-sm bg-purple-600/60 px-2 py-1 rounded-lg">
+        <span
+          onClick={handleClick}
+          className="font-bold cursor-pointer text-purple-100 text-sm bg-purple-600/60 px-2 py-1 rounded-lg"
+        >
           {data.fromLabel}
         </span>
         <span className="text-sm font-bold text-purple-100 bg-purple-500/60 px-2 py-1 rounded-lg">
