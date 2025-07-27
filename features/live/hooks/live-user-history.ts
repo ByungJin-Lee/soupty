@@ -27,6 +27,8 @@ const getUserIdFromDomainEvent = (e: DomainEvent) => {
       return e.payload.user.id;
     case DomainEventType.Subscribe:
       return e.payload.userId;
+    case DomainEventType.Kick:
+      return e.payload.user.id;
   }
 };
 

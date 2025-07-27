@@ -34,6 +34,7 @@ type SlowProps = {
 };
 
 export const KickRow: React.FC<KickProps> = ({ data }) => {
+  const handleClick = useUserPopoverDispatch(data.user);
   return (
     <div className="my-1 mx-2 p-3 rounded-xl bg-gradient-to-r from-red-400 via-red-500 to-red-600 shadow-lg shadow-red-200/50 border border-red-300 transform hover:scale-[1.02] transition-all duration-200">
       <div className="flex items-center justify-between">
@@ -41,7 +42,10 @@ export const KickRow: React.FC<KickProps> = ({ data }) => {
           <div className="w-2 h-2 rounded-full bg-red-800 shadow-inner"></div>
           <span className="font-semibold text-red-100 text-sm">강퇴</span>
         </div>
-        <span className="font-bold text-red-100 text-sm bg-red-600/60 px-2 py-1 rounded-lg">
+        <span
+          onClick={handleClick}
+          className="font-bold cursor-pointer text-red-100 text-sm bg-red-600/60 px-2 py-1 rounded-lg"
+        >
           {data.user.label}
         </span>
       </div>

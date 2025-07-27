@@ -28,18 +28,15 @@ export default class CircularQueue<T> {
   public getAll() {
     if (this.size === 0) return [];
 
-    const result: T[] = [];
     const start = this.size < this.capacity ? 0 : this.head;
-
-    for (let i = 0; i < this.size; i++) {
-      const index = (start + i) % this.capacity;
-      const item = this.buffer[index];
-      if (item !== undefined) {
-        result.push(item);
-      }
+    
+    if (start + this.size <= this.capacity) {
+      return this.buffer.slice(start, start + this.size) as T[];
+    } else {
+      const firstPart = this.buffer.slice(start) as T[];
+      const secondPart = this.buffer.slice(0, (start + this.size) % this.capacity) as T[];
+      return firstPart.concat(secondPart);
     }
-
-    return result;
   }
 
   public getFiltered(filter: (item: T) => boolean) {

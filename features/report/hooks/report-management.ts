@@ -14,7 +14,9 @@ import {
 
 export const useReportManagement = () => {
   const [report, setReport] = useState<ReportInfo | null>(null);
-  const [reportStatus, setReportStatus] = useState<ReportStatusInfo | null>(null);
+  const [reportStatus, setReportStatus] = useState<ReportStatusInfo | null>(
+    null
+  );
   const [reportLoading, setReportLoading] = useState(false);
   const [reportError, setReportError] = useState<string | null>(null);
 

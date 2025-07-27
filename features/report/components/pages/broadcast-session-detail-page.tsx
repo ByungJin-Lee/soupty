@@ -1,22 +1,14 @@
-import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { ErrorMessage, LoadingSpinner, NotFound } from "~/common/ui";
-import { useBroadcastSessionDetail, useReportManagement } from "~/features/report/hooks";
-import { BroadcastSessionHeader } from "../sections/session-header";
+import { useBroadcastSessionDetail } from "~/features/report/hooks";
 import { ReportSection } from "../sections/report-section";
+import { BroadcastSessionHeader } from "../sections/session-header";
 
 export const BroadcastSessionDetailPage = () => {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("id");
-  
-  const { session, loading, error } = useBroadcastSessionDetail(sessionId);
-  const { loadReportInfo } = useReportManagement();
 
-  useEffect(() => {
-    if (session) {
-      loadReportInfo(session.id);
-    }
-  }, [session, loadReportInfo]);
+  const { session, loading, error } = useBroadcastSessionDetail(sessionId);
 
   if (loading) {
     return <LoadingSpinner message="세션 정보를 불러오는 중..." />;

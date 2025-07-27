@@ -1,13 +1,14 @@
 import { useMemo } from "react";
 import { UserHistory } from "~/services/ipc/types";
-import { MuteUserTableItem } from "./mute-users-table-item";
 import { MuteLog } from "./types";
+import { UserHistoriesTableItem } from "./user-histories-table-item";
 
 type Props = {
   histories: UserHistory[];
+  title: string;
 };
 
-export const MuteUsersTable: React.FC<Props> = ({ histories }) => {
+export const UserHistoriesTable: React.FC<Props> = ({ histories, title }) => {
   const merged = useMemo(() => {
     const zip = histories.reduce((acc, h) => {
       if (!acc[h.user.id]) {
@@ -36,7 +37,7 @@ export const MuteUsersTable: React.FC<Props> = ({ histories }) => {
         <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md text-sm mr-2">
           👹
         </span>
-        채팅 금지된 사용자
+        {title}
       </h4>
       {merged.length > 0 ? (
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -78,9 +79,9 @@ export const MuteUsersTable: React.FC<Props> = ({ histories }) => {
                     key={`word-row-${rowIndex}`}
                     className="hover:bg-green-25 transition-colors"
                   >
-                    <MuteUserTableItem rank={leftIdx + 1} data={lhs} />
+                    <UserHistoriesTableItem rank={leftIdx + 1} data={lhs} />
                     <td className="px-2 border-l border-gray-200"></td>
-                    <MuteUserTableItem rank={rightIdx + 1} data={rhs} />
+                    <UserHistoriesTableItem rank={rightIdx + 1} data={rhs} />
                   </tr>
                 );
               })}
@@ -90,7 +91,7 @@ export const MuteUsersTable: React.FC<Props> = ({ histories }) => {
       ) : (
         <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 text-center py-12">
           <div className="text-4xl mb-2">📝</div>
-          <div className="font-medium">분석된 단어가 없습니다</div>
+          <div className="font-medium">데이터가 없습니다.</div>
         </div>
       )}
     </div>

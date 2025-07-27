@@ -148,6 +148,8 @@ pub struct EventVital {
 pub struct ModerationVital {
     pub mute_count: u32,
     pub mute_histories: Vec<UserHistory>,
+    pub kick_count: u32,
+    pub kick_histories: Vec<UserHistory>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -163,6 +165,8 @@ pub struct UserHistory {
 pub struct ModerationAnalysis {
     pub total_mute_count: u32,
     pub total_mute_histories: Vec<UserHistory>,
+    pub total_kick_count: u32,
+    pub total_kick_histories: Vec<UserHistory>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

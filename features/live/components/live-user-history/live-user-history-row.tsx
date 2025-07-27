@@ -53,5 +53,7 @@ const EventRow: React.FC<EventRowProps> = ({ data }) => {
           {data.payload.renew > 0 ? `${data.payload.renew}개월` : "신규 구독"})
         </p>
       );
+    case DomainEventType.Kick:
+      return <p className="text-red-400">강제퇴장</p>;
   }
 };

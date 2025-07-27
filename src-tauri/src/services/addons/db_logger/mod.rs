@@ -84,32 +84,32 @@ impl Addon for DBLoggerAddon {
         }
     }
 
-    // async fn on_kick(&self, ctx: &AddonContext, event: &UserEvent) {
-    //     let mut buffer_guard = self.buffer.lock().await;
-    //     if let Err(e) = self
-    //         .event_processor
-    //         .process_event_log(
-    //             ctx,
-    //             &event.channel_id,
-    //             Some(&event.user.id),    // user_id
-    //             Some(&event.user.label), // username
-    //             None,                    // user_flag
-    //             EVENT_TYPE_KICK,
-    //             event,
-    //             event.timestamp,
-    //             &mut buffer_guard,
-    //         )
-    //         .await
-    //     {
-    //         eprintln!("[DBLoggerAddon] Error logging donation: {}", e);
-    //         return;
-    //     }
-    //     drop(buffer_guard);
+    async fn on_kick(&self, ctx: &AddonContext, event: &UserEvent) {
+        let mut buffer_guard = self.buffer.lock().await;
+        if let Err(e) = self
+            .event_processor
+            .process_event_log(
+                ctx,
+                &event.channel_id,
+                Some(&event.user.id),    // user_id
+                Some(&event.user.label), // username
+                None,                    // user_flag
+                EVENT_TYPE_KICK,
+                event,
+                event.timestamp,
+                &mut buffer_guard,
+            )
+            .await
+        {
+            eprintln!("[DBLoggerAddon] Error logging donation: {}", e);
+            return;
+        }
+        drop(buffer_guard);
 
-    //     if let Err(e) = self.should_flush_and_process(ctx).await {
-    //         eprintln!("[DBLoggerAddon] Error during flush check: {}", e);
-    //     }
-    // }
+        if let Err(e) = self.should_flush_and_process(ctx).await {
+            eprintln!("[DBLoggerAddon] Error during flush check: {}", e);
+        }
+    }
 
     async fn on_donation(&self, ctx: &AddonContext, event: &DonationEvent) {
         let mut buffer_guard = self.buffer.lock().await;

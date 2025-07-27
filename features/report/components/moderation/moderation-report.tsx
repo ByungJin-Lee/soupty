@@ -1,6 +1,7 @@
 import { ReportData } from "~/services/ipc/types";
+import { KickTrendChart } from "./kick-trend-chart";
 import { MuteTrendChart } from "./mute-trend-chart";
-import { MuteUsersTable } from "./mute-users-table";
+import { UserHistoriesTable } from "./user-histories-table";
 
 type Props = {
   data: ReportData;
@@ -17,7 +18,15 @@ export const ModerationReport: React.FC<Props> = ({ data }) => {
       </h3>
 
       <MuteTrendChart data={data} />
-      <MuteUsersTable histories={data.moderationAnalysis.totalMuteHistories} />
+      <UserHistoriesTable
+        title="채팅금지된 사용자"
+        histories={data.moderationAnalysis.totalMuteHistories}
+      />
+      <KickTrendChart data={data} />
+      <UserHistoriesTable
+        title="강제퇴장된 사용자"
+        histories={data.moderationAnalysis.totalKickHistories}
+      />
     </div>
   );
 };

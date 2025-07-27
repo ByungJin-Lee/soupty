@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { ChatEvent } from "~/types/event/chat";
 import { ChatRow } from "./chat-row";
 
@@ -8,7 +9,7 @@ type Props = {
   className?: string;
 };
 
-export const ChatView: React.FC<Props> = ({ messages, className = "" }) => {
+export const ChatView: React.FC<Props> = memo(({ messages, className = "" }) => {
   return (
     <div className={className}>
       {messages.map((v) => (
@@ -16,4 +17,6 @@ export const ChatView: React.FC<Props> = ({ messages, className = "" }) => {
       ))}
     </div>
   );
-};
+});
+
+ChatView.displayName = "ChatView";

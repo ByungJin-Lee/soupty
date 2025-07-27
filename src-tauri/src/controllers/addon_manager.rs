@@ -96,7 +96,7 @@ impl AddonManager {
                 DomainEvent::Donation(e) => addon.on_donation(context, e).await,
                 DomainEvent::Subscribe(e) => addon.on_subscribe(context, e).await,
 
-                // DomainEvent::Kick(e) => addon.on_kick(context, e).await,
+                DomainEvent::Kick(e) => addon.on_kick(context, e).await,
                 DomainEvent::KickCancel(e) => addon.on_kick_cancel(context, e).await,
                 DomainEvent::Mute(e) => addon.on_mute(context, e).await,
                 DomainEvent::Black(e) => addon.on_black(context, e).await,

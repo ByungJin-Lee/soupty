@@ -89,6 +89,18 @@ export const ReportSummary: React.FC<Props> = ({ data }) => {
             <span className="text-lg font-medium text-gray-700 ml-1">번</span>
           </dd>
         </div>
+        <div className="bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 p-6 rounded-xl shadow-sm">
+          <div className="flex items-center mb-2">
+            <span className="text-2xl mr-2">💀</span>
+            <dt className="text-sm font-semibold text-gray-700 uppercase tracking-wide">
+              총 강제퇴장 수
+            </dt>
+          </div>
+          <dd className="text-2xl font-bold text-gray-900">
+            {data.moderationAnalysis.totalKickCount.toLocaleString()}
+            <span className="text-lg font-medium text-gray-700 ml-1">번</span>
+          </dd>
+        </div>
       </div>
     </div>
   );

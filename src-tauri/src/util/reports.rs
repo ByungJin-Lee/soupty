@@ -4,9 +4,13 @@ use std::collections::{HashMap, HashSet};
 
 use crate::{
     models::{
-        events::{DonationEvent, MetadataEvent, MissionEvent, MuteEvent, SubscribeEvent},
+        events::{
+            DonationEvent, MetadataEvent, MissionEvent, MuteEvent, SubscribeEvent, UserEvent,
+        },
         reports::{
-            ChatAnalysis, ChatVital, ChatterRank, DonatorRank, EventAnalysis, EventVital, Matrix, ModerationAnalysis, ModerationVital, ReportChunk, ReportData, ReportMetadata, UserAnalysis, UserHistory, UserVital, WordCount
+            ChatAnalysis, ChatVital, ChatterRank, DonatorRank, EventAnalysis, EventVital, Matrix,
+            ModerationAnalysis, ModerationVital, ReportChunk, ReportData, ReportMetadata,
+            UserAnalysis, UserHistory, UserVital, WordCount,
         },
     },
     services::{
@@ -60,7 +64,8 @@ fn classify_user_group(user_stats: &UserStatus) -> u8 {
 }
 
 fn create_top_chatters(chat_logs: &[ChatLogResult]) -> Vec<ChatterRank> {
-    let mut user_message_count: HashMap<String, (soup_sdk::chat::types::User, u64)> = HashMap::new();
+    let mut user_message_count: HashMap<String, (soup_sdk::chat::types::User, u64)> =
+        HashMap::new();
 
     for chat in chat_logs {
         user_message_count
@@ -81,7 +86,10 @@ fn create_top_chatters(chat_logs: &[ChatLogResult]) -> Vec<ChatterRank> {
     chatters.into_iter().take(10).collect()
 }
 
-fn create_popular_words(chat_logs: &[ChatLogResult], token_analyzer: &TokenAnalyzer) -> Vec<WordCount> {
+fn create_popular_words(
+    chat_logs: &[ChatLogResult],
+    token_analyzer: &TokenAnalyzer,
+) -> Vec<WordCount> {
     let mut word_counts: HashMap<String, u64> = HashMap::new();
 
     for chat in chat_logs {
@@ -148,26 +156,45 @@ fn create_event_vital(event_logs: &[EventLogResult]) -> EventVital {
     }
 }
 
-
 fn create_moderation_vital(event_logs: &[EventLogResult]) -> ModerationVital {
     let mut mute_count: u32 = 0;
     let mut mute_histories: Vec<UserHistory> = Vec::new();
+    let mut kick_count: u32 = 0;
+    let mut kick_histories: Vec<UserHistory> = Vec::new();
 
     for event in event_logs {
         match event.event_type.as_str() {
             "Mute" => {
                 if let Ok(e) = serde_json::from_str::<MuteEvent>(&event.payload) {
                     mute_count += 1;
-                    mute_histories.push(UserHistory { user: e.user, timestamp: e.timestamp, by: Some(e.by) });
+                    mute_histories.push(UserHistory {
+                        user: e.user,
+                        timestamp: e.timestamp,
+                        by: Some(e.by),
+                    });
+                }
+            }
+            "Kick" => {
+                if let Ok(e) = serde_json::from_str::<UserEvent>(&event.payload) {
+                    kick_count += 1;
+                    kick_histories.push(UserHistory {
+                        user: e.user,
+                        timestamp: e.timestamp,
+                        by: None,
+                    });
                 }
             }
             _ => {}
         }
     }
 
-    ModerationVital { mute_count, mute_histories }
+    ModerationVital {
+        mute_count,
+        mute_histories,
+        kick_count,
+        kick_histories,
+    }
 }
-
 
 pub fn create_report_chunk(
     timestamp: DateTime<Utc>,
@@ -199,18 +226,24 @@ fn create_top_donators(all_event_logs: &[EventLogResult]) -> Vec<DonatorRank> {
         match event.event_type.as_str() {
             "Donation" => {
                 if let Ok(donation) = serde_json::from_str::<DonationEvent>(&event.payload) {
-                    let entry = user_donations
-                        .entry(donation.from.clone())
-                        .or_insert((donation.from_label.clone(), 0, 0, 0));
+                    let entry = user_donations.entry(donation.from.clone()).or_insert((
+                        donation.from_label.clone(),
+                        0,
+                        0,
+                        0,
+                    ));
                     entry.1 += 1; // donation_count
                     entry.2 += donation.amount as u64; // total_amount
                 }
             }
             "MissionDonation" => {
                 if let Ok(mission) = serde_json::from_str::<MissionEvent>(&event.payload) {
-                    let entry = user_donations
-                        .entry(mission.from.clone())
-                        .or_insert((mission.from_label.clone(), 0, 0, 0));
+                    let entry = user_donations.entry(mission.from.clone()).or_insert((
+                        mission.from_label.clone(),
+                        0,
+                        0,
+                        0,
+                    ));
                     entry.1 += 1; // donation_count
                     entry.2 += mission.amount as u64; // total_amount
                     entry.3 += mission.amount as u64; // mission_amount
@@ -222,29 +255,39 @@ fn create_top_donators(all_event_logs: &[EventLogResult]) -> Vec<DonatorRank> {
 
     let mut donators: Vec<_> = user_donations
         .into_iter()
-        .map(|(user_id, (user_label, donation_count, total_amount, mission_amount))| {
-            DonatorRank {
+        .map(
+            |(user_id, (user_label, donation_count, total_amount, mission_amount))| DonatorRank {
                 user_id,
                 user_label,
                 donation_count,
                 total_amount,
                 mission_amount,
-            }
-        })
+            },
+        )
         .collect();
 
     donators.sort_by(|a, b| b.total_amount.cmp(&a.total_amount));
     donators.into_iter().take(10).collect()
 }
 
-fn create_event_analysis(chunks: &[ReportChunk], all_event_logs: &[EventLogResult]) -> EventAnalysis {
+fn create_event_analysis(
+    chunks: &[ReportChunk],
+    all_event_logs: &[EventLogResult],
+) -> EventAnalysis {
     let total_donation_count = chunks.iter().map(|c| c.event.donation_count as u64).sum();
     let total_donation_amount = chunks.iter().map(|c| c.event.donation_amount).sum();
-    let total_mission_donation_count = chunks.iter().map(|c| c.event.mission_donation_count as u64).sum();
-    let total_mission_donation_amount = chunks.iter().map(|c| c.event.mission_donation_amount).sum();
+    let total_mission_donation_count = chunks
+        .iter()
+        .map(|c| c.event.mission_donation_count as u64)
+        .sum();
+    let total_mission_donation_amount =
+        chunks.iter().map(|c| c.event.mission_donation_amount).sum();
     let total_subscribe_count = chunks.iter().map(|c| c.event.subscribe_count as u64).sum();
-    let total_subscribe_renew_count = chunks.iter().map(|c| c.event.subscribe_renew_count as u64).sum();
-    
+    let total_subscribe_renew_count = chunks
+        .iter()
+        .map(|c| c.event.subscribe_renew_count as u64)
+        .sum();
+
     let average_donation_amount = if total_donation_count > 0 {
         total_donation_amount as f64 / total_donation_count as f64
     } else {
@@ -271,8 +314,18 @@ fn create_moderation_analysis(chunks: &[ReportChunk]) -> ModerationAnalysis {
         acc.extend(chunk.moderation.mute_histories.iter().cloned());
         acc
     });
+    let total_kick_count = chunks.iter().map(|c| c.moderation.kick_count).sum();
+    let total_kick_histories = chunks.iter().fold(Vec::new(), |mut acc, chunk| {
+        acc.extend(chunk.moderation.kick_histories.iter().cloned());
+        acc
+    });
 
-    ModerationAnalysis { total_mute_count, total_mute_histories }
+    ModerationAnalysis {
+        total_mute_count,
+        total_mute_histories,
+        total_kick_count,
+        total_kick_histories,
+    }
 }
 
 pub fn create_report_data(
@@ -317,7 +370,11 @@ fn extract_viewer_count_from_events(event_logs: &[EventLogResult]) -> Option<u64
         })
 }
 
-fn create_chat_analysis(chunks: &[ReportChunk], all_chat_logs: &[ChatLogResult], token_analyzer: &TokenAnalyzer) -> ChatAnalysis {
+fn create_chat_analysis(
+    chunks: &[ReportChunk],
+    all_chat_logs: &[ChatLogResult],
+    token_analyzer: &TokenAnalyzer,
+) -> ChatAnalysis {
     let total_count = chunks.iter().map(|c| c.chat.total_count as u64).sum();
     let top_chatters = create_top_chatters(all_chat_logs);
     let popular_words = create_popular_words(all_chat_logs, token_analyzer);

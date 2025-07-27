@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, memo } from "react";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { MessagePart, MessageType } from "~/types/chat";
 import { ChatEvent } from "~/types/event";
@@ -8,20 +8,22 @@ type Props = {
   data: ChatEvent;
 };
 
-export const ChatRow: React.FC<Props> = ({ data }) => {
+export const ChatRow: React.FC<Props> = memo(({ data }) => {
   return (
     <div className="flex gap-x-1 mt-3">
       <Header data={data} />
       <ChatMessage parts={data.parts} />
     </div>
   );
-};
+});
+
+ChatRow.displayName = "ChatRow";
 
 type HeaderProps = {
   data: ChatEvent;
 };
 
-const Header: React.FC<HeaderProps> = ({ data }) => {
+const Header: React.FC<HeaderProps> = memo(({ data }) => {
   const handleClick = useUserPopoverDispatch(data.user);
 
   return (
@@ -40,13 +42,15 @@ const Header: React.FC<HeaderProps> = ({ data }) => {
       </span>
     </div>
   );
-};
+});
+
+Header.displayName = "Header";
 
 type MessageProps = {
   parts: MessagePart[];
 };
 
-export const ChatMessage: React.FC<MessageProps> = ({ parts }) => {
+export const ChatMessage: React.FC<MessageProps> = memo(({ parts }) => {
   return (
     <div className="break-all">
       {parts.map((p, i) => {
@@ -82,4 +86,6 @@ export const ChatMessage: React.FC<MessageProps> = ({ parts }) => {
       })}
     </div>
   );
-};
+});
+
+ChatMessage.displayName = "ChatMessage";

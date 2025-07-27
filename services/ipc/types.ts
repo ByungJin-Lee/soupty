@@ -382,11 +382,15 @@ export interface EventVital {
 export interface ModerationAnalysis {
   totalMuteCount: number;
   totalMuteHistories: UserHistory[];
+  totalKickCount: number;
+  totalKickHistories: UserHistory[];
 }
 
 export interface ModerationVital {
   muteCount: number;
   muteHistories: UserHistory[];
+  kickCount: number;
+  kickHistories: UserHistory[];
 }
 
 export interface UserHistory {

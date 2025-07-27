@@ -7,7 +7,7 @@ type Props = {
   data: MuteLog | null;
 };
 
-export const MuteUserTableItem: React.FC<Props> = ({ rank, data }) => {
+export const UserHistoriesTableItem: React.FC<Props> = ({ rank, data }) => {
   const handleUserClick = useUserPopoverDispatch(data?.user);
   const handleMuteLogClick = useMuteLogPopoverDispatch(data);
 

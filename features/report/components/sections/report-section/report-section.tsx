@@ -1,9 +1,9 @@
+import { useEffect } from "react";
 import { useReportManagement } from "~/features/report/hooks";
+import { BroadcastSession, ReportStatus } from "~/services/ipc/types";
 import { Report } from "../../report";
 import { ReportControls } from "./report-controls";
 import { ReportStatus as ReportStatusComponent } from "./report-status";
-import { ReportStatus } from "~/services/ipc/types";
-import { BroadcastSession } from "~/services/ipc/types";
 
 type Props = {
   session: BroadcastSession;
@@ -15,9 +15,14 @@ export const ReportSection: React.FC<Props> = ({ session }) => {
     reportStatus,
     reportLoading,
     reportError,
+    loadReportInfo,
     handleCreateReport,
     handleDeleteReport,
   } = useReportManagement();
+
+  useEffect(() => {
+    loadReportInfo(session.id);
+  }, [session]);
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
@@ -33,7 +38,7 @@ export const ReportSection: React.FC<Props> = ({ session }) => {
         />
       </div>
 
-      <ReportStatusComponent 
+      <ReportStatusComponent
         reportError={reportError}
         reportStatus={reportStatus}
       />

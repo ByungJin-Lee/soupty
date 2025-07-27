@@ -57,10 +57,10 @@ impl Addon for DefaultUIAddon {
         let _ = ctx.app_handle.emit(event_name::LOG_EVENT, domain_event);
     }
 
-    // async fn on_kick(&self, ctx: &AddonContext, event: &UserEvent) {
-    //     let domain_event = DomainEvent::Kick(event.clone());
-    //     let _ = ctx.app_handle.emit(event_name::LOG_EVENT, domain_event);
-    // }
+    async fn on_kick(&self, ctx: &AddonContext, event: &UserEvent) {
+        let domain_event = DomainEvent::Kick(event.clone());
+        let _ = ctx.app_handle.emit(event_name::LOG_EVENT, domain_event);
+    }
 
     async fn on_kick_cancel(&self, ctx: &AddonContext, event: &SimplifiedUserEvent) {
         let domain_event = DomainEvent::KickCancel(event.clone());

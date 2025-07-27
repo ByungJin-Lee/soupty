@@ -165,7 +165,7 @@ pub struct NotificationEvent {
     pub show: bool,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserEvent {
     pub id: uuid::Uuid,
     pub timestamp: DateTime<Utc>,

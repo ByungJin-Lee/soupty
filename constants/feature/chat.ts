@@ -5,7 +5,7 @@
  */
 export const CHAT_NICKNAME_COLORS = [
   "#E53E3E", // Red - 활기찬 빨강
-  "#D69E2E", // Orange - 따뜻한 오렌지  
+  "#D69E2E", // Orange - 따뜻한 오렌지
   "#38A169", // Green - 자연스러운 초록
   "#3182CE", // Blue - 신뢰감 있는 파랑
   "#805AD5", // Purple - 우아한 보라
@@ -19,10 +19,10 @@ export const CHAT_NICKNAME_COLORS = [
 /**
  * 색상 타입 정의
  */
-export type ChatNicknameColor = typeof CHAT_NICKNAME_COLORS[number];
+export type ChatNicknameColor = (typeof CHAT_NICKNAME_COLORS)[number];
 
 export const CHAT_SETTINGS = {
-  MAX_QUEUE_CAPACITY: 128,
+  MAX_QUEUE_CAPACITY: 1024,
   MAX_MESSAGE_LENGTH: 500,
   SPAM_THRESHOLD: 5, // messages per second
 } as const;
