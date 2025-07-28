@@ -62,7 +62,7 @@ pub enum DomainEvent {
     Slow(SlowEvent),
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatEvent {
     pub id: uuid::Uuid,

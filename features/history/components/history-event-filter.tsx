@@ -12,6 +12,7 @@ import { HistoryEventTypeCondition } from "./history-event-type-condition";
 import { HistoryPeriodCondition } from "./history-period-condition";
 import { HistoryUserCondition } from "./history-user-condition";
 import { HistoryUsernameCondition } from "./history-username-condition";
+import { EventCsvExportButton } from "./history-csv-export-button";
 
 export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
   children,
@@ -54,7 +55,8 @@ export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
           broadcastSession={w.broadcastSession}
           onSelect={(s) => setValue("broadcastSession", s)}
         />
-        <div className="ml-auto">
+        <div className="ml-auto flex gap-2">
+          <EventCsvExportButton filters={convertEventFilter(w)} />
           <button
             onClick={() => reset()}
             className="px-2 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
@@ -63,7 +65,7 @@ export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
           </button>
           <button
             onClick={handleSearch}
-            className="px-2 py-1 ml-2 bg-blue-500 text-white rounded-md hover:bg-gray-600"
+            className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
             검색
           </button>

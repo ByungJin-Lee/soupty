@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use tokio::sync::mpsc;
 
-use crate::services::addons::interface::{BroadcastMetadata, AddonContext};
+use crate::services::addons::interface::{AddonContext, BroadcastMetadata};
 
 #[derive(Debug, Clone)]
 pub enum SystemEvent {
@@ -12,17 +12,17 @@ pub enum SystemEvent {
         metadata: BroadcastMetadata,
         context: AddonContext,
     },
-    MetadataFetchFailed(String), 
-    
+    MetadataFetchFailed(String),
+
     // System lifecycle events
     SystemStarted,
     SystemStopping,
     SystemStopped,
-    
+
     // Timer events
     DonationFlushRequested,
     MetadataUpdateRequested,
-    
+
     // Error events
     ComponentError {
         component: String,
@@ -43,18 +43,18 @@ impl EventBus {
             channels: HashMap::new(),
         }
     }
-    
+
     pub fn subscribe(&mut self, subscriber_id: &str) -> EventReceiver {
         let (sender, receiver) = mpsc::unbounded_channel();
-        
+
         self.channels
             .entry(subscriber_id.to_string())
             .or_insert_with(Vec::new)
             .push(sender);
-            
+
         receiver
     }
-    
+
     pub fn publish(&self, event: SystemEvent) {
         for senders in self.channels.values() {
             for sender in senders {
@@ -63,11 +63,11 @@ impl EventBus {
             }
         }
     }
-    
+
     pub fn unsubscribe(&mut self, subscriber_id: &str) {
         self.channels.remove(subscriber_id);
     }
-    
+
     pub fn subscriber_count(&self) -> usize {
         self.channels.len()
     }
@@ -90,22 +90,22 @@ impl EventBusManager {
             bus: Arc::new(tokio::sync::Mutex::new(EventBus::new())),
         }
     }
-    
+
     pub async fn subscribe(&self, subscriber_id: &str) -> EventReceiver {
         let mut bus = self.bus.lock().await;
         bus.subscribe(subscriber_id)
     }
-    
+
     pub async fn publish(&self, event: SystemEvent) {
         let bus = self.bus.lock().await;
         bus.publish(event);
     }
-    
+
     pub async fn unsubscribe(&self, subscriber_id: &str) {
         let mut bus = self.bus.lock().await;
         bus.unsubscribe(subscriber_id);
     }
-    
+
     pub async fn subscriber_count(&self) -> usize {
         let bus = self.bus.lock().await;
         bus.subscriber_count()

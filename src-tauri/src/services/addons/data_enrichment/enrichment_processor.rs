@@ -27,7 +27,8 @@ impl EnrichmentProcessor {
         let character_count = event.comment.chars().count();
 
         // 감정 분석 수행 (실시간이므로 성능 문제 없음)
-        let sentiment_analysis = self.sentiment_analyzer
+        let sentiment_analysis = self
+            .sentiment_analyzer
             .and_then(|analyzer| analyzer.analyze(&event.comment).ok());
 
         Some(EnrichedChatData {

@@ -1,5 +1,5 @@
-use rusqlite::{functions::FunctionFlags, Connection};
 use crate::util::hangul::decompose_hangul_to_string;
+use rusqlite::{functions::FunctionFlags, Connection};
 
 pub struct DBInitializer<'a> {
     conn: &'a Connection,
@@ -14,7 +14,7 @@ impl<'a> DBInitializer<'a> {
     pub fn initialize(&self) -> anyhow::Result<()> {
         // 성능 최적화 PRAGMA
         self.conn.execute_batch("PRAGMA journal_mode = WAL;")?;
-        
+
         // 외래 키 제약 조건 활성화
         self.conn.execute_batch("PRAGMA foreign_keys = ON;")?;
 
@@ -70,7 +70,7 @@ impl<'a> DBInitializer<'a> {
                 INSERT INTO chat_logs_fts(rowid, message_jamo, chat_log_id)
                 VALUES (new.id, DECOMPOSE_HANGUL(new.message), new.id);
             END;
-            "
+            ",
         )?;
         Ok(())
     }

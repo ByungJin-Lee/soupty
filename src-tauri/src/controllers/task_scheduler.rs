@@ -7,16 +7,10 @@ use tokio::sync::Mutex;
 
 use crate::{
     controllers::{
-        addon_manager::AddonManager,
-        donation_timer::DonationTimer,
-        scheduler::Scheduler,
-        config::timer_tick_duration,
-        constants::DONATION_FLUSH_TASK,
+        addon_manager::AddonManager, config::timer_tick_duration, constants::DONATION_FLUSH_TASK,
+        donation_timer::DonationTimer, scheduler::Scheduler,
     },
-    services::{
-        addons::interface::AddonContext,
-        event_mapper::EventMapper,
-    },
+    services::{addons::interface::AddonContext, event_mapper::EventMapper},
 };
 
 pub struct TaskScheduler {
@@ -43,15 +37,17 @@ impl TaskScheduler {
         let donation_manager = manager.clone();
         let donation_ctx = ctx.clone();
 
-        self.scheduler.schedule_recurring(DONATION_FLUSH_TASK, timer_tick_duration(), move || {
-            let event_mapper = donation_event_mapper.clone();
-            let manager = donation_manager.clone();
-            let ctx = donation_ctx.clone();
-            
-            async move {
-                DonationTimer::process_donations(&event_mapper, &manager, &ctx).await;
-            }
-        }).await;
+        self.scheduler
+            .schedule_recurring(DONATION_FLUSH_TASK, timer_tick_duration(), move || {
+                let event_mapper = donation_event_mapper.clone();
+                let manager = donation_manager.clone();
+                let ctx = donation_ctx.clone();
+
+                async move {
+                    DonationTimer::process_donations(&event_mapper, &manager, &ctx).await;
+                }
+            })
+            .await;
 
         // conn의 size가 초과되지 않도록 늦게 conn을 start 한다.
         chat_conn.start().await?;

@@ -20,10 +20,10 @@ const links: { href: string; label: string }[] = [
     href: route.history,
     label: "기록",
   },
-  // {
-  //   href: route.setting,
-  //   label: "설정",
-  // },
+  {
+    href: route.setting,
+    label: "설정",
+  },
 ];
 
 export const Links = () => {

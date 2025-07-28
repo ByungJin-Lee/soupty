@@ -26,4 +26,6 @@ export const convertFilter = (filter: Filter): ChatSearchFilters => ({
   ...filter,
   channelId: filter.channel?.id,
   broadcastId: filter.session?.id,
+  endDate: filter.endDate && new Date(filter.endDate).toISOString(),
+  startDate: filter.startDate && new Date(filter.startDate).toISOString(),
 });

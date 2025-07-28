@@ -7,6 +7,7 @@ export enum IpcRequestWithoutPayload {
   GetChannels = "get_channels",
   GetTargetUsers = "get_target_users",
   GetMainControllerContext = "get_main_controller_context",
+  GetSupportedEventTypes = "get_supported_event_types",
 }
 
 // 요청 Payload가 있는 request 객체입니다.
@@ -30,6 +31,7 @@ export enum IpcRequestWithPayload {
   DeleteReport = "delete_report",
   GetReport = "get_report",
   GetReportStatus = "get_report_status",
+  ExportEventsToCsv = "export_events_to_csv",
 }
 
 export type IpcRequest = IpcRequestWithPayload | IpcRequestWithoutPayload;
@@ -100,6 +102,7 @@ export interface IpcPayloadMap {
   [IpcRequestWithPayload.GetReportStatus]: {
     broadcastId: number;
   };
+  [IpcRequestWithPayload.ExportEventsToCsv]: { options: CsvExportOptions };
 }
 
 /**
@@ -115,6 +118,7 @@ export interface IpcResponseMap {
   }[];
   [IpcRequestWithoutPayload.GetTargetUsers]: string[];
   [IpcRequestWithoutPayload.GetMainControllerContext]: BroadcastMetadata | null;
+  [IpcRequestWithoutPayload.GetSupportedEventTypes]: string[];
   /// 라이브가 아닌 경우 null이 반환됩니다.
   [IpcRequestWithPayload.GetStreamerLive]: StreamerLive | null;
   [IpcRequestWithPayload.GetStreamerEmoji]: StreamerEmoji;
@@ -134,6 +138,7 @@ export interface IpcResponseMap {
   [IpcRequestWithPayload.DeleteReport]: void;
   [IpcRequestWithPayload.GetReport]: ReportInfo | null;
   [IpcRequestWithPayload.GetReportStatus]: ReportStatusInfo | null;
+  [IpcRequestWithPayload.ExportEventsToCsv]: string;
 }
 
 export interface StreamerLive {
@@ -405,4 +410,31 @@ export interface DonatorRank {
   donationCount: number;
   totalAmount: number;
   missionAmount: number;
+}
+
+// CSV Export 관련 타입
+export interface CsvExportOptions {
+  eventType: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  channelId?: string | null;
+  broadcastId?: number | null;
+  outputPath: string;
+}
+
+// CSV Export 옵션 검증 함수
+export function validateCsvExportOptions(options: CsvExportOptions): string | null {
+  if (!options.broadcastId && !options.channelId) {
+    return "Either broadcastId or channelId must be provided";
+  }
+  
+  if (!options.eventType || options.eventType.trim() === "") {
+    return "eventType is required";
+  }
+  
+  if (!options.outputPath || options.outputPath.trim() === "") {
+    return "outputPath is required";
+  }
+  
+  return null;
 }

@@ -750,6 +750,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tauri-apps/api@npm:^2.6.0":
+  version: 2.7.0
+  resolution: "@tauri-apps/api@npm:2.7.0"
+  checksum: 10c0/14df27fd6546655cf68b4d77c4ace3e359fc4357c5bdee1d95572eaaf884636905630a33a823b1e11fdb662577ed2e4cfa51d2f99d277427d61db98b1fec2948
+  languageName: node
+  linkType: hard
+
 "@tauri-apps/cli-darwin-arm64@npm:2.5.0":
   version: 2.5.0
   resolution: "@tauri-apps/cli-darwin-arm64@npm:2.5.0"
@@ -868,6 +875,15 @@ __metadata:
   bin:
     tauri: tauri.js
   checksum: 10c0/5ce96349371692b7d6c6b9c20af6b137f57373335331d806904e3e37d0a4feac2bbd2fd394bfcffcc2d352ba25b579142e784e18946a83a405a69912078d33bb
+  languageName: node
+  linkType: hard
+
+"@tauri-apps/plugin-dialog@npm:~2":
+  version: 2.3.1
+  resolution: "@tauri-apps/plugin-dialog@npm:2.3.1"
+  dependencies:
+    "@tauri-apps/api": "npm:^2.6.0"
+  checksum: 10c0/3818d85c595bd3440016e626edb12139fac0f9ec85ba35827a6779780f0075dc04b614420ebcd4af5d3be8a24705055fd39f0bd11c99611f8e02d6257cade887
   languageName: node
   linkType: hard
 
@@ -3967,6 +3983,7 @@ __metadata:
     "@tailwindcss/postcss": "npm:^4"
     "@tauri-apps/api": "npm:^2.5.0"
     "@tauri-apps/cli": "npm:^2.5.0"
+    "@tauri-apps/plugin-dialog": "npm:~2"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"

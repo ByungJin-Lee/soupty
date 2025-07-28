@@ -15,6 +15,7 @@ import { HistoryPeriodCondition } from "./history-period-condition";
 import { HistoryTextCondition } from "./history-text-condition";
 import { HistoryUserCondition } from "./history-user-condition";
 import { HistoryUsernameCondition } from "./history-username-condition";
+import { ChatCsvExportButton } from "./history-csv-export-button";
 
 export const HistoryChatFilter: React.FC<PropsWithChildren> = ({
   children,
@@ -60,7 +61,8 @@ export const HistoryChatFilter: React.FC<PropsWithChildren> = ({
           broadcastSession={w.session}
           onSelect={(s) => setValue("session", s)}
         />
-        <div className="ml-auto">
+        <div className="ml-auto flex gap-2">
+          <ChatCsvExportButton filters={convertFilter(w)} />
           <button
             onClick={() => reset()}
             className="px-2 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
@@ -69,7 +71,7 @@ export const HistoryChatFilter: React.FC<PropsWithChildren> = ({
           </button>
           <button
             onClick={handleSearch}
-            className="px-2 py-1 ml-2 bg-blue-500 text-white rounded-md hover:bg-gray-600"
+            className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
             검색
           </button>

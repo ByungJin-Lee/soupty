@@ -27,10 +27,10 @@ impl Scheduler {
         Fut: Future<Output = ()> + Send + 'static,
     {
         let task_id = id.to_string();
-        
+
         let handle = spawn(async move {
             let mut interval_timer = tokio::time::interval(interval);
-            
+
             loop {
                 interval_timer.tick().await;
                 task().await;

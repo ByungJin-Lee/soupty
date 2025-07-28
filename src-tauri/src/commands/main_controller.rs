@@ -1,8 +1,7 @@
 use tauri::{async_runtime::spawn, AppHandle, State};
 
 use crate::{
-    controllers::event_bus::SystemEvent,
-    services::addons::interface::BroadcastMetadata,
+    controllers::event_bus::SystemEvent, services::addons::interface::BroadcastMetadata,
     state::AppState,
 };
 
@@ -29,7 +28,9 @@ pub async fn start_main_controller(
         while let Some(event) = receiver.recv().await {
             if let SystemEvent::SystemStopping = event {
                 if let Ok(mut controller) = main_controller_ref.try_lock() {
-                    let _ = controller.stop(app_handle_clone.clone(), db_ref.clone()).await;
+                    let _ = controller
+                        .stop(app_handle_clone.clone(), db_ref.clone())
+                        .await;
                 }
                 break;
             }

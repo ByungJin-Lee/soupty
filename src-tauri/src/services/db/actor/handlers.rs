@@ -1,14 +1,14 @@
 use chrono::{DateTime, Utc};
-use rusqlite::{Connection};
+use rusqlite::Connection;
 use tokio::sync::oneshot;
 
-use crate::services::db::commands::{
-    ChannelData, ChatLogData, EventLogData, ChatSearchFilters, EventSearchFilters,
-    PaginationParams, ChatSearchResult, EventSearchResult, ChatLogResult, EventLogResult,
-    ChatMetadata, BroadcastSessionSearchFilters, BroadcastSessionSearchResult, BroadcastSessionResult,
-    ReportInfo, ReportStatusInfo,  
-};
 use crate::services::addons::db_logger::user_flag::parse_user_from_flag;
+use crate::services::db::commands::{
+    BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult,
+    ChannelData, ChatLogData, ChatLogResult, ChatMetadata, ChatSearchFilters, ChatSearchResult,
+    EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams,
+    ReportInfo, ReportStatusInfo,
+};
 use crate::util::hangul::decompose_hangul_to_string;
 
 pub struct CommandHandlers<'a> {
@@ -44,8 +44,9 @@ impl<'a> CommandHandlers<'a> {
         // If insert fails due to unique constraint, find existing session
         let final_result = match result {
             Ok(id) => Ok(id),
-            Err(rusqlite::Error::SqliteFailure(error, _)) 
-                if error.code == rusqlite::ErrorCode::ConstraintViolation => {
+            Err(rusqlite::Error::SqliteFailure(error, _))
+                if error.code == rusqlite::ErrorCode::ConstraintViolation =>
+            {
                 // Find existing session with same channel_id and started_at
                 self.conn.prepare_cached(
                     "SELECT id FROM broadcast_sessions WHERE channel_id = ?1 AND started_at = ?2"
@@ -56,7 +57,7 @@ impl<'a> CommandHandlers<'a> {
                     })
                 })
                 .map_err(|e| e.to_string())
-            },
+            }
             Err(e) => Err(e.to_string()),
         };
 
@@ -81,7 +82,6 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
-
     pub fn handle_upsert_channels(
         &self,
         channels: Vec<ChannelData>,
@@ -103,7 +103,6 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
-    
     pub fn handle_delete_channel(
         &self,
         channel_id: String,
@@ -111,9 +110,7 @@ impl<'a> CommandHandlers<'a> {
     ) {
         let result = self
             .conn
-            .prepare_cached(
-                "DELETE FROM channels where channel_id = ?1",
-            )
+            .prepare_cached("DELETE FROM channels where channel_id = ?1")
             .and_then(|mut stmt| {
                 stmt.execute([channel_id])?;
                 Ok(())
@@ -123,15 +120,13 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
-    pub fn handle_get_channels(
-        &self,
-        reply_to: oneshot::Sender<Result<Vec<ChannelData>, String>>,
-    ) {
+    pub fn handle_get_channels(&self, reply_to: oneshot::Sender<Result<Vec<ChannelData>, String>>) {
         let result = (|| {
-            let mut stmt = self.conn.prepare("SELECT channel_id, channel_name, last_updated FROM channels")
+            let mut stmt = self
+                .conn
+                .prepare("SELECT channel_id, channel_name, last_updated FROM channels")
                 .map_err(|_| "구문 오류".to_string())?;
-            let mut rows = stmt.query([])
-                .map_err(|_| "Transaction 오류".to_string())?;
+            let mut rows = stmt.query([]).map_err(|_| "Transaction 오류".to_string())?;
 
             let mut channels: Vec<ChannelData> = Vec::new();
 
@@ -142,7 +137,11 @@ impl<'a> CommandHandlers<'a> {
                 let last_updated = DateTime::parse_from_rfc3339(&last_updated_str)
                     .map(|dt| dt.with_timezone(&Utc))
                     .unwrap_or_else(|_| Utc::now());
-                channels.push(ChannelData { channel_id, channel_name, last_updated });
+                channels.push(ChannelData {
+                    channel_id,
+                    channel_name,
+                    last_updated,
+                });
             }
             Ok(channels)
         })();
@@ -262,15 +261,13 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
-    pub fn handle_get_target_users(
-        &self,
-        reply_to: oneshot::Sender<Result<Vec<String>, String>>,
-    ) {
+    pub fn handle_get_target_users(&self, reply_to: oneshot::Sender<Result<Vec<String>, String>>) {
         let result = (|| {
-            let mut stmt = self.conn.prepare("SELECT user_id FROM target_users ORDER BY added_at")
+            let mut stmt = self
+                .conn
+                .prepare("SELECT user_id FROM target_users ORDER BY added_at")
                 .map_err(|e| e.to_string())?;
-            let mut rows = stmt.query([])
-                .map_err(|e| e.to_string())?;
+            let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
 
             let mut user_ids: Vec<String> = Vec::new();
             while let Some(row) = rows.next().map_err(|e| e.to_string())? {
@@ -329,7 +326,7 @@ impl<'a> CommandHandlers<'a> {
         let result = self.search_chat_logs_impl(filters, pagination);
         let _ = reply_to.send(result);
     }
-    
+
     pub fn handle_search_event_logs(
         &self,
         filters: EventSearchFilters,
@@ -415,7 +412,7 @@ impl<'a> CommandHandlers<'a> {
             total_pages,
         })
     }
-    
+
     fn search_event_logs_impl(
         &self,
         filters: EventSearchFilters,
@@ -426,7 +423,7 @@ impl<'a> CommandHandlers<'a> {
 
         let mut where_conditions = Vec::new();
         let mut param_values = Vec::new();
-        
+
         if let Some(channel_id) = &filters.channel_id {
             where_conditions.push("c.channel_id = ?");
             param_values.push(channel_id.clone());
@@ -501,13 +498,13 @@ impl<'a> CommandHandlers<'a> {
         } else {
             decompose_hangul_to_string(search_term)
         };
-        
-        let additional_where = if where_clause.is_empty() { 
-            String::new() 
-        } else { 
-            format!("AND {}", &where_clause[6..]) 
+
+        let additional_where = if where_clause.is_empty() {
+            String::new()
+        } else {
+            format!("AND {}", &where_clause[6..])
         };
-        
+
         let fts_query = format!(
             "SELECT cl.id, cl.broadcast_id, cl.user_id, cl.username, cl.user_flag, cl.message_type, 
                     cl.message, cl.metadata, cl.timestamp, c.channel_id, c.channel_name, bs.title
@@ -521,8 +518,11 @@ impl<'a> CommandHandlers<'a> {
             additional_where
         );
 
-        let mut stmt = self.conn.prepare_cached(&fts_query).map_err(|e| e.to_string())?;
-        
+        let mut stmt = self
+            .conn
+            .prepare_cached(&fts_query)
+            .map_err(|e| e.to_string())?;
+
         let limit_str = limit.to_string();
         let offset_str = offset.to_string();
         let mut all_params = vec![message_contains.as_str()];
@@ -530,35 +530,38 @@ impl<'a> CommandHandlers<'a> {
         all_params.push(&limit_str);
         all_params.push(&offset_str);
 
-        let rows = stmt.query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
-            let user_id: String = row.get(2)?;
-            let username: String = row.get(3)?;
-            let user_flag: u32 = row.get(4)?;
-            
-            Ok(ChatLogResult {
-                id: row.get(0)?,
-                broadcast_id: row.get(1)?,
-                user: parse_user_from_flag(user_flag, user_id, username),
-                message_type: row.get(5)?,
-                message: row.get(6)?,
-                metadata: {
-                    let metadata_str: String = row.get(7)?;
-                    if metadata_str.is_empty() {
-                        None
-                    } else {
-                        serde_json::from_str(&metadata_str).ok()
-                    }
-                },
-                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?)
-                    .unwrap()
-                    .with_timezone(&Utc),
-                channel_id: row.get(9)?,
-                channel_name: row.get(10)?,
-                broadcast_title: row.get(11)?,
-            })
-        }).map_err(|e| e.to_string())?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+                let user_id: String = row.get(2)?;
+                let username: String = row.get(3)?;
+                let user_flag: u32 = row.get(4)?;
 
-        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+                Ok(ChatLogResult {
+                    id: row.get(0)?,
+                    broadcast_id: row.get(1)?,
+                    user: parse_user_from_flag(user_flag, user_id, username),
+                    message_type: row.get(5)?,
+                    message: row.get(6)?,
+                    metadata: {
+                        let metadata_str: String = row.get(7)?;
+                        if metadata_str.is_empty() {
+                            None
+                        } else {
+                            serde_json::from_str(&metadata_str).ok()
+                        }
+                    },
+                    timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?)
+                        .unwrap()
+                        .with_timezone(&Utc),
+                    channel_id: row.get(9)?,
+                    channel_name: row.get(10)?,
+                    broadcast_title: row.get(11)?,
+                })
+            })
+            .map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())
     }
 
     fn search_chat_logs_without_fts(
@@ -580,43 +583,49 @@ impl<'a> CommandHandlers<'a> {
             where_clause
         );
 
-        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
-        
+        let mut stmt = self
+            .conn
+            .prepare_cached(&query)
+            .map_err(|e| e.to_string())?;
+
         let limit_str = limit.to_string();
         let offset_str = offset.to_string();
         let mut all_params = params.to_vec();
         all_params.push(&limit_str);
         all_params.push(&offset_str);
 
-        let rows = stmt.query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
-            let user_id: String = row.get(2)?;
-            let username: String = row.get(3)?;
-            let user_flag: u32 = row.get(4)?;
-            
-            Ok(ChatLogResult {
-                id: row.get(0)?,
-                broadcast_id: row.get(1)?,
-                user: parse_user_from_flag(user_flag, user_id, username),
-                message_type: row.get(5)?,
-                message: row.get(6)?,
-                metadata: {
-                    let metadata_str: String = row.get(7)?;
-                    if metadata_str.is_empty() {
-                        None
-                    } else {
-                        serde_json::from_str(&metadata_str).ok()
-                    }
-                },
-                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?)
-                    .unwrap()
-                    .with_timezone(&Utc),
-                channel_id: row.get(9)?,
-                channel_name: row.get(10)?,
-                broadcast_title: row.get(11)?,
-            })
-        }).map_err(|e| e.to_string())?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+                let user_id: String = row.get(2)?;
+                let username: String = row.get(3)?;
+                let user_flag: u32 = row.get(4)?;
 
-        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+                Ok(ChatLogResult {
+                    id: row.get(0)?,
+                    broadcast_id: row.get(1)?,
+                    user: parse_user_from_flag(user_flag, user_id, username),
+                    message_type: row.get(5)?,
+                    message: row.get(6)?,
+                    metadata: {
+                        let metadata_str: String = row.get(7)?;
+                        if metadata_str.is_empty() {
+                            None
+                        } else {
+                            serde_json::from_str(&metadata_str).ok()
+                        }
+                    },
+                    timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?)
+                        .unwrap()
+                        .with_timezone(&Utc),
+                    channel_id: row.get(9)?,
+                    channel_name: row.get(10)?,
+                    broadcast_title: row.get(11)?,
+                })
+            })
+            .map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())
     }
 
     fn search_event_logs_only(
@@ -638,40 +647,48 @@ impl<'a> CommandHandlers<'a> {
             where_clause
         );
 
-        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
-        
+        let mut stmt = self
+            .conn
+            .prepare_cached(&query)
+            .map_err(|e| e.to_string())?;
+
         let limit_str = limit.to_string();
         let offset_str = offset.to_string();
         let mut all_params = params.to_vec();
         all_params.push(&limit_str);
         all_params.push(&offset_str);
 
-        let rows = stmt.query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
-            let user_id: Option<String> = row.get(2)?;
-            let username: Option<String> = row.get(3)?;
-            let user_flag: Option<u32> = row.get(4)?;
-            
-            let user = match (user_id, username, user_flag) {
-                (Some(id), Some(name), Some(flag)) => Some(parse_user_from_flag(flag, id, name)),
-                _ => None,
-            };
-            
-            Ok(EventLogResult {
-                id: row.get(0)?,
-                broadcast_id: row.get(1)?,
-                user,
-                event_type: row.get(5)?,
-                payload: row.get(6)?,
-                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
-                    .unwrap()
-                    .with_timezone(&Utc),
-                channel_id: row.get(8)?,
-                channel_name: row.get(9)?,
-                broadcast_title: row.get(10)?,
-            })
-        }).map_err(|e| e.to_string())?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+                let user_id: Option<String> = row.get(2)?;
+                let username: Option<String> = row.get(3)?;
+                let user_flag: Option<u32> = row.get(4)?;
 
-        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+                let user = match (user_id, username, user_flag) {
+                    (Some(id), Some(name), Some(flag)) => {
+                        Some(parse_user_from_flag(flag, id, name))
+                    }
+                    _ => None,
+                };
+
+                Ok(EventLogResult {
+                    id: row.get(0)?,
+                    broadcast_id: row.get(1)?,
+                    user,
+                    event_type: row.get(5)?,
+                    payload: row.get(6)?,
+                    timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
+                        .unwrap()
+                        .with_timezone(&Utc),
+                    channel_id: row.get(8)?,
+                    channel_name: row.get(9)?,
+                    broadcast_title: row.get(10)?,
+                })
+            })
+            .map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())
     }
 
     fn get_chat_total_count(
@@ -681,10 +698,10 @@ impl<'a> CommandHandlers<'a> {
         params: &[&str],
     ) -> Result<i64, String> {
         let query = if filters.message_contains.is_some() {
-            let additional_where = if where_clause.is_empty() { 
-                String::new() 
-            } else { 
-                format!("AND {}", &where_clause[6..]) 
+            let additional_where = if where_clause.is_empty() {
+                String::new()
+            } else {
+                format!("AND {}", &where_clause[6..])
             };
             format!(
                 "SELECT COUNT(*) FROM chat_logs_fts fts
@@ -704,8 +721,11 @@ impl<'a> CommandHandlers<'a> {
             )
         };
 
-        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
-        
+        let mut stmt = self
+            .conn
+            .prepare_cached(&query)
+            .map_err(|e| e.to_string())?;
+
         let count = if filters.message_contains.is_some() {
             let search_term = filters.message_contains.as_ref().unwrap();
             let message_contains = if search_term.chars().count() == 1 {
@@ -716,19 +736,20 @@ impl<'a> CommandHandlers<'a> {
             };
             let mut all_params = vec![message_contains.as_str()];
             all_params.extend(params);
-            stmt.query_row(rusqlite::params_from_iter(all_params.iter()), |row| row.get::<_, i64>(0))
+            stmt.query_row(rusqlite::params_from_iter(all_params.iter()), |row| {
+                row.get::<_, i64>(0)
+            })
         } else {
-            stmt.query_row(rusqlite::params_from_iter(params.iter()), |row| row.get::<_, i64>(0))
-        }.map_err(|e| e.to_string())?;
+            stmt.query_row(rusqlite::params_from_iter(params.iter()), |row| {
+                row.get::<_, i64>(0)
+            })
+        }
+        .map_err(|e| e.to_string())?;
 
         Ok(count)
     }
-    
-    fn get_event_total_count(
-        &self,
-        where_clause: &str,
-        params: &[&str],
-    ) -> Result<i64, String> {
+
+    fn get_event_total_count(&self, where_clause: &str, params: &[&str]) -> Result<i64, String> {
         let query = format!(
             "SELECT COUNT(*) FROM event_logs el
              JOIN broadcast_sessions bs ON el.broadcast_id = bs.id
@@ -737,9 +758,15 @@ impl<'a> CommandHandlers<'a> {
             where_clause
         );
 
-        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
-        
-        let count = stmt.query_row(rusqlite::params_from_iter(params.iter()), |row| row.get::<_, i64>(0))
+        let mut stmt = self
+            .conn
+            .prepare_cached(&query)
+            .map_err(|e| e.to_string())?;
+
+        let count = stmt
+            .query_row(rusqlite::params_from_iter(params.iter()), |row| {
+                row.get::<_, i64>(0)
+            })
             .map_err(|e| e.to_string())?;
 
         Ok(count)
@@ -801,17 +828,25 @@ impl<'a> CommandHandlers<'a> {
     fn try_cascade_delete(&self, broadcast_id: i64) -> Result<(), String> {
         // 외래 키 무결성 검사
         let has_violations = self.check_foreign_key_violations()?;
-        
+
         if has_violations {
             return Err("Foreign key violations detected".to_string());
         }
 
         // 정상적인 CASCADE DELETE 시도
-        let rows_affected = self.conn.execute("DELETE FROM broadcast_sessions WHERE id = ?1", [broadcast_id])
+        let rows_affected = self
+            .conn
+            .execute(
+                "DELETE FROM broadcast_sessions WHERE id = ?1",
+                [broadcast_id],
+            )
             .map_err(|e| format!("CASCADE DELETE failed: {}", e))?;
 
         if rows_affected == 0 {
-            return Err(format!("Broadcast session with id {} not found", broadcast_id));
+            return Err(format!(
+                "Broadcast session with id {} not found",
+                broadcast_id
+            ));
         }
 
         Ok(())
@@ -819,31 +854,34 @@ impl<'a> CommandHandlers<'a> {
 
     // 외래 키 무결성 검사
     fn check_foreign_key_violations(&self) -> Result<bool, String> {
-        let mut stmt = self.conn.prepare("PRAGMA foreign_key_check")
+        let mut stmt = self
+            .conn
+            .prepare("PRAGMA foreign_key_check")
             .map_err(|e| e.to_string())?;
-        
-        let violations = stmt.query_map([], |_| Ok(()))
-            .map_err(|e| e.to_string())?;
-        
+
+        let violations = stmt.query_map([], |_| Ok(())).map_err(|e| e.to_string())?;
+
         // 하나라도 위반이 있으면 true 반환
         for _ in violations {
             return Ok(true);
         }
-        
+
         Ok(false)
     }
 
     // 수동 CASCADE 삭제 (FTS 트리거 문제 해결)
     fn manual_cascade_delete(&self, broadcast_id: i64) -> Result<(), String> {
         // 트랜잭션으로 안전하게 처리
-        self.conn.execute("BEGIN IMMEDIATE", [])
+        self.conn
+            .execute("BEGIN IMMEDIATE", [])
             .map_err(|e| format!("Transaction start failed: {}", e))?;
 
         let result = self.execute_manual_cascade(broadcast_id);
 
         match result {
             Ok(()) => {
-                self.conn.execute("COMMIT", [])
+                self.conn
+                    .execute("COMMIT", [])
                     .map_err(|e| format!("Commit failed: {}", e))?;
                 self.recreate_fts_triggers()?;
                 Ok(())
@@ -868,21 +906,41 @@ impl<'a> CommandHandlers<'a> {
         ).map_err(|e| format!("FTS deletion failed: {}", e))?;
 
         // 3. 관련 테이블 순차 삭제
-        self.conn.execute("DELETE FROM chat_logs WHERE broadcast_id = ?1", [broadcast_id])
+        self.conn
+            .execute(
+                "DELETE FROM chat_logs WHERE broadcast_id = ?1",
+                [broadcast_id],
+            )
             .map_err(|e| format!("Chat logs deletion failed: {}", e))?;
 
-        self.conn.execute("DELETE FROM event_logs WHERE broadcast_id = ?1", [broadcast_id])
+        self.conn
+            .execute(
+                "DELETE FROM event_logs WHERE broadcast_id = ?1",
+                [broadcast_id],
+            )
             .map_err(|e| format!("Event logs deletion failed: {}", e))?;
 
-        self.conn.execute("DELETE FROM reports WHERE broadcast_id = ?1", [broadcast_id])
+        self.conn
+            .execute(
+                "DELETE FROM reports WHERE broadcast_id = ?1",
+                [broadcast_id],
+            )
             .map_err(|e| format!("Reports deletion failed: {}", e))?;
 
         // 4. 방송 세션 삭제
-        let rows_affected = self.conn.execute("DELETE FROM broadcast_sessions WHERE id = ?1", [broadcast_id])
+        let rows_affected = self
+            .conn
+            .execute(
+                "DELETE FROM broadcast_sessions WHERE id = ?1",
+                [broadcast_id],
+            )
             .map_err(|e| format!("Broadcast session deletion failed: {}", e))?;
 
         if rows_affected == 0 {
-            return Err(format!("Broadcast session with id {} not found", broadcast_id));
+            return Err(format!(
+                "Broadcast session with id {} not found",
+                broadcast_id
+            ));
         }
 
         Ok(())
@@ -890,17 +948,20 @@ impl<'a> CommandHandlers<'a> {
 
     // FTS 트리거 비활성화
     fn disable_fts_triggers(&self) -> Result<(), String> {
-        self.conn.execute("DROP TRIGGER IF EXISTS t_chat_logs_delete", [])
+        self.conn
+            .execute("DROP TRIGGER IF EXISTS t_chat_logs_delete", [])
             .map_err(|e| format!("Failed to drop delete trigger: {}", e))?;
-        self.conn.execute("DROP TRIGGER IF EXISTS t_chat_logs_update", [])
+        self.conn
+            .execute("DROP TRIGGER IF EXISTS t_chat_logs_update", [])
             .map_err(|e| format!("Failed to drop update trigger: {}", e))?;
         Ok(())
     }
 
     // FTS 트리거 재생성
     fn recreate_fts_triggers(&self) -> Result<(), String> {
-        self.conn.execute_batch(
-            "
+        self.conn
+            .execute_batch(
+                "
             CREATE TRIGGER IF NOT EXISTS t_chat_logs_delete AFTER DELETE ON chat_logs
             BEGIN
                 INSERT INTO chat_logs_fts(chat_logs_fts, rowid) VALUES ('delete', old.id);
@@ -913,8 +974,9 @@ impl<'a> CommandHandlers<'a> {
                 INSERT INTO chat_logs_fts(rowid, message_jamo, chat_log_id)
                 VALUES (new.id, DECOMPOSE_HANGUL(new.message), new.id);
             END;
-            "
-        ).map_err(|e| format!("Failed to recreate triggers: {}", e))?;
+            ",
+            )
+            .map_err(|e| format!("Failed to recreate triggers: {}", e))?;
         Ok(())
     }
 
@@ -929,7 +991,7 @@ impl<'a> CommandHandlers<'a> {
 
         let mut where_conditions = Vec::new();
         let mut param_values = Vec::new();
-        
+
         if let Some(channel_id) = &filters.channel_id {
             where_conditions.push("bs.channel_id = ?");
             param_values.push(channel_id.clone());
@@ -954,7 +1016,8 @@ impl<'a> CommandHandlers<'a> {
         };
 
         // 방송 세션 검색
-        let broadcast_sessions = self.search_broadcast_sessions_only(&where_clause, &params, limit, offset)?;
+        let broadcast_sessions =
+            self.search_broadcast_sessions_only(&where_clause, &params, limit, offset)?;
 
         // 총 개수 조회
         let total_count = self.get_broadcast_sessions_total_count(&where_clause, &params)?;
@@ -987,33 +1050,52 @@ impl<'a> CommandHandlers<'a> {
             where_clause, limit, offset
         );
 
-        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
-        
-        let rows = stmt.query_map(rusqlite::params_from_iter(params.iter()), |row| {
-            let started_at_str: String = row.get(4)?;
-            let ended_at_opt: Option<String> = row.get(5)?;
-            
-            let started_at = DateTime::parse_from_rfc3339(&started_at_str)
-                .map_err(|e| rusqlite::Error::InvalidColumnType(4, "started_at".to_string(), rusqlite::types::Type::Text))?
-                .with_timezone(&Utc);
-                
-            let ended_at = if let Some(ended_at_str) = ended_at_opt {
-                Some(DateTime::parse_from_rfc3339(&ended_at_str)
-                    .map_err(|e| rusqlite::Error::InvalidColumnType(5, "ended_at".to_string(), rusqlite::types::Type::Text))?
-                    .with_timezone(&Utc))
-            } else {
-                None
-            };
+        let mut stmt = self
+            .conn
+            .prepare_cached(&query)
+            .map_err(|e| e.to_string())?;
 
-            Ok(BroadcastSessionResult {
-                id: row.get(0)?,
-                channel_id: row.get(1)?,
-                channel_name: row.get(2)?,
-                title: row.get(3)?,
-                started_at,
-                ended_at,
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
+                let started_at_str: String = row.get(4)?;
+                let ended_at_opt: Option<String> = row.get(5)?;
+
+                let started_at = DateTime::parse_from_rfc3339(&started_at_str)
+                    .map_err(|e| {
+                        rusqlite::Error::InvalidColumnType(
+                            4,
+                            "started_at".to_string(),
+                            rusqlite::types::Type::Text,
+                        )
+                    })?
+                    .with_timezone(&Utc);
+
+                let ended_at = if let Some(ended_at_str) = ended_at_opt {
+                    Some(
+                        DateTime::parse_from_rfc3339(&ended_at_str)
+                            .map_err(|e| {
+                                rusqlite::Error::InvalidColumnType(
+                                    5,
+                                    "ended_at".to_string(),
+                                    rusqlite::types::Type::Text,
+                                )
+                            })?
+                            .with_timezone(&Utc),
+                    )
+                } else {
+                    None
+                };
+
+                Ok(BroadcastSessionResult {
+                    id: row.get(0)?,
+                    channel_id: row.get(1)?,
+                    channel_name: row.get(2)?,
+                    title: row.get(3)?,
+                    started_at,
+                    ended_at,
+                })
             })
-        }).map_err(|e| e.to_string())?;
+            .map_err(|e| e.to_string())?;
 
         let mut broadcast_sessions = Vec::new();
         for row in rows {
@@ -1036,16 +1118,25 @@ impl<'a> CommandHandlers<'a> {
             where_clause
         );
 
-        let mut stmt = self.conn.prepare_cached(&query).map_err(|e| e.to_string())?;
-        
-        let count = stmt.query_row(rusqlite::params_from_iter(params.iter()), |row| row.get::<_, i64>(0))
+        let mut stmt = self
+            .conn
+            .prepare_cached(&query)
+            .map_err(|e| e.to_string())?;
+
+        let count = stmt
+            .query_row(rusqlite::params_from_iter(params.iter()), |row| {
+                row.get::<_, i64>(0)
+            })
             .map_err(|e| e.to_string())?;
 
         Ok(count)
     }
 
     // 단일 방송 세션 조회 구현
-    fn get_broadcast_session_impl(&self, broadcast_id: i64) -> Result<Option<BroadcastSessionResult>, String> {
+    fn get_broadcast_session_impl(
+        &self,
+        broadcast_id: i64,
+    ) -> Result<Option<BroadcastSessionResult>, String> {
         let query = r#"
             SELECT 
                 bs.id,
@@ -1060,21 +1151,30 @@ impl<'a> CommandHandlers<'a> {
         "#;
 
         let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
-        
+
         let result = stmt.query_row([broadcast_id], |row| {
             Ok(BroadcastSessionResult {
                 id: row.get(0)?,
                 channel_id: row.get(1)?,
                 channel_name: row.get(2)?,
                 title: row.get(3)?,
-                started_at: row.get::<_, String>(4)?
-                    .parse()
-                    .map_err(|_e| rusqlite::Error::InvalidColumnType(4, "started_at".to_string(), rusqlite::types::Type::Text))?,
+                started_at: row.get::<_, String>(4)?.parse().map_err(|_e| {
+                    rusqlite::Error::InvalidColumnType(
+                        4,
+                        "started_at".to_string(),
+                        rusqlite::types::Type::Text,
+                    )
+                })?,
                 ended_at: {
                     let ended_at_str: Option<String> = row.get(5)?;
                     match ended_at_str {
-                        Some(s) => Some(s.parse()
-                            .map_err(|_e| rusqlite::Error::InvalidColumnType(5, "ended_at".to_string(), rusqlite::types::Type::Text))?),
+                        Some(s) => Some(s.parse().map_err(|_e| {
+                            rusqlite::Error::InvalidColumnType(
+                                5,
+                                "ended_at".to_string(),
+                                rusqlite::types::Type::Text,
+                            )
+                        })?),
                         None => None,
                     }
                 },
@@ -1094,14 +1194,18 @@ impl<'a> CommandHandlers<'a> {
         ended_at: DateTime<Utc>,
     ) -> Result<(), String> {
         let query = "UPDATE broadcast_sessions SET ended_at = ?1 WHERE id = ?2";
-        
+
         let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
-        
-        let rows_affected = stmt.execute([ended_at.to_rfc3339(), broadcast_id.to_string()])
+
+        let rows_affected = stmt
+            .execute([ended_at.to_rfc3339(), broadcast_id.to_string()])
             .map_err(|e| e.to_string())?;
 
         if rows_affected == 0 {
-            return Err(format!("No broadcast session found with id: {}", broadcast_id));
+            return Err(format!(
+                "No broadcast session found with id: {}",
+                broadcast_id
+            ));
         }
 
         Ok(())
@@ -1125,7 +1229,8 @@ impl<'a> CommandHandlers<'a> {
         error_message: Option<String>,
         reply_to: oneshot::Sender<Result<(), String>>,
     ) {
-        let result = self.update_report_status(broadcast_id, status, progress_percentage, error_message);
+        let result =
+            self.update_report_status(broadcast_id, status, progress_percentage, error_message);
         let _ = reply_to.send(result);
     }
 
@@ -1216,7 +1321,10 @@ impl<'a> CommandHandlers<'a> {
         "#;
 
         self.conn
-            .execute(query, (status, progress_percentage, error_message, broadcast_id))
+            .execute(
+                query,
+                (status, progress_percentage, error_message, broadcast_id),
+            )
             .map_err(|e| e.to_string())?;
 
         Ok(())
@@ -1246,7 +1354,7 @@ impl<'a> CommandHandlers<'a> {
         "#;
 
         let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
-        
+
         let result = stmt.query_row([broadcast_id], |row| {
             Ok(ReportInfo {
                 broadcast_id: row.get(0)?,
@@ -1258,7 +1366,7 @@ impl<'a> CommandHandlers<'a> {
                     } else {
                         serde_json::from_str(&data).ok()
                     }
-                } ,
+                },
                 version: row.get(3)?,
                 error_message: row.get(4)?,
                 progress_percentage: row.get(5)?,
@@ -1291,7 +1399,7 @@ impl<'a> CommandHandlers<'a> {
         "#;
 
         let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
-        
+
         let result = stmt.query_row([broadcast_id], |row| {
             Ok(ReportStatusInfo {
                 broadcast_id: row.get(0)?,
@@ -1325,38 +1433,42 @@ impl<'a> CommandHandlers<'a> {
         "#;
 
         let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
-        
-        let rows = stmt.query_map(
-            (broadcast_id, start_time.to_rfc3339(), end_time.to_rfc3339()),
-            |row| {
-            let user_id: String = row.get(2)?;
-            let username: String = row.get(3)?;
-            let user_flag: u32 = row.get(4)?;
-            
-            Ok(ChatLogResult {
-                id: row.get(0)?,
-                broadcast_id: row.get(1)?,
-                user: parse_user_from_flag(user_flag, user_id, username),
-                message_type: row.get(5)?,
-                message: row.get(6)?,
-                metadata: {
-                    let metadata_str: String = row.get(7)?;
-                    if metadata_str.is_empty() {
-                        None
-                    } else {
-                        serde_json::from_str(&metadata_str).ok()
-                    }
-                },
-                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?)
-                    .unwrap()
-                    .with_timezone(&Utc),
-                channel_id: row.get(9)?,
-                channel_name: row.get(10)?,
-                broadcast_title: row.get(11)?,
-            })
-        }).map_err(|e| e.to_string())?;
 
-        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+        let rows = stmt
+            .query_map(
+                (broadcast_id, start_time.to_rfc3339(), end_time.to_rfc3339()),
+                |row| {
+                    let user_id: String = row.get(2)?;
+                    let username: String = row.get(3)?;
+                    let user_flag: u32 = row.get(4)?;
+
+                    Ok(ChatLogResult {
+                        id: row.get(0)?,
+                        broadcast_id: row.get(1)?,
+                        user: parse_user_from_flag(user_flag, user_id, username),
+                        message_type: row.get(5)?,
+                        message: row.get(6)?,
+                        metadata: {
+                            let metadata_str: String = row.get(7)?;
+                            if metadata_str.is_empty() {
+                                None
+                            } else {
+                                serde_json::from_str(&metadata_str).ok()
+                            }
+                        },
+                        timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(8)?)
+                            .unwrap()
+                            .with_timezone(&Utc),
+                        channel_id: row.get(9)?,
+                        channel_name: row.get(10)?,
+                        broadcast_title: row.get(11)?,
+                    })
+                },
+            )
+            .map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())
     }
 
     fn get_event_logs_for_report(
@@ -1376,34 +1488,40 @@ impl<'a> CommandHandlers<'a> {
         "#;
 
         let mut stmt = self.conn.prepare_cached(query).map_err(|e| e.to_string())?;
-        
-        let rows = stmt.query_map(
-            (broadcast_id, start_time.to_rfc3339(), end_time.to_rfc3339()),
-            |row| {
-                let user_id: Option<String> = row.get(2)?;
-            let username: Option<String> = row.get(3)?;
-            let user_flag: Option<u32> = row.get(4)?;
-            
-            let user = match (user_id, username, user_flag) {
-                (Some(id), Some(name), Some(flag)) => Some(parse_user_from_flag(flag, id, name)),
-                _ => None,
-            };
-            
-            Ok(EventLogResult {
-                id: row.get(0)?,
-                broadcast_id: row.get(1)?,
-                user,
-                event_type: row.get(5)?,
-                payload: row.get(6)?,
-                timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
-                    .unwrap()
-                    .with_timezone(&Utc),
-                channel_id: row.get(8)?,
-                channel_name: row.get(9)?,
-                broadcast_title: row.get(10)?,
-            })   
-        }).map_err(|e| e.to_string())?;
 
-        rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+        let rows = stmt
+            .query_map(
+                (broadcast_id, start_time.to_rfc3339(), end_time.to_rfc3339()),
+                |row| {
+                    let user_id: Option<String> = row.get(2)?;
+                    let username: Option<String> = row.get(3)?;
+                    let user_flag: Option<u32> = row.get(4)?;
+
+                    let user = match (user_id, username, user_flag) {
+                        (Some(id), Some(name), Some(flag)) => {
+                            Some(parse_user_from_flag(flag, id, name))
+                        }
+                        _ => None,
+                    };
+
+                    Ok(EventLogResult {
+                        id: row.get(0)?,
+                        broadcast_id: row.get(1)?,
+                        user,
+                        event_type: row.get(5)?,
+                        payload: row.get(6)?,
+                        timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(7)?)
+                            .unwrap()
+                            .with_timezone(&Utc),
+                        channel_id: row.get(8)?,
+                        channel_name: row.get(9)?,
+                        broadcast_title: row.get(10)?,
+                    })
+                },
+            )
+            .map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())
     }
 }

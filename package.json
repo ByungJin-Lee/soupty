@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2.5.0",
+    "@tauri-apps/plugin-dialog": "~2",
     "chart.js": "^4.5.0",
     "chartjs-chart-wordcloud": "^4.4.4",
     "chartjs-plugin-datalabels": "^2.2.0",

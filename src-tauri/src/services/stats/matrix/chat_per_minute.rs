@@ -14,7 +14,7 @@ pub fn calculate_chat_per_minute(
         .iter()
         .position(|chat| chat.timestamp >= one_minute_ago)
         .unwrap_or(chats.len());
-    
+
     let count = chats.len() - start_index;
 
     ChatPerMinuteData {

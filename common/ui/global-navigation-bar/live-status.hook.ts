@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import { ConnectStatus, useChannel } from "~/features/soop/stores/channel";
 import { Channel } from "~/types";
 
@@ -55,8 +56,9 @@ export const useLiveStatus = () => {
         await connect(channel);
       }
     } catch (error) {
-      console.error("Connection toggle failed:", error);
-      // You could add toast notification here
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
     }
   }, [channel, connectStatus, connect, disconnect, canConnect]);
 

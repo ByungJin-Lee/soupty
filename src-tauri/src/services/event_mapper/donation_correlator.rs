@@ -1,10 +1,10 @@
-use std::collections::HashMap;
 use chrono::{DateTime, Utc};
-use uuid::Uuid;
 use soup_sdk::chat::types::DonationType;
+use std::collections::HashMap;
+use uuid::Uuid;
 
-use crate::models::events::DonationEvent;
 use super::constants::DONATION_CHAT_CORRELATION_WINDOW_MS;
+use crate::models::events::DonationEvent;
 
 #[derive(Debug)]
 pub struct PendingDonation {

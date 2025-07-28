@@ -119,7 +119,12 @@ async fn generate_report_background(
             .get_event_logs_for_report(broadcast_id, current_time, chunk_end)
             .await?;
 
-        chunks.push(create_report_chunk(current_time.clone(), &chat_logs, &event_logs, token_analyzer));
+        chunks.push(create_report_chunk(
+            current_time.clone(),
+            &chat_logs,
+            &event_logs,
+            token_analyzer,
+        ));
         all_chat_logs.extend(chat_logs);
         all_event_logs.extend(event_logs);
 
@@ -134,7 +139,15 @@ async fn generate_report_background(
     }
 
     // 리포트 데이터 생성
-    let report_data = create_report_data(chunks, start_time, end_time, CHUNK_SIZE, &all_chat_logs, &all_event_logs, token_analyzer)?;
+    let report_data = create_report_data(
+        chunks,
+        start_time,
+        end_time,
+        CHUNK_SIZE,
+        &all_chat_logs,
+        &all_event_logs,
+        token_analyzer,
+    )?;
 
     // 리포트 데이터를 JSON으로 직렬화
     let report_json = serde_json::to_string(&report_data)

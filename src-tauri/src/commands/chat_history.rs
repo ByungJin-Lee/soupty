@@ -1,7 +1,10 @@
 use tauri::State;
 
 use crate::{
-    services::db::commands::{ChatSearchFilters, EventSearchFilters, PaginationParams, ChatSearchResult, EventSearchResult},
+    services::db::commands::{
+        ChatSearchFilters, ChatSearchResult, EventSearchFilters, EventSearchResult,
+        PaginationParams,
+    },
     state::AppState,
 };
 
