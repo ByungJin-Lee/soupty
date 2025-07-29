@@ -10,7 +10,7 @@ export const AppSettingsTab = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 px-4">
       <div>
         <h3 className="text-lg font-medium mb-3">앱 전체 초기화</h3>
         <p className="text-sm text-gray-600 mb-3">

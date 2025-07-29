@@ -88,20 +88,11 @@ impl CSVExporter {
                 break;
             }
 
-            // 첫 번째 페이지에서 헤더 작성
-            if page == 1 {
-                self.write_csv_header(&mut writer, &options.event_type)?;
-            }
-
             // 마지막 페이지인지 확인
             let is_last_page = result.chat_logs.len() < page_size as usize;
 
             // 채팅 로그를 CSV 행으로 변환
             for chat_log in result.chat_logs {
-                // Generate UUID from the ID
-                let uuid_id = uuid::Uuid::parse_str(&chat_log.id.to_string())
-                    .unwrap_or_else(|_| uuid::Uuid::new_v4());
-
                 let chat_type = match chat_log.message_type.as_str() {
                     "TEXT" => soup_sdk::chat::types::ChatType::Common,
                     "EMOTICON" => soup_sdk::chat::types::ChatType::Emoticon,
@@ -110,14 +101,12 @@ impl CSVExporter {
                 };
 
                 let row = ChatCsvRow::from_chat_event(
-                    uuid_id,
                     chat_log.timestamp,
                     chat_log.channel_id.clone(),
                     chat_log.message,
                     chat_type,
                     chat_log.user,
-                    false, // TODO: get is_admin from user data if available
-                    chat_log.metadata.is_some(),
+                    false,
                 );
                 writer
                     .serialize(&row)
@@ -139,8 +128,6 @@ impl CSVExporter {
     }
 
     async fn export_event_logs_to_csv(&self, options: CsvExportOptions) -> Result<String, String> {
-        println!("CSVExporter: Exporting event logs");
-
         let filters = EventSearchFilters {
             channel_id: options.channel_id.clone(),
             user_id: None,
@@ -170,10 +157,6 @@ impl CSVExporter {
         loop {
             let pagination = PaginationParams { page, page_size };
 
-            println!(
-                "CSVExporter: Searching events - page: {}, page_size: {}",
-                page, page_size
-            );
             let result = self
                 .db_service
                 .search_event_logs(filters.clone(), pagination)
@@ -184,20 +167,9 @@ impl CSVExporter {
                     error
                 })?;
 
-            println!(
-                "CSVExporter: Found {} events in page {}",
-                result.event_logs.len(),
-                page
-            );
-
             if result.event_logs.is_empty() {
                 println!("CSVExporter: No more events, breaking loop");
                 break;
-            }
-
-            // 첫 번째 페이지에서 헤더 작성
-            if page == 1 {
-                self.write_csv_header(&mut writer, &options.event_type)?;
             }
 
             // 마지막 페이지인지 확인
@@ -223,93 +195,6 @@ impl CSVExporter {
         Ok(options.output_path)
     }
 
-    fn write_csv_header(
-        &self,
-        writer: &mut csv::Writer<std::fs::File>,
-        event_type: &str,
-    ) -> Result<(), String> {
-        match event_type {
-            EVENT_TYPE_CHAT => {
-                let dummy = ChatCsvRow {
-                    id: String::new(),
-                    timestamp: String::new(),
-                    channel_id: String::new(),
-                    user_id: String::new(),
-                    username: String::new(),
-                    comment: String::new(),
-                    chat_type: String::new(),
-                    is_admin: false,
-                    has_ogq: false,
-                };
-                writer
-                    .serialize(&dummy)
-                    .map_err(|e| format!("Failed to write CSV header: {}", e))?;
-            }
-            EVENT_TYPE_DONATION => {
-                let dummy = DonationCsvRow {
-                    id: String::new(),
-                    timestamp: String::new(),
-                    channel_id: String::new(),
-                    from_user_id: String::new(),
-                    from_user_name: String::new(),
-                    amount: 0,
-                    donation_type: String::new(),
-                    message: String::new(),
-                    become_top_fan: false,
-                    fan_club_ordinal: 0,
-                };
-                writer
-                    .serialize(&dummy)
-                    .map_err(|e| format!("Failed to write CSV header: {}", e))?;
-            }
-            EVENT_TYPE_MUTE => {
-                let dummy = MuteCsvRow {
-                    id: String::new(),
-                    timestamp: String::new(),
-                    channel_id: String::new(),
-                    target_user_id: String::new(),
-                    target_username: String::new(),
-                    seconds: 0,
-                    message: String::new(),
-                    moderator: String::new(),
-                    counts: 0,
-                    superuser_type: String::new(),
-                };
-                writer
-                    .serialize(&dummy)
-                    .map_err(|e| format!("Failed to write CSV header: {}", e))?;
-            }
-            EVENT_TYPE_KICK => {
-                let dummy = KickCsvRow {
-                    id: String::new(),
-                    timestamp: String::new(),
-                    channel_id: String::new(),
-                    target_user_id: String::new(),
-                    target_username: String::new(),
-                };
-                writer
-                    .serialize(&dummy)
-                    .map_err(|e| format!("Failed to write CSV header: {}", e))?;
-            }
-            EVENT_TYPE_METADATA_UPDATE => {
-                let dummy = MetadataUpdateCsvRow {
-                    id: String::new(),
-                    timestamp: String::new(),
-                    channel_id: String::new(),
-                    title: String::new(),
-                    started_at: String::new(),
-                    viewer_count: 0,
-                };
-                writer
-                    .serialize(&dummy)
-                    .map_err(|e| format!("Failed to write CSV header: {}", e))?;
-            }
-            _ => return Err(format!("Unsupported event type: {}", event_type)),
-        }
-
-        Ok(())
-    }
-
     fn write_csv_row(
         &self,
         writer: &mut csv::Writer<std::fs::File>,
@@ -321,14 +206,12 @@ impl CSVExporter {
                 let event: ChatEvent = serde_json::from_str(payload)
                     .map_err(|e| format!("Failed to parse chat event: {}", e))?;
                 let row = ChatCsvRow::from_chat_event(
-                    event.id,
                     event.timestamp,
                     event.channel_id,
                     event.comment,
                     event.chat_type,
                     event.user,
                     event.is_admin,
-                    event.ogq.is_some(),
                 );
                 writer
                     .serialize(&row)
@@ -338,7 +221,6 @@ impl CSVExporter {
                 let event: DonationEvent = serde_json::from_str(payload)
                     .map_err(|e| format!("Failed to parse donation event: {}", e))?;
                 let row = DonationCsvRow::from_donation_event(
-                    event.id,
                     event.timestamp,
                     event.channel_id,
                     event.from,
@@ -357,7 +239,6 @@ impl CSVExporter {
                 let event: MuteEvent = serde_json::from_str(payload)
                     .map_err(|e| format!("Failed to parse mute event: {}", e))?;
                 let row = MuteCsvRow::from_mute_event(
-                    event.id,
                     event.timestamp,
                     event.channel_id,
                     event.user,
@@ -374,12 +255,8 @@ impl CSVExporter {
             EVENT_TYPE_KICK => {
                 let event: UserEvent = serde_json::from_str(payload)
                     .map_err(|e| format!("Failed to parse kick event: {}", e))?;
-                let row = KickCsvRow::from_kick_event(
-                    event.id,
-                    event.timestamp,
-                    event.channel_id,
-                    event.user,
-                );
+                let row =
+                    KickCsvRow::from_kick_event(event.timestamp, event.channel_id, event.user);
                 writer
                     .serialize(&row)
                     .map_err(|e| format!("Failed to write CSV row: {}", e))?;
@@ -388,7 +265,6 @@ impl CSVExporter {
                 let event: MetadataEvent = serde_json::from_str(payload)
                     .map_err(|e| format!("Failed to parse metadata event: {}", e))?;
                 let row = MetadataUpdateCsvRow::from_metadata_event(
-                    event.id,
                     event.timestamp,
                     event.channel_id,
                     event.title,

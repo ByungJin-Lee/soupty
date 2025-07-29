@@ -1,7 +1,10 @@
 import { Download } from "react-feather";
 import { toast } from "react-hot-toast";
 import { exportEventsToCsv } from "~/common/utils/csv-export";
-import { validateChatFiltersForCsvExport, validateEventFiltersForCsvExport } from "~/common/utils/csv-export-validation";
+import {
+  validateChatFiltersForCsvExport,
+  validateEventFiltersForCsvExport,
+} from "~/common/utils/csv-export-validation";
 import { ChatSearchFilters, EventSearchFilters } from "~/services/ipc/types";
 
 interface ChatCsvExportButtonProps {
@@ -12,54 +15,55 @@ interface EventCsvExportButtonProps {
   filters: EventSearchFilters;
 }
 
-export const ChatCsvExportButton: React.FC<ChatCsvExportButtonProps> = ({ filters }) => {
+export const ChatCsvExportButton: React.FC<ChatCsvExportButtonProps> = ({
+  filters,
+}) => {
   const handleExport = async () => {
     const validation = validateChatFiltersForCsvExport(filters);
-    
+
     if (!validation.isValid) {
-      toast.error(validation.error || 'CSV 내보내기 조건을 확인해주세요.');
+      toast.error(validation.error || "CSV 내보내기 조건을 확인해주세요.");
       return;
     }
 
-    console.log('Chat CSV Export - Original filters:', filters);
-    
     // 날짜 형식 변환 및 검증
     let startDate: string | undefined;
     let endDate: string | undefined;
-    
+
     try {
       if (filters.startDate) {
-        // ISO 8601 형식으로 변환
         const start = new Date(filters.startDate);
         if (isNaN(start.getTime())) {
-          throw new Error(`Invalid start date: ${filters.startDate}`);
+          throw new Error(`잘못된 날짜 형식: ${filters.startDate}`);
         }
         startDate = start.toISOString();
-        console.log(`Start date converted: ${filters.startDate} -> ${startDate}`);
       }
-      
+
       if (filters.endDate) {
-        // ISO 8601 형식으로 변환
         const end = new Date(filters.endDate);
         if (isNaN(end.getTime())) {
-          throw new Error(`Invalid end date: ${filters.endDate}`);
+          throw new Error(`잘못된 날짜 형식: ${filters.endDate}`);
         }
         endDate = end.toISOString();
-        console.log(`End date converted: ${filters.endDate} -> ${endDate}`);
       }
     } catch (error) {
-      console.error('Date conversion error:', error);
-      toast.error(`날짜 형식 오류: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      toast.error(
+        `날짜 형식 오류: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
       return;
     }
 
     await exportEventsToCsv({
-      eventType: 'Chat',
-      channelId: validation.channelId || null,
-      broadcastId: validation.broadcastId || null,
-      startDate: startDate || null,
-      endDate: endDate || null,
-      defaultFileName: `chat_export_${new Date().toISOString().split('T')[0]}.csv`,
+      eventType: "Chat",
+      channelId: validation.channelId,
+      broadcastId: validation.broadcastId,
+      startDate: startDate,
+      endDate: endDate,
+      defaultFileName: `chat_export_${
+        validation.channelId ? validation.channelId : validation.broadcastId
+      }.csv`,
     });
   };
 
@@ -75,54 +79,55 @@ export const ChatCsvExportButton: React.FC<ChatCsvExportButtonProps> = ({ filter
   );
 };
 
-export const EventCsvExportButton: React.FC<EventCsvExportButtonProps> = ({ filters }) => {
+export const EventCsvExportButton: React.FC<EventCsvExportButtonProps> = ({
+  filters,
+}) => {
   const handleExport = async () => {
     const validation = validateEventFiltersForCsvExport(filters);
-    
+
     if (!validation.isValid) {
-      toast.error(validation.error || 'CSV 내보내기 조건을 확인해주세요.');
+      toast.error(validation.error || "CSV 내보내기 조건을 확인해주세요.");
       return;
     }
 
-    console.log('Event CSV Export - Original filters:', filters);
-    
     // 날짜 형식 변환 및 검증
     let startDate: string | undefined;
     let endDate: string | undefined;
-    
+
     try {
       if (filters.startDate) {
-        // ISO 8601 형식으로 변환
         const start = new Date(filters.startDate);
         if (isNaN(start.getTime())) {
           throw new Error(`Invalid start date: ${filters.startDate}`);
         }
         startDate = start.toISOString();
-        console.log(`Start date converted: ${filters.startDate} -> ${startDate}`);
       }
-      
+
       if (filters.endDate) {
-        // ISO 8601 형식으로 변환
         const end = new Date(filters.endDate);
         if (isNaN(end.getTime())) {
           throw new Error(`Invalid end date: ${filters.endDate}`);
         }
         endDate = end.toISOString();
-        console.log(`End date converted: ${filters.endDate} -> ${endDate}`);
       }
     } catch (error) {
-      console.error('Date conversion error:', error);
-      toast.error(`날짜 형식 오류: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+      toast.error(
+        `날짜 형식 오류: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
       return;
     }
 
     await exportEventsToCsv({
       eventType: filters.eventType!,
-      channelId: validation.channelId || null,
-      broadcastId: validation.broadcastId || null,
-      startDate: startDate || null,
-      endDate: endDate || null,
-      defaultFileName: `${filters.eventType}_export_${new Date().toISOString().split('T')[0]}.csv`,
+      channelId: validation.channelId,
+      broadcastId: validation.broadcastId,
+      startDate: startDate,
+      endDate: endDate,
+      defaultFileName: `${filters.eventType}_export_${
+        validation.channelId ? validation.channelId : validation.broadcastId
+      }.csv`,
     });
   };
 

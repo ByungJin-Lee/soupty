@@ -887,6 +887,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tauri-apps/plugin-opener@npm:~2":
+  version: 2.4.0
+  resolution: "@tauri-apps/plugin-opener@npm:2.4.0"
+  dependencies:
+    "@tauri-apps/api": "npm:^2.6.0"
+  checksum: 10c0/8ebcd8f0b64bb31ebaac0ac96d98b877781756948035868a1398236a208cf94265340cff0c60b3b60bb38a52ae1f82f6a5a636a9d134bcb75afc8ee5d72bf038
+  languageName: node
+  linkType: hard
+
 "@tybys/wasm-util@npm:^0.9.0":
   version: 0.9.0
   resolution: "@tybys/wasm-util@npm:0.9.0"
@@ -3984,6 +3993,7 @@ __metadata:
     "@tauri-apps/api": "npm:^2.5.0"
     "@tauri-apps/cli": "npm:^2.5.0"
     "@tauri-apps/plugin-dialog": "npm:~2"
+    "@tauri-apps/plugin-opener": "npm:~2"
     "@types/node": "npm:^20"
     "@types/react": "npm:^19"
     "@types/react-dom": "npm:^19"

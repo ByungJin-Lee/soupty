@@ -9,7 +9,7 @@ type Props = {
   onSelect(channel?: Channel): void;
 };
 
-export const HistoryChannelCondition: React.FC<Props> = ({
+export const ChannelCondition: React.FC<Props> = ({
   channel,
   onSelect,
 }) => {

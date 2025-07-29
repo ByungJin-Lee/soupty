@@ -8,7 +8,7 @@ type Props = {
   onSelect(session?: BroadcastSession): void;
 };
 
-export const HistoryBroadcastSessionCondition: React.FC<Props> = ({
+export const BroadcastSessionCondition: React.FC<Props> = ({
   broadcastSession,
   onSelect,
 }) => {

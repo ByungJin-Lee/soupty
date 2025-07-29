@@ -9,7 +9,7 @@ type Props = {
   onEndDateChange(date?: string): void;
 };
 
-export const HistoryPeriodCondition: React.FC<Props> = ({
+export const PeriodCondition: React.FC<Props> = ({
   startDate,
   endDate,
   onStartDateChange,

@@ -1,4 +1,4 @@
-import { Link } from "react-feather";
+import Link from "next/link";
 import { Pagination } from "~/common/ui/pagination";
 import { route } from "~/constants";
 import { EventLogResult } from "~/services/ipc/types";
@@ -236,7 +236,7 @@ const EventLogItem: React.FC<Props> = ({ eventLog }) => {
             </span>
           </div>
 
-          <div className="mb-2">
+          <div className="">
             {renderEventPayload(eventLog.eventType, eventLog.payload)}
           </div>
 

@@ -1,17 +1,19 @@
 import { PropsWithChildren } from "react";
 import { usePaginationContext } from "~/common/context/pagination";
+import {
+  BroadcastSessionCondition,
+  ChannelCondition,
+  EventTypeCondition,
+  PeriodCondition,
+  UserCondition,
+  UsernameCondition,
+} from "~/features/condition";
 import { HistoryEventFilterProvider } from "../context/history-event-filter-context";
 import { useHistoryEventSearchContext } from "../context/history-event-search-context";
 import {
   convertEventFilter,
   useHistoryEventFilter,
 } from "../hooks/history-event-filter";
-import { HistoryBroadcastSessionCondition } from "./history-broadcast-session-condition";
-import { HistoryChannelCondition } from "./history-channel-condition";
-import { HistoryEventTypeCondition } from "./history-event-type-condition";
-import { HistoryPeriodCondition } from "./history-period-condition";
-import { HistoryUserCondition } from "./history-user-condition";
-import { HistoryUsernameCondition } from "./history-username-condition";
 import { EventCsvExportButton } from "./history-csv-export-button";
 
 export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
@@ -19,46 +21,43 @@ export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
 }) => {
   const pagination = usePaginationContext();
   const search = useHistoryEventSearchContext().search;
-  const { watch, reset, setValue, getValues } = useHistoryEventFilter();
+  const { filter, updateFilter } = useHistoryEventFilter();
 
-  const w = watch();
-
-  const handleSearch = () =>
-    search(convertEventFilter(getValues()), pagination);
+  const handleSearch = () => search(convertEventFilter(filter), pagination);
 
   return (
     <>
       <div className="bg-gray-50 p-3 rounded-lg mb-3 flex gap-2 flex-wrap">
-        <HistoryChannelCondition
-          channel={w.channel}
-          onSelect={(c) => setValue("channel", c)}
+        <ChannelCondition
+          channel={filter.channel}
+          onSelect={updateFilter.setChannel}
         />
-        <HistoryUserCondition
-          userId={w.userId}
-          onChange={(u) => setValue("userId", u)}
+        <UserCondition
+          userId={filter.userId}
+          onChange={updateFilter.setUserId}
         />
-        <HistoryUsernameCondition
-          username={w.username}
-          onChange={(u) => setValue("username", u)}
+        <UsernameCondition
+          username={filter.username}
+          onChange={updateFilter.setUsername}
         />
-        <HistoryPeriodCondition
-          startDate={w.startDate}
-          endDate={w.endDate}
-          onStartDateChange={(date) => setValue("startDate", date)}
-          onEndDateChange={(date) => setValue("endDate", date)}
+        <PeriodCondition
+          startDate={filter.startDate}
+          endDate={filter.endDate}
+          onStartDateChange={updateFilter.setStartDate}
+          onEndDateChange={updateFilter.setEndDate}
         />
-        <HistoryEventTypeCondition
-          eventType={w.eventType}
-          onChange={(et) => setValue("eventType", et)}
+        <EventTypeCondition
+          eventType={filter.eventType}
+          onChange={updateFilter.setEventType}
         />
-        <HistoryBroadcastSessionCondition
-          broadcastSession={w.broadcastSession}
-          onSelect={(s) => setValue("broadcastSession", s)}
+        <BroadcastSessionCondition
+          broadcastSession={filter.broadcastSession}
+          onSelect={updateFilter.setBroadcastSession}
         />
         <div className="ml-auto flex gap-2">
-          <EventCsvExportButton filters={convertEventFilter(w)} />
+          <EventCsvExportButton filters={convertEventFilter(filter)} />
           <button
-            onClick={() => reset()}
+            onClick={updateFilter.reset}
             className="px-2 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
           >
             초기화
@@ -71,7 +70,7 @@ export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
           </button>
         </div>
       </div>
-      <HistoryEventFilterProvider value={convertEventFilter(w)}>
+      <HistoryEventFilterProvider value={convertEventFilter(filter)}>
         {children}
       </HistoryEventFilterProvider>
     </>

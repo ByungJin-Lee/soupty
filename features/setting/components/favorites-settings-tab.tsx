@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
 import { prompt } from "~/common/stores/prompt-modal-store";
-import { addTargetUser, getTargetUsers, removeTargetUser } from "~/common/utils/target-users";
+import {
+  addTargetUser,
+  getTargetUsers,
+  removeTargetUser,
+} from "~/common/utils/target-users";
 import { ipcService } from "~/services/ipc";
 
 export const FavoritesSettingsTab = () => {
@@ -16,7 +20,7 @@ export const FavoritesSettingsTab = () => {
     } catch (error) {
       console.error("Failed to load target users:", error);
       toast.error("즐겨찾기 사용자 목록을 불러오는데 실패했습니다.");
-      
+
       // 실패 시 로컬 캐시에서 가져오기
       const cachedUsers = Array.from(getTargetUsers());
       setTargetUsers(cachedUsers);
@@ -31,14 +35,14 @@ export const FavoritesSettingsTab = () => {
       if (!userId || userId.trim() === "") return;
 
       const trimmedUserId = userId.trim();
-      
+
       if (targetUsers.includes(trimmedUserId)) {
         toast.error("이미 등록된 사용자입니다.");
         return;
       }
 
       await addTargetUser(trimmedUserId);
-      setTargetUsers(prev => [...prev, trimmedUserId]);
+      setTargetUsers((prev) => [...prev, trimmedUserId]);
       toast.success(`${trimmedUserId}님을 즐겨찾기에 추가했습니다.`);
     } catch (error) {
       console.error("Failed to add target user:", error);
@@ -49,7 +53,7 @@ export const FavoritesSettingsTab = () => {
   const handleRemoveUser = async (userId: string) => {
     try {
       await removeTargetUser(userId);
-      setTargetUsers(prev => prev.filter(user => user !== userId));
+      setTargetUsers((prev) => prev.filter((user) => user !== userId));
       toast.success(`${userId}님을 즐겨찾기에서 제거했습니다.`);
     } catch (error) {
       console.error("Failed to remove target user:", error);
@@ -63,7 +67,7 @@ export const FavoritesSettingsTab = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 px-4">
         <div>
           <h3 className="text-lg font-medium mb-3">즐겨찾기 사용자</h3>
           <p className="text-gray-500">로딩 중...</p>
@@ -73,21 +77,24 @@ export const FavoritesSettingsTab = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6  px-4">
       <div>
         <h3 className="text-lg font-medium mb-3">즐겨찾기 사용자</h3>
         <p className="text-sm text-gray-600 mb-3">
           관심있는 사용자를 즐겨찾기에 추가하세요.
         </p>
-        
+
         {targetUsers.length === 0 ? (
           <p className="text-gray-500">등록된 즐겨찾기 사용자가 없습니다.</p>
         ) : (
           <div className="space-y-2">
             {targetUsers.map((user, index) => (
-              <div key={index} className="flex items-center justify-between p-2 border rounded">
+              <div
+                key={index}
+                className="flex items-center justify-between p-2 border rounded"
+              >
                 <span>{user}</span>
-                <button 
+                <button
                   className="text-red-500 hover:text-red-700"
                   onClick={() => handleRemoveUser(user)}
                 >
@@ -97,8 +104,8 @@ export const FavoritesSettingsTab = () => {
             ))}
           </div>
         )}
-        
-        <button 
+
+        <button
           className="mt-3 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
           onClick={handleAddUser}
         >

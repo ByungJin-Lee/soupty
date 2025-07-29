@@ -14,7 +14,7 @@ type Props = {
   onChange(chatType?: string): void;
 };
 
-export const HistoryChatTypeCondition: React.FC<Props> = ({
+export const ChatTypeCondition: React.FC<Props> = ({
   chatType,
   onChange,
 }) => {

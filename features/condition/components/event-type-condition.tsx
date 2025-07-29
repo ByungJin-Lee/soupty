@@ -13,7 +13,7 @@ type Props = {
   onChange(eventType?: DomainEventType): void;
 };
 
-export const HistoryEventTypeCondition: React.FC<Props> = ({
+export const EventTypeCondition: React.FC<Props> = ({
   eventType,
   onChange,
 }) => {

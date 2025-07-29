@@ -4,8 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { usePaginationContext } from "~/common/context/pagination";
 import { Pagination } from "~/common/ui/pagination";
-import { HistoryChannelCondition } from "~/features/history/components/history-channel-condition";
-import { HistoryPeriodCondition } from "~/features/history/components/history-period-condition";
+import { ChannelCondition, PeriodCondition } from "~/features/condition";
 import { formatTimestamp } from "~/features/history/utils/format";
 import { BroadcastSession } from "~/services/ipc/types";
 import { useBroadcastSessionContext } from "../context/broadcast-session-context";
@@ -46,11 +45,11 @@ export const BroadcastSessionList: React.FC = () => {
 
       {/* 필터 */}
       <div className="bg-gray-50 p-3 rounded-lg mb-3 flex gap-2 flex-wrap">
-        <HistoryChannelCondition
+        <ChannelCondition
           channel={filters.channel}
           onSelect={(channel) => setValue("channel", channel)}
         />
-        <HistoryPeriodCondition
+        <PeriodCondition
           startDate={filters.startDate}
           endDate={filters.endDate}
           onStartDateChange={(date) => setValue("startDate", date)}

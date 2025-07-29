@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { HistoryChatTab } from "~/features/history/components/history-chat-tab";
 import { HistoryEventTab } from "~/features/history/components/history-event-tab";
 import { HistoryTabSelector } from "~/features/history/components/history-tab-selector";
+import { useQueryParam } from "~/common/hooks";
 
 export default function HistoryPage() {
-  const [activeTab, setActiveTab] = useState<"chat" | "event">("chat");
+  const [activeTab, setActiveTab] = useQueryParam<"chat" | "event">("type", "chat");
   return (
     <div className="p-2 flex flex-col flex-1 overflow-y-scroll invisible-scrollbar">
       {/* 탭 네비게이션 */}

@@ -13,3 +13,6 @@ export const transformPaginationParams = (page: number, pageSize: number) => {
     pageSize: Math.max(1, Math.min(100, pageSize)),
   };
 };
+
+export const transformVODURL = (id: number) =>
+  `https://vod.sooplive.co.kr/player/${id}`;

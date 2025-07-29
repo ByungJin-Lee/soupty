@@ -1,5 +1,6 @@
 use soup_sdk::{
-    models::{LiveDetail, SignatureEmoticonData, Station}, SoopHttpClient, VODDetail, VOD
+    models::{LiveDetail, SignatureEmoticonData, Station},
+    SoopHttpClient, VODDetail, VOD,
 };
 
 #[tauri::command]
@@ -38,7 +39,6 @@ pub async fn fetch_streamer_emoticon(streamer_id: &str) -> Result<SignatureEmoti
     Ok(data)
 }
 
-
 #[tauri::command]
 pub async fn fetch_streamer_vod_list(streamer_id: &str, page: u32) -> Result<Vec<VOD>, String> {
     let client = SoopHttpClient::new();
@@ -50,7 +50,6 @@ pub async fn fetch_streamer_vod_list(streamer_id: &str, page: u32) -> Result<Vec
 
     Ok(data)
 }
-
 
 #[tauri::command]
 pub async fn fetch_streamer_vod_detail(vod_id: u64) -> Result<VODDetail, String> {
