@@ -1,5 +1,0 @@
-"use client";
-
-export default function ClipPage() {
-  return <div className="grid grid-cols-3"></div>;
-}

@@ -53,30 +53,27 @@ const BroadcastSessionContent: React.FC<{
   }, [pagination.page, pagination.pageSize]);
 
   return (
-    <div className="w-[800px] max-h-[600px] flex flex-col">
+    <div className="w-[400px] max-h-[600px] flex flex-col">
       {/* 필터 헤더 */}
-      <div className="bg-gray-50 p-3 rounded-lg mb-4">
-        <div className="flex gap-2 mb-3">
-          <HistoryChannelCondition
-            channel={filters.channel}
-            onSelect={(channel) => setValue("channel", channel)}
-          />
-          <HistoryPeriodCondition
-            startDate={filters.startDate}
-            endDate={filters.endDate}
-            onStartDateChange={(date) => setValue("startDate", date)}
-            onEndDateChange={(date) => setValue("endDate", date)}
-          />
-        </div>
-        <div className="flex justify-end">
-          <button
-            onClick={handleSearch}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-            disabled={loading}
-          >
-            {loading ? "검색 중..." : "검색"}
-          </button>
-        </div>
+      <div className="bg-gray-50 p-3 rounded-lg flex gap-2 mb-3">
+        <HistoryChannelCondition
+          channel={filters.channel}
+          onSelect={(channel) => setValue("channel", channel)}
+        />
+        <HistoryPeriodCondition
+          startDate={filters.startDate}
+          endDate={filters.endDate}
+          onStartDateChange={(date) => setValue("startDate", date)}
+          onEndDateChange={(date) => setValue("endDate", date)}
+        />
+
+        <button
+          onClick={handleSearch}
+          className="px-4 py-2 bg-blue-500 ml-auto text-white rounded-md hover:bg-blue-600"
+          disabled={loading}
+        >
+          {loading ? "검색 중..." : "검색"}
+        </button>
       </div>
 
       {/* 결과 목록 */}

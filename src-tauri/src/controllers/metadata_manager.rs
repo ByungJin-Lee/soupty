@@ -36,19 +36,10 @@ impl MetadataManager {
         // Live 데이터에서 title 가져오기
         let (_, live) = soop_client.get_live_detail_state(streamer_id).await?;
 
-        // broad_start를 DateTime<Utc>로 파싱 (YYYY-MM-DD HH:MM:SS 형식)
-        let mut started_at =
-            chrono::NaiveDateTime::parse_from_str(&station.broad_start, "%Y-%m-%d %H:%M:%S")
-                .map_err(|e| anyhow::anyhow!("Failed to parse broad_start: {}", e))?
-                .and_utc();
-
-        // started_at에서 9시간을 빼기
-        started_at = started_at - chrono::Duration::hours(9);
-
         Ok(BroadcastMetadata {
             channel_id: streamer_id.to_string(),
             title: live.unwrap().title,
-            started_at,
+            started_at: station.broad_start,
             viewer_count: station.viewer_count,
             timestamp: Utc::now(),
         })

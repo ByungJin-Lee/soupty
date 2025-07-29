@@ -17,6 +17,8 @@ export enum IpcRequestWithPayload {
   ConnectChannel = "start_main_controller",
   AnalyzeEmotion = "analyze_chat",
   GetStreamerLive = "fetch_streamer_live",
+  GetStreamerVODList = "fetch_streamer_vod_list",
+  GetVODDetail = "fetch_streamer_vod_detail",
   GetStreamerStation = "fetch_streamer_station",
   GetStreamerEmoji = "fetch_streamer_emoticon",
   AddTargetUser = "add_target_user",
@@ -48,6 +50,13 @@ export interface IpcPayloadMap {
   };
   [IpcRequestWithPayload.GetStreamerEmoji]: {
     streamerId: string;
+  };
+  [IpcRequestWithPayload.GetStreamerVODList]: {
+    streamerId: string;
+    page: number;
+  };
+  [IpcRequestWithPayload.GetVODDetail]: {
+    vodId: number;
   };
   [IpcRequestWithPayload.GetStreamerStation]: {
     streamerId: string;
@@ -139,6 +148,20 @@ export interface IpcResponseMap {
   [IpcRequestWithPayload.GetReport]: ReportInfo | null;
   [IpcRequestWithPayload.GetReportStatus]: ReportStatusInfo | null;
   [IpcRequestWithPayload.ExportEventsToCsv]: string;
+  [IpcRequestWithPayload.GetStreamerVODList]: StreamerVOD[] | null;
+  [IpcRequestWithPayload.GetVODDetail]: VODDetail | null;
+}
+
+export interface StreamerVOD {
+  id: number;
+  title: string;
+  thumbnailUrl: string;
+  regDate: string;
+  duration: number;
+}
+
+export interface VODDetail {
+  id: string;
 }
 
 export interface StreamerLive {
@@ -423,18 +446,20 @@ export interface CsvExportOptions {
 }
 
 // CSV Export 옵션 검증 함수
-export function validateCsvExportOptions(options: CsvExportOptions): string | null {
+export function validateCsvExportOptions(
+  options: CsvExportOptions
+): string | null {
   if (!options.broadcastId && !options.channelId) {
     return "Either broadcastId or channelId must be provided";
   }
-  
+
   if (!options.eventType || options.eventType.trim() === "") {
     return "eventType is required";
   }
-  
+
   if (!options.outputPath || options.outputPath.trim() === "") {
     return "outputPath is required";
   }
-  
+
   return null;
 }

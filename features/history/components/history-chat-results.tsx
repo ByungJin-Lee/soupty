@@ -1,4 +1,6 @@
+import Link from "next/link";
 import { Pagination } from "~/common/ui/pagination";
+import { route } from "~/constants";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { ChatLogResult } from "~/services/ipc/types";
 import { useHistoryChatFilterCtx } from "../context/history-chat-filter-context";
@@ -20,7 +22,7 @@ const ChatLogItem: React.FC<Props> = ({ chatLog }) => {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <span
-              className="font-medium text-blue-600 underline cursor-pointer"
+              className="font-medium text-blue-600 cursor-pointer"
               onClick={handleClick}
             >
               {chatLog.user.label}
@@ -31,9 +33,12 @@ const ChatLogItem: React.FC<Props> = ({ chatLog }) => {
             </span>
           </div>
           <HistoryChatContent chatLog={chatLog} />
-          <div className="text-xs text-gray-600">
+          <Link
+            href={route.broadcastSession(chatLog.broadcastId)}
+            className="text-xs text-gray-600 underline"
+          >
             방송: {chatLog.broadcastTitle}
-          </div>
+          </Link>
         </div>
         <HistoryChatMessageTypeLabel
           messageType={chatLog.messageType}

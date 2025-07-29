@@ -1,4 +1,6 @@
+import { Link } from "react-feather";
 import { Pagination } from "~/common/ui/pagination";
+import { route } from "~/constants";
 import { EventLogResult } from "~/services/ipc/types";
 import { domainEventLabel, DomainEventType } from "~/types";
 import { useHistoryEventFilterCtx } from "../context/history-event-filter-context";
@@ -238,9 +240,12 @@ const EventLogItem: React.FC<Props> = ({ eventLog }) => {
             {renderEventPayload(eventLog.eventType, eventLog.payload)}
           </div>
 
-          <div className="text-xs text-gray-600">
+          <Link
+            href={route.broadcastSession(eventLog.broadcastId)}
+            className="text-xs text-gray-600 underline"
+          >
             방송: {eventLog.broadcastTitle}
-          </div>
+          </Link>
         </div>
         <div className="text-xs text-gray-400 ml-4 font-medium">
           {domainEventLabel[eventLog.eventType]}
