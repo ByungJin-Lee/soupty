@@ -10,7 +10,9 @@ import {
  * @description Payload에 따라 Overload된 함수를 정의합니다
  */
 interface IpcClient {
-  <K extends IpcRequestWithoutPayload>(name: K): Promise<IpcResponseMap[K]>;
+  <K extends IpcRequestWithoutPayload & keyof IpcResponseMap>(name: K): Promise<
+    IpcResponseMap[K]
+  >;
   <K extends IpcRequestWithPayload>(
     name: K,
     payload: IpcPayloadMap[K]
@@ -21,10 +23,6 @@ interface IpcClient {
  * @description ipc 요청을 관리하는 객체입니다.
  */
 export const ipcClient: IpcClient = async (name: string, payload?: unknown) => {
-  console.log(`IPC Client: Calling ${name} with payload:`, payload);
-  
   const resp = await invoke(name, payload as InvokeArgs);
-  
-  console.log(`IPC Client: Response from ${name}:`, resp);
   return resp;
 };

@@ -133,6 +133,7 @@ impl CSVExporter {
             user_id: None,
             username: None,
             event_type: Some(options.event_type.clone()),
+            exclude_event_types: Vec::new(),
             start_date: options.start_date,
             end_date: options.end_date,
             broadcast_id: options.broadcast_id,

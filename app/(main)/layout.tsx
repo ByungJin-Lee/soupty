@@ -1,6 +1,7 @@
 import { Toaster } from "react-hot-toast";
 import { GlobalEventProvider } from "~/common/components/global-event-provider";
 import { GlobalPopoverProvider } from "~/common/components/global-popover-provider";
+import { VodSelectModal } from "~/common/ui";
 import { ConfirmModal } from "~/common/ui/confirm-modal";
 import { GlobalNavigationBar } from "~/common/ui/global-navigation-bar";
 import { PromptModal } from "~/common/ui/prompt-modal";
@@ -19,6 +20,7 @@ export default function MainLayout({
       <PromptModal />
       <ConfirmModal />
       <LiveUserHistoryModal />
+      <VodSelectModal />
       <Toaster toastOptions={toastOptions} />
       <GlobalPopoverProvider />
       <WindowTitlebar>

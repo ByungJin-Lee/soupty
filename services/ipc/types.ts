@@ -25,10 +25,12 @@ export enum IpcRequestWithPayload {
   RemoveTargetUser = "remove_target_user",
   SearchChatLogs = "search_chat_logs",
   SearchEventLogs = "search_event_logs",
+  SearchUserLogs = "search_user_logs",
   DeleteBroadcastSession = "delete_broadcast_session",
   GetBroadcastSession = "get_broadcast_session",
   SearchBroadcastSessions = "search_broadcast_sessions",
   UpdateBroadcastSessionEndTime = "update_broadcast_session_end_time",
+  UpdateBroadcastSessionVODId = "update_broadcast_vod_id",
   CreateReport = "create_report",
   DeleteReport = "delete_report",
   GetReport = "get_report",
@@ -85,6 +87,10 @@ export interface IpcPayloadMap {
     filters: EventSearchFilters;
     pagination: PaginationParams;
   };
+  [IpcRequestWithPayload.SearchUserLogs]: {
+    filters: UserSearchFilters;
+    pagination: PaginationParams;
+  };
   [IpcRequestWithPayload.DeleteBroadcastSession]: {
     broadcastId: number;
   };
@@ -112,6 +118,10 @@ export interface IpcPayloadMap {
     broadcastId: number;
   };
   [IpcRequestWithPayload.ExportEventsToCsv]: { options: CsvExportOptions };
+  [IpcRequestWithPayload.UpdateBroadcastSessionVODId]: {
+    broadcastId: number;
+    vodId: number;
+  };
 }
 
 /**
@@ -140,6 +150,7 @@ export interface IpcResponseMap {
   [IpcRequestWithPayload.RemoveTargetUser]: void;
   [IpcRequestWithPayload.SearchChatLogs]: ChatSearchResult;
   [IpcRequestWithPayload.SearchEventLogs]: EventSearchResult;
+  [IpcRequestWithPayload.SearchUserLogs]: UserSearchResult;
   [IpcRequestWithPayload.DeleteBroadcastSession]: void;
   [IpcRequestWithPayload.GetBroadcastSession]: BroadcastSession | null;
   [IpcRequestWithPayload.SearchBroadcastSessions]: BroadcastSessionSearchResult;
@@ -150,6 +161,7 @@ export interface IpcResponseMap {
   [IpcRequestWithPayload.ExportEventsToCsv]: string;
   [IpcRequestWithPayload.GetStreamerVODList]: StreamerVOD[] | null;
   [IpcRequestWithPayload.GetVODDetail]: VODDetail | null;
+  [IpcRequestWithPayload.UpdateBroadcastSessionVODId]: void;
 }
 
 export interface StreamerVOD {
@@ -212,6 +224,16 @@ export interface EventSearchFilters {
   endDate?: string;
   broadcastId?: number;
   username?: string;
+  excludeEventTypes?: string[];
+}
+
+// 사용자 검색 관련 타입
+export interface UserSearchFilters {
+  userId: string;
+  channelId?: string;
+  sessionId?: number;
+  startDate?: string;
+  endDate?: string;
 }
 
 export interface PaginationParams {
@@ -229,6 +251,14 @@ export interface ChatSearchResult {
 
 export interface EventSearchResult {
   eventLogs: EventLogResult[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface UserSearchResult {
+  logs: UserLogEntry[];
   totalCount: number;
   page: number;
   pageSize: number;
@@ -264,11 +294,29 @@ export interface EventLogResult {
   userId?: string;
   username?: string;
   eventType: DomainEventType;
-  payload: string;
+  payload: unknown;
   timestamp: string;
   channelId: string;
   channelName: string;
   broadcastTitle: string;
+}
+
+export interface UserLogEntry {
+  id: number;
+  broadcastId: number;
+  user: User;
+  logType: "CHAT" | "EVENT";
+  timestamp: string;
+  channelId: string;
+  channelName: string;
+  broadcastTitle: string;
+  // 채팅 로그 필드
+  messageType?: ChatLogMessageType;
+  message?: string;
+  metadata?: ChatLogMetadata;
+  // 이벤트 로그 필드
+  eventType?: DomainEventType;
+  payload?: string;
 }
 
 // 방송 세션 검색 관련 타입
@@ -293,6 +341,10 @@ export interface BroadcastSession {
   title: string;
   startedAt: string;
   endedAt?: string;
+  /**
+   * @description 0인 경우 할당되지 않은 상태입니다.
+   */
+  vodId: number;
 }
 
 // 리포트 관련 타입

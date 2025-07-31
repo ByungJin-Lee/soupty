@@ -8,9 +8,9 @@ export const BroadcastSessionDetailPage = () => {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("id");
 
-  const { session, loading, error } = useBroadcastSessionDetail(sessionId);
+  const { session, isLoading, error } = useBroadcastSessionDetail(sessionId);
 
-  if (loading) {
+  if (isLoading) {
     return <LoadingSpinner message="세션 정보를 불러오는 중..." />;
   }
 

@@ -15,6 +15,10 @@ const tabs: { tab: HistoryType; label: string }[] = [
     tab: "event",
     label: "이벤트",
   },
+  {
+    tab: "user",
+    label: "유저",
+  },
 ];
 
 export const HistoryTabSelector: React.FC<Props> = ({
@@ -30,7 +34,7 @@ export const HistoryTabSelector: React.FC<Props> = ({
   );
 
   return (
-    <div className="flex border-b border-gray-200 mb-2">
+    <div className="flex flex-1 border-b border-gray-200 mb-2">
       {tabs.map((t) => (
         <button
           key={t.tab}

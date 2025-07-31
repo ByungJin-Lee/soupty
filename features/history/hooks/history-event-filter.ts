@@ -97,5 +97,6 @@ export const convertEventFilter = (filter: EventFilter): EventSearchFilters => {
     endDate: filter.endDate,
     broadcastId: filter.broadcastSession?.id,
     username: filter.username,
+    excludeEventTypes: ["MetadataUpdate"],
   };
 };

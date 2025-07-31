@@ -2,25 +2,17 @@ import { useRouter } from "next/navigation";
 import { confirm } from "~/common/stores/confirm-modal-store";
 import { formatTimestamp } from "~/common/utils/format";
 import { route } from "~/constants";
-import { useBroadcastSessionEndTime } from "~/features/report/hooks";
 import { ChannelAvatar } from "~/features/soop/components/channel/channel-avatar";
 import { deleteBroadcastSession } from "~/services/ipc/broadcast-session";
 import { BroadcastSession } from "~/services/ipc/types";
+import { BroadcastSessionEnd } from "./broadcast-session-end";
+import { BroadcastSessionVOD } from "./broadcast-session-vod";
 
 type Props = {
   session: BroadcastSession;
 };
 
 export const BroadcastSessionHeader: React.FC<Props> = ({ session }) => {
-  const {
-    isEditingEndTime,
-    endTime,
-    setEndTime,
-    handleSetEndTime,
-    handleSaveEndTime,
-    handleCancelEdit,
-  } = useBroadcastSessionEndTime(session);
-
   const router = useRouter();
 
   const handleDeleteSession = async () => {
@@ -83,84 +75,41 @@ export const BroadcastSessionHeader: React.FC<Props> = ({ session }) => {
           </span>
           방송 정보
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-1">
-            <dt className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-              세션 ID
-            </dt>
-            <dd className="text-lg font-mono text-gray-900 bg-gray-50 px-3 py-1 rounded-md border border-gray-300">
-              #{session.id}
-            </dd>
-          </div>
-          <div className="space-y-1">
-            <dt className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-              채널명
-            </dt>
-            <dd className="text-lg text-gray-900 flex gap-2 items-center bg-gray-50 px-3 py-1 rounded-md border border-gray-300">
-              <ChannelAvatar
-                channel={{ id: session.channelId }}
-                size={28}
-                className="rounded-full border-2 border-white shadow-sm"
-              />
-              <span className="font-medium">{session.channelName}</span>
-            </dd>
-          </div>
-          <div className="space-y-1">
-            <dt className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
-              시작 시간
-            </dt>
-            <dd className="text-lg text-gray-900 bg-green-50 px-3 py-1 rounded-md border border-green-200">
-              <span className="font-medium">
-                🕐 {formatTimestamp(session.startedAt)}
-              </span>
-            </dd>
-          </div>
-          <div className="space-y-1">
-            <dt className="text-sm font-semibold text-gray-600 uppercase tracking-wide flex items-center justify-between">
-              종료 시간
-              {!isEditingEndTime && (
-                <button
-                  onClick={handleSetEndTime}
-                  className="text-xs bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-md transition-colors"
-                >
-                  {session.endedAt ? "수정" : "설정"}
-                </button>
-              )}
-            </dt>
-            {session.endedAt || isEditingEndTime ? (
-              <dd className="text-lg text-gray-900 bg-red-50 px-3 py-1 rounded-md border border-red-200">
-                {isEditingEndTime ? (
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="datetime-local"
-                      value={endTime.slice(0, 16)}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      className="text-sm border border-gray-300 rounded px-2 py-1 flex-1"
-                    />
-                    <button
-                      onClick={handleSaveEndTime}
-                      className="text-xs bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded transition-colors"
-                    >
-                      저장
-                    </button>
-                    <button
-                      onClick={handleCancelEdit}
-                      className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded transition-colors"
-                    >
-                      취소
-                    </button>
-                  </div>
-                ) : (
-                  <span className="font-medium">
-                    🕐 {formatTimestamp(session.endedAt!)}
-                  </span>
-                )}
+        <div className="grid grid-cols-1 md:grid-cols-[270px_1fr] gap-2">
+          <BroadcastSessionVOD session={session} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+            <div className="space-y-1">
+              <dt className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                세션 ID
+              </dt>
+              <dd className="text-lg font-mono text-gray-900 bg-gray-50 px-3 py-1 rounded-md border border-gray-300">
+                #{session.id}
               </dd>
-            ) : (
-              <dd className="text-lg text-gray-500 bg-gray-50 px-3 py-1 rounded-md border border-gray-200">
-                <span className="font-medium italic">미설정</span>
+            </div>
+            <div className="space-y-1">
+              <dt className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                채널명
+              </dt>
+              <dd className="text-lg text-gray-900 flex gap-2 items-center bg-gray-50 px-3 py-1 rounded-md border border-gray-300">
+                <ChannelAvatar
+                  channel={{ id: session.channelId }}
+                  size={28}
+                  className="rounded-full border-2 border-white shadow-sm"
+                />
+                <span className="font-medium">{session.channelName}</span>
               </dd>
-            )}
+            </div>
+            <div className="space-y-1">
+              <dt className="text-sm font-semibold text-gray-600 uppercase tracking-wide">
+                시작 시간
+              </dt>
+              <dd className="text-lg text-gray-900 bg-green-50 px-3 py-1 rounded-md border border-green-200">
+                <span className="font-medium">
+                  🕐 {formatTimestamp(session.startedAt)}
+                </span>
+              </dd>
+            </div>
+            <BroadcastSessionEnd session={session} />
           </div>
         </div>
       </div>

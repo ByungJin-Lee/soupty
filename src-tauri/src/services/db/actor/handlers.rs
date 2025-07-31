@@ -7,7 +7,7 @@ use crate::services::db::commands::{
     BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult,
     ChannelData, ChatLogData, ChatLogResult, ChatMetadata, ChatSearchFilters, ChatSearchResult,
     EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams,
-    ReportInfo, ReportStatusInfo,
+    ReportInfo, ReportStatusInfo, UserLogEntry, UserSearchFilters, UserSearchResult,
 };
 use crate::util::hangul::decompose_hangul_to_string;
 
@@ -75,6 +75,24 @@ impl<'a> CommandHandlers<'a> {
             .prepare_cached("UPDATE broadcast_sessions SET ended_at = ?1 WHERE id = ?2")
             .and_then(|mut stmt| {
                 stmt.execute([&ended_at.to_rfc3339(), &broadcast_id.to_string()])?;
+                Ok(())
+            })
+            .map_err(|e| e.to_string());
+
+        let _ = reply_to.send(result);
+    }
+
+        pub fn handle_vod_broadcast_session(
+        &self,
+        broadcast_id: i64,
+        vod_id: u64,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    ) {
+        let result = self
+            .conn
+            .prepare_cached("UPDATE broadcast_sessions SET vod_id = ?1 WHERE id = ?2")
+            .and_then(|mut stmt| {
+                stmt.execute([vod_id.to_string(), broadcast_id.to_string()])?;
                 Ok(())
             })
             .map_err(|e| e.to_string());
@@ -337,6 +355,16 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
+    pub fn handle_search_user_logs(
+        &self,
+        filters: UserSearchFilters,
+        pagination: PaginationParams,
+        reply_to: oneshot::Sender<Result<UserSearchResult, String>>,
+    ) {
+        let result = self.search_user_logs_impl(filters, pagination);
+        let _ = reply_to.send(result);
+    }
+
     fn search_chat_logs_impl(
         &self,
         filters: ChatSearchFilters,
@@ -423,6 +451,7 @@ impl<'a> CommandHandlers<'a> {
 
         let mut where_conditions = Vec::new();
         let mut param_values = Vec::new();
+        let mut exclude_condition = String::new();
 
         if let Some(channel_id) = &filters.channel_id {
             where_conditions.push("c.channel_id = ?");
@@ -442,6 +471,16 @@ impl<'a> CommandHandlers<'a> {
         if let Some(event_type) = &filters.event_type {
             where_conditions.push("el.event_type = ?");
             param_values.push(event_type.clone());
+        }
+
+        if !filters.exclude_event_types.is_empty() {
+            let placeholders = filters.exclude_event_types.iter()
+                .map(|_| "?")
+                .collect::<Vec<_>>()
+                .join(", ");
+            exclude_condition = format!("el.event_type NOT IN ({})", placeholders);
+            where_conditions.push(&exclude_condition);
+            param_values.extend(filters.exclude_event_types.iter().cloned());
         }
 
         if let Some(broadcast_id) = &filters.broadcast_id {
@@ -772,6 +811,206 @@ impl<'a> CommandHandlers<'a> {
         Ok(count)
     }
 
+    fn search_user_logs_impl(
+        &self,
+        filters: UserSearchFilters,
+        pagination: PaginationParams,
+    ) -> Result<UserSearchResult, String> {
+        let offset = (pagination.page - 1) * pagination.page_size;
+        let limit = pagination.page_size;
+
+        // Build WHERE conditions for both chat and event logs
+        let mut where_conditions = Vec::new();
+        let mut param_values = Vec::new();
+
+        // user_id is required
+        where_conditions.push("user_id = ?");
+        param_values.push(filters.user_id.clone());
+
+        // channel_id filter (optional)
+        if let Some(channel_id) = &filters.channel_id {
+            where_conditions.push("c.channel_id = ?");
+            param_values.push(channel_id.clone());
+        }
+
+        // session_id filter (optional) - filters by broadcast_id
+        if let Some(session_id) = &filters.session_id {
+            where_conditions.push("broadcast_id = ?");
+            param_values.push(session_id.to_string());
+        }
+
+        // Date range filters (optional)
+        if let Some(start_date) = &filters.start_date {
+            where_conditions.push("timestamp >= ?");
+            param_values.push(start_date.to_rfc3339());
+        }
+
+        if let Some(end_date) = &filters.end_date {
+            where_conditions.push("timestamp <= ?");
+            param_values.push(end_date.to_rfc3339());
+        }
+
+        let where_clause = if where_conditions.is_empty() {
+            String::new()
+        } else {
+            format!("WHERE {}", where_conditions.join(" AND "))
+        };
+
+        // Convert to &str for rusqlite
+        let params: Vec<&str> = param_values.iter().map(String::as_str).collect();
+
+        // Get combined user logs (chat + event)
+        let logs = self.search_user_logs_combined(&where_clause, &params, limit, offset)?;
+
+        // Get total count
+        let total_count = self.get_user_logs_total_count(&where_clause, &params)?;
+        let total_pages = (total_count + pagination.page_size - 1) / pagination.page_size;
+
+        Ok(UserSearchResult {
+            logs,
+            total_count,
+            page: pagination.page,
+            page_size: pagination.page_size,
+            total_pages,
+        })
+    }
+
+    fn search_user_logs_combined(
+        &self,
+        where_clause: &str,
+        params: &[&str],
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<UserLogEntry>, String> {
+        // Query combines both chat_logs and event_logs using UNION ALL
+        let query = format!(
+            "SELECT 
+                id, broadcast_id, user_id, username, user_flag, timestamp,
+                channel_id, channel_name, title as broadcast_title, log_type,
+                message_type, message, metadata, event_type, payload
+             FROM (
+                 SELECT 
+                     cl.id, cl.broadcast_id, cl.user_id, cl.username, cl.user_flag, cl.timestamp,
+                     c.channel_id, c.channel_name, bs.title,
+                     'CHAT' as log_type,
+                     cl.message_type, cl.message, cl.metadata,
+                     NULL as event_type, NULL as payload
+                 FROM chat_logs cl
+                 JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+                 JOIN channels c ON bs.channel_id = c.channel_id
+                 {}
+                 
+                 UNION ALL
+                 
+                 SELECT 
+                     el.id, el.broadcast_id, el.user_id, el.username, el.user_flag, el.timestamp,
+                     c.channel_id, c.channel_name, bs.title,
+                     'EVENT' as log_type,
+                     NULL as message_type, NULL as message, NULL as metadata,
+                     el.event_type, el.payload
+                 FROM event_logs el
+                 JOIN broadcast_sessions bs ON el.broadcast_id = bs.id
+                 JOIN channels c ON bs.channel_id = c.channel_id
+                 {}
+             ) AS combined_logs
+             ORDER BY timestamp DESC
+             LIMIT ? OFFSET ?",
+            where_clause, where_clause
+        );
+
+        let mut stmt = self
+            .conn
+            .prepare_cached(&query)
+            .map_err(|e| e.to_string())?;
+
+        let limit_str = limit.to_string();
+        let offset_str = offset.to_string();
+        
+        // Duplicate params for both UNION queries
+        let mut all_params = params.to_vec();
+        all_params.extend(params.iter());
+        all_params.push(&limit_str);
+        all_params.push(&offset_str);
+
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
+                let user_id: String = row.get(2)?;
+                let username: String = row.get(3)?;
+                let user_flag: u32 = row.get(4)?;
+                let log_type: String = row.get(9)?;
+
+                Ok(UserLogEntry {
+                    id: row.get(0)?,
+                    broadcast_id: row.get(1)?,
+                    user: parse_user_from_flag(user_flag, user_id, username),
+                    log_type,
+                    timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(5)?)
+                        .unwrap()
+                        .with_timezone(&Utc),
+                    channel_id: row.get(6)?,
+                    channel_name: row.get(7)?,
+                    broadcast_title: row.get(8)?,
+                    // Chat log fields
+                    message_type: row.get(10)?,
+                    message: row.get(11)?,
+                    metadata: {
+                        let metadata_str: Option<String> = row.get(12)?;
+                        match metadata_str {
+                            Some(s) if !s.is_empty() => serde_json::from_str(&s).ok(),
+                            _ => None,
+                        }
+                    },
+                    // Event log fields
+                    event_type: row.get(13)?,
+                    payload: row.get(14)?,
+                })
+            })
+            .map_err(|e| e.to_string())?;
+
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| e.to_string())
+    }
+
+    fn get_user_logs_total_count(
+        &self,
+        where_clause: &str,
+        params: &[&str],
+    ) -> Result<i64, String> {
+        let query = format!(
+            "SELECT COUNT(*) FROM (
+                 SELECT cl.id FROM chat_logs cl
+                 JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+                 JOIN channels c ON bs.channel_id = c.channel_id
+                 {}
+                 
+                 UNION ALL
+                 
+                 SELECT el.id FROM event_logs el
+                 JOIN broadcast_sessions bs ON el.broadcast_id = bs.id
+                 JOIN channels c ON bs.channel_id = c.channel_id
+                 {}
+             ) AS combined_logs",
+            where_clause, where_clause
+        );
+
+        let mut stmt = self
+            .conn
+            .prepare_cached(&query)
+            .map_err(|e| e.to_string())?;
+
+        // Duplicate params for both UNION queries
+        let mut all_params = params.to_vec();
+        all_params.extend(params.iter());
+
+        let count = stmt
+            .query_row(rusqlite::params_from_iter(all_params.iter()), |row| {
+                row.get::<_, i64>(0)
+            })
+            .map_err(|e| e.to_string())?;
+
+        Ok(count)
+    }
+
     // 방송 세션 삭제 핸들러
     pub fn handle_delete_broadcast_session(
         &self,
@@ -1041,7 +1280,7 @@ impl<'a> CommandHandlers<'a> {
         offset: i64,
     ) -> Result<Vec<BroadcastSessionResult>, String> {
         let query = format!(
-            "SELECT bs.id, bs.channel_id, c.channel_name, bs.title, bs.started_at, bs.ended_at
+            "SELECT bs.id, bs.channel_id, c.channel_name, bs.title, bs.started_at, bs.ended_at, bs.vod_id
              FROM broadcast_sessions bs
              JOIN channels c ON bs.channel_id = c.channel_id
              {}
@@ -1093,6 +1332,7 @@ impl<'a> CommandHandlers<'a> {
                     title: row.get(3)?,
                     started_at,
                     ended_at,
+                    vod_id: row.get(6)?,
                 })
             })
             .map_err(|e| e.to_string())?;
@@ -1144,7 +1384,8 @@ impl<'a> CommandHandlers<'a> {
                 c.channel_name,
                 bs.title,
                 bs.started_at,
-                bs.ended_at
+                bs.ended_at,
+                bs.vod_id
             FROM broadcast_sessions bs
             JOIN channels c ON bs.channel_id = c.channel_id
             WHERE bs.id = ?1
@@ -1158,6 +1399,7 @@ impl<'a> CommandHandlers<'a> {
                 channel_id: row.get(1)?,
                 channel_name: row.get(2)?,
                 title: row.get(3)?,
+                vod_id: row.get(6)?,
                 started_at: row.get::<_, String>(4)?.parse().map_err(|_e| {
                     rusqlite::Error::InvalidColumnType(
                         4,

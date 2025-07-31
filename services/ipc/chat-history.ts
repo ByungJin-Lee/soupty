@@ -6,6 +6,8 @@ import {
   EventSearchResult,
   IpcRequestWithPayload,
   PaginationParams,
+  UserSearchFilters,
+  UserSearchResult,
 } from "./types";
 
 export const chatHistoryService = {
@@ -18,12 +20,29 @@ export const chatHistoryService = {
       pagination,
     });
   },
-  
+
   async searchEventLogs(
     filters: EventSearchFilters,
     pagination: PaginationParams
   ): Promise<EventSearchResult> {
-    return await ipcClient(IpcRequestWithPayload.SearchEventLogs, {
+    const raw = await ipcClient(IpcRequestWithPayload.SearchEventLogs, {
+      filters,
+      pagination,
+    });
+
+    raw.eventLogs = raw.eventLogs.map((v) => ({
+      ...v,
+      payload: JSON.parse(v.payload as string),
+    }));
+
+    return raw;
+  },
+
+  async searchUserLogs(
+    filters: UserSearchFilters,
+    pagination: PaginationParams
+  ): Promise<UserSearchResult> {
+    return await ipcClient(IpcRequestWithPayload.SearchUserLogs, {
       filters,
       pagination,
     });

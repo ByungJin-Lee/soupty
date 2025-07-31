@@ -1,5 +1,7 @@
-export const formatTimestamp = (timestamp: string | number) => {
-  return new Date(timestamp).toLocaleString("ko-KR");
+export const formatTimestamp = (timestamp: Date | string | number) => {
+  return (
+    timestamp instanceof Date ? timestamp : new Date(timestamp)
+  ).toLocaleString("ko-KR");
 };
 
 export const formatDayTimestamp = (timestamp: string | number) => {

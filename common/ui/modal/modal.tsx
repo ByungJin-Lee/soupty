@@ -36,7 +36,7 @@ const ModalComponent: React.FC<ModalProps> = ({
       onClick={handleBackdropClick}
     >
       <div
-        className="relative max-h-[90vh] max-w-[90vw] overflow-auto rounded-lg bg-white p-3 shadow-xl"
+        className="relative max-h-[90vh] max-w-[90vw] overflow-auto invisible-scrollbar rounded-lg bg-white p-3 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <ModalHeader

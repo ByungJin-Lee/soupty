@@ -5,7 +5,6 @@ import {
   formatTimestamp,
   transformVODURL,
 } from "~/common/utils";
-import ipcService from "~/services/ipc";
 import { StreamerVOD } from "~/services/ipc/types";
 
 type Props = {
@@ -13,23 +12,16 @@ type Props = {
 };
 
 export const VODItem: React.FC<Props> = ({ data }) => {
-  const handleClick = async () => {
-    const detail = await ipcService.soop.getVODDetail(data.id);
-    console.log(detail);
-  };
-
   return (
-    <div
-      className="group bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer"
-      onClick={handleClick}
-    >
+    <div className="group bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer">
       {/* Thumbnail Container */}
-      <div
-        className="relative aspect-video bg-gray-100"
-        onClick={() => openUrl(transformVODURL(data.id))}
-      >
+      <div className="relative aspect-video bg-gray-100">
         <img
-          src={data.thumbnailUrl}
+          src={
+            data.thumbnailUrl.length > 0
+              ? data.thumbnailUrl
+              : "/images/default.png"
+          }
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover"
           alt=""
@@ -37,7 +29,10 @@ export const VODItem: React.FC<Props> = ({ data }) => {
 
         {/* Play Button Overlay */}
         <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-all duration-200 flex items-center justify-center">
-          <div className="w-12 h-12 bg-white bg-opacity-0 group-hover:bg-opacity-90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-200">
+          <div
+            className="w-12 h-12 bg-white bg-opacity-0 group-hover:bg-opacity-90 rounded-full flex items-center justify-center transform scale-0 group-hover:scale-100 transition-all duration-200"
+            onClick={() => openUrl(transformVODURL(data.id))}
+          >
             <Play
               className="w-5 h-5 text-gray-700 ml-0.5"
               fill="currentColor"

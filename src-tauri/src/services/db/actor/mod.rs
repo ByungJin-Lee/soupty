@@ -56,6 +56,11 @@ impl DBActor {
                 ended_at,
                 reply_to,
             } => handlers.handle_end_broadcast_session(broadcast_id, ended_at, reply_to),
+            DBCommand::UpdateBroadcastSessionVOD {
+                broadcast_id,
+                vod_id,
+                reply_to,
+            } => handlers.handle_vod_broadcast_session(broadcast_id, vod_id, reply_to),
             DBCommand::UpsertChannels { channels, reply_to } => {
                 handlers.handle_upsert_channels(channels, reply_to)
             }
@@ -89,6 +94,11 @@ impl DBActor {
                 pagination,
                 reply_to,
             } => handlers.handle_search_event_logs(filters, pagination, reply_to),
+            DBCommand::SearchUserLogs {
+                filters,
+                pagination,
+                reply_to,
+            } => handlers.handle_search_user_logs(filters, pagination, reply_to),
             DBCommand::DeleteBroadcastSession {
                 broadcast_id,
                 reply_to,

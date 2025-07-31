@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Star } from "react-feather";
 import { ClipboardButton } from "~/common/ui/clipboard-button";
 import {
@@ -8,7 +9,9 @@ import {
   withPopover,
 } from "~/common/ui/popover";
 import { isTargetUser } from "~/common/utils/target-users";
+import { route } from "~/constants";
 import { useLiveUserHistoryStore } from "~/features/live/stores/live-user-history";
+import { useChannel } from "~/features/soop";
 import { useUserPopover } from "../hooks/user-popover";
 import { UserPopoverPayload } from "../types/user";
 
@@ -17,7 +20,15 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
 }) => {
   const { userInfo, isLoading, handleToggleTargetUser } =
     useUserPopover(payload);
+  const router = useRouter();
   const openLiveUserHistory = useLiveUserHistoryStore((v) => v.open);
+  const currentChannel = useChannel((v) => v.channel);
+  const openWholeUserHistory = (userId: string) => {
+    const channelQuery = currentChannel
+      ? `&channelId=${currentChannel.id}`
+      : "";
+    router.push(`${route.history}?type=user&userId=${userId}${channelQuery}`);
+  };
 
   const isTarget = userInfo.userId ? isTargetUser(userInfo.userId) : false;
 
@@ -91,10 +102,16 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
       </div>
       <div className="border-t border-gray-200 mt-2">
         <p
-          className="cursor-pointer py-1 px-0.5 text-sm text-gray-600 hover:bg-gray-200 rounded-md"
+          className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"
           onClick={() => openLiveUserHistory(userInfo.userId)}
         >
           라이브 기록
+        </p>
+        <p
+          className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"
+          onClick={() => openWholeUserHistory(userInfo.userId)}
+        >
+          전체 기록
         </p>
       </div>
     </div>

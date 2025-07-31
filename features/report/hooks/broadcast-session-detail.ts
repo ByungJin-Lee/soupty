@@ -1,27 +1,23 @@
-import { useCallback, useEffect } from "react";
+import useSWR from "swr";
+import { route } from "~/constants";
 import { getBroadcastSessionDetail } from "~/services/ipc/broadcast-session";
-import { BroadcastSession } from "~/services/ipc/types";
-import { useApiState } from "~/common/hooks/api-state";
 
 export const useBroadcastSessionDetail = (sessionId: string | null) => {
-  const fetcher = useCallback(async () => {
-    if (!sessionId) {
-      throw new Error("세션 ID가 제공되지 않았습니다.");
-    }
-    return await getBroadcastSessionDetail(sessionId);
-  }, [sessionId]);
+  if (!sessionId) {
+    throw Error("");
+  }
 
-  const { data: session, loading, error, execute } = useApiState<BroadcastSession>(fetcher);
-
-  useEffect(() => {
-    if (sessionId) {
-      execute();
-    }
-  }, [sessionId, execute]);
+  const {
+    data: session,
+    isLoading,
+    error,
+  } = useSWR(route.broadcastSession(sessionId), () =>
+    getBroadcastSessionDetail(sessionId)
+  );
 
   return {
     session,
-    loading,
+    isLoading,
     error,
   };
 };

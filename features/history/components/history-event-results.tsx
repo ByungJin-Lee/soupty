@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Pagination } from "~/common/ui/pagination";
 import { route } from "~/constants";
+import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { EventLogResult } from "~/services/ipc/types";
 import { domainEventLabel, DomainEventType } from "~/types";
 import { useHistoryEventFilterCtx } from "../context/history-event-filter-context";
@@ -11,39 +12,28 @@ type Props = {
   eventLog: EventLogResult;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const renderEventPayload = (eventType: DomainEventType, payload: any) => {
   try {
-    const parsedPayload = JSON.parse(payload);
-
     switch (eventType) {
       case DomainEventType.Chat:
-        return (
-          <div className="space-y-1">
-            <div className="text-gray-900 break-all">
-              {parsedPayload.comment}
-            </div>
-            {parsedPayload.user && (
-              <div className="text-sm text-gray-600">
-                사용자: {parsedPayload.user.label} ({parsedPayload.user.id})
-              </div>
-            )}
-          </div>
-        );
+        // 해당 이벤트는 chat log에서 핸들링 됩니다.
+        return null;
 
       case DomainEventType.Donation:
         return (
           <div className="space-y-1">
             <div className="font-medium text-yellow-600">
-              {parsedPayload.fromLabel}님이 {parsedPayload.amount}개 후원
+              {payload.amount}개 후원
             </div>
-            {parsedPayload.message && (
+            {payload.message && (
               <div className="text-gray-900 break-all">
-                &quot;{parsedPayload.message}&quot;
+                &quot;{payload.message}&quot;
               </div>
             )}
             <div className="text-sm text-gray-600">
-              타입: {parsedPayload.donationType}
-              {parsedPayload.becomeTopFan && " • 새로운 탑팬!"}
+              타입: {payload.donationType}
+              {payload.becomeTopFan && " • 새로운 탑팬!"}
             </div>
           </div>
         );
@@ -51,11 +41,9 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
       case DomainEventType.Subscribe:
         return (
           <div className="space-y-1">
-            <div className="font-medium text-purple-600">
-              {parsedPayload.label}님이 구독
-            </div>
+            <div className="font-medium text-purple-600">구독</div>
             <div className="text-sm text-gray-600">
-              티어: {parsedPayload.tier} • 갱신: {parsedPayload.renew}개월
+              티어: {payload.tier} • 갱신: {payload.renew}개월
             </div>
           </div>
         );
@@ -64,10 +52,10 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
         return (
           <div className="space-y-1">
             <div className="font-medium text-blue-600">
-              {parsedPayload.fromLabel}님이 미션 후원 {parsedPayload.amount}개
+              미션 후원 {payload.amount}개
             </div>
             <div className="text-sm text-gray-600">
-              미션 타입: {parsedPayload.missionType}
+              미션 타입: {payload.missionType}
             </div>
           </div>
         );
@@ -75,7 +63,7 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
       case DomainEventType.MissionTotal:
         return (
           <div className="font-medium text-blue-600">
-            미션 총합: {parsedPayload.amount}개 ({parsedPayload.missionType})
+            미션 총합: {payload.amount}개 ({payload.missionType})
           </div>
         );
 
@@ -84,12 +72,12 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
           <div className="space-y-1">
             <div
               className={`font-medium ${
-                parsedPayload.isSuccess ? "text-green-600" : "text-red-600"
+                payload.isSuccess ? "text-green-600" : "text-red-600"
               }`}
             >
-              챌린지 미션 {parsedPayload.isSuccess ? "성공" : "실패"}
+              챌린지 미션 {payload.isSuccess ? "성공" : "실패"}
             </div>
-            <div className="text-gray-900">{parsedPayload.title}</div>
+            <div className="text-gray-900">{payload.title}</div>
           </div>
         );
 
@@ -98,9 +86,9 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
           <div className="space-y-1">
             <div className="font-medium text-orange-600">
               배틀 미션 결과:{" "}
-              {parsedPayload.isDraw ? "무승부" : `${parsedPayload.winner} 승리`}
+              {payload.isDraw ? "무승부" : `${payload.winner} 승리`}
             </div>
-            <div className="text-gray-900">{parsedPayload.title}</div>
+            <div className="text-gray-900">{payload.title}</div>
           </div>
         );
 
@@ -108,32 +96,28 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
         return (
           <div className="space-y-1">
             <div className="font-medium text-red-600">
-              {parsedPayload.user?.label}님이 뮤트됨 ({parsedPayload.seconds}초)
+              채팅금지 ({payload.seconds}초)
             </div>
             <div className="text-sm text-gray-600">
-              실행자: {parsedPayload.by} • 누적: {parsedPayload.counts}회
+              실행자: {payload.by} • 누적: {payload.counts}회
             </div>
           </div>
         );
 
       case DomainEventType.Kick:
-        return (
-          <div className="font-medium text-red-600">
-            {parsedPayload.user?.label}님이 킥됨
-          </div>
-        );
+        return <div className="font-medium text-red-600">강제퇴장</div>;
 
       case DomainEventType.KickCancel:
         return (
           <div className="font-medium text-green-600">
-            킥이 취소됨 (사용자 ID: {parsedPayload.userId})
+            강제퇴장이 취소됨 (사용자 ID: {payload.userId})
           </div>
         );
 
       case DomainEventType.Black:
         return (
           <div className="font-medium text-black">
-            사용자가 블랙리스트에 추가됨 (ID: {parsedPayload.userId})
+            사용자가 블랙리스트에 추가됨 (ID: {payload.userId})
           </div>
         );
 
@@ -141,15 +125,15 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
         return (
           <div className="space-y-1">
             <div className="font-medium text-blue-600">
-              채팅 제한 {parsedPayload.freezed ? "활성화" : "비활성화"}
+              채팅 제한 {payload.freezed ? "활성화" : "비활성화"}
             </div>
             <div className="text-sm text-gray-600">
-              구독 {parsedPayload.limitSubscriptionMonth}개월 이상 • 풍선{" "}
-              {parsedPayload.limitBalloons}개 이상
+              구독 {payload.limitSubscriptionMonth}개월 이상 • 풍선{" "}
+              {payload.limitBalloons}개 이상
             </div>
-            {parsedPayload.targets?.length > 0 && (
+            {payload.targets?.length > 0 && (
               <div className="text-sm text-gray-600">
-                대상: {parsedPayload.targets.join(", ")}
+                대상: {payload.targets.join(", ")}
               </div>
             )}
           </div>
@@ -158,7 +142,7 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
       case DomainEventType.Slow:
         return (
           <div className="font-medium text-blue-600">
-            슬로우 모드: {parsedPayload.duration}초 간격
+            슬로우 모드: {payload.duration}초 간격
           </div>
         );
 
@@ -166,38 +150,21 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
         return (
           <div className="space-y-1">
             <div className="font-medium text-indigo-600">시스템 알림</div>
-            <div className="text-gray-900 break-all">
-              {parsedPayload.message}
-            </div>
+            <div className="text-gray-900 break-all">{payload.message}</div>
             <div className="text-sm text-gray-600">
-              표시: {parsedPayload.show ? "예" : "아니오"}
-            </div>
-          </div>
-        );
-
-      case DomainEventType.MetadataUpdate:
-        return (
-          <div className="space-y-1">
-            <div className="font-medium text-gray-600">방송 정보 업데이트</div>
-            <div className="text-gray-900">{parsedPayload.title}</div>
-            <div className="text-sm text-gray-600">
-              시청자: {parsedPayload.viewerCount?.toLocaleString()}명
+              표시: {payload.show ? "예" : "아니오"}
             </div>
           </div>
         );
 
       case DomainEventType.Enter:
         return (
-          <div className="text-green-600">
-            {parsedPayload.user?.label}님이 입장
-          </div>
+          <div className="text-green-600">{payload.user?.label}님이 입장</div>
         );
 
       case DomainEventType.Exit:
         return (
-          <div className="text-gray-600">
-            {parsedPayload.user?.label}님이 퇴장
-          </div>
+          <div className="text-gray-600">{payload.user?.label}님이 퇴장</div>
         );
 
       case DomainEventType.Connected:
@@ -217,15 +184,92 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
   }
 };
 
+const getUser = (
+  eventType: DomainEventType,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload: any
+): {
+  id: string;
+  label: string;
+} => {
+  switch (eventType) {
+    case DomainEventType.Donation:
+      return {
+        id: payload.from || "",
+        label: payload.fromLabel || "",
+      };
+
+    case DomainEventType.Subscribe:
+      return {
+        id: payload.userId || "",
+        label: payload.label || "",
+      };
+
+    case DomainEventType.MissionDonation:
+      return {
+        id: payload.from || "",
+        label: payload.fromLabel || "",
+      };
+
+    case DomainEventType.Mute:
+      return {
+        id: payload.user?.id || "",
+        label: payload.user?.label || "",
+      };
+
+    case DomainEventType.Kick:
+      return {
+        id: payload.user?.id || "",
+        label: payload.user?.label || "",
+      };
+
+    case DomainEventType.KickCancel:
+      return {
+        id: payload.userId || "",
+        label: "",
+      };
+
+    case DomainEventType.Black:
+      return {
+        id: payload.userId || "",
+        label: "",
+      };
+
+    case DomainEventType.Enter:
+      return {
+        id: payload.user?.id || "",
+        label: payload.user?.label || "",
+      };
+
+    case DomainEventType.Exit:
+      return {
+        id: payload.user?.id || "",
+        label: payload.user?.label || "",
+      };
+
+    default:
+      return {
+        id: "",
+        label: "",
+      };
+  }
+};
+
 const EventLogItem: React.FC<Props> = ({ eventLog }) => {
+  const user = getUser(eventLog.eventType, eventLog.payload);
+  const handleUserClick = useUserPopoverDispatch(user);
+
   return (
     <div className="border-b border-gray-200 p-3 hover:bg-gray-50">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            {eventLog.username && (
-              <span className="font-medium text-green-600">
-                {eventLog.username}
+            {user.label && (
+              <span
+                className="font-medium text-green-600 cursor-pointer"
+                onClick={handleUserClick}
+              >
+                {user.label}
               </span>
             )}
             <span className="text-sm text-gray-500">

@@ -3,10 +3,10 @@ use tauri::generate_handler;
 use crate::commands::{
     broadcast_session::{
         delete_broadcast_session, get_broadcast_session, search_broadcast_sessions,
-        update_broadcast_session_end_time,
+        update_broadcast_session_end_time, update_broadcast_vod_id,
     },
     channel::{delete_channel, get_channels, upsert_channel},
-    chat_history::{search_chat_logs, search_event_logs},
+    chat_history::{search_chat_logs, search_event_logs, search_user_logs},
     csv_export::{export_events_to_csv, get_supported_event_types},
     main_controller::{get_main_controller_context, start_main_controller, stop_main_controller},
     reports::{create_report, delete_report, get_report, get_report_status},
@@ -61,7 +61,9 @@ pub fn run() {
             remove_target_user,
             search_chat_logs,
             search_event_logs,
+            search_user_logs,
             delete_broadcast_session,
+            update_broadcast_vod_id,
             get_broadcast_session,
             search_broadcast_sessions,
             update_broadcast_session_end_time,

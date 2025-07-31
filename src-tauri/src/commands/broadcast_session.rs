@@ -53,3 +53,12 @@ pub async fn update_broadcast_session_end_time(
         .update_broadcast_session_end_time(broadcast_id, ended_at_parsed)
         .await
 }
+
+#[tauri::command]
+pub async fn update_broadcast_vod_id(
+    broadcast_id: i64,
+    vod_id: u64,
+    state: State<'_, AppState>,
+) -> Result<(), String> {
+    state.db.update_broadcast_vod_id(broadcast_id, vod_id).await
+}

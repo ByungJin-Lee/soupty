@@ -66,6 +66,19 @@ export const broadcastSessionService = {
       }
     );
   },
+
+  /**
+   * 방송 세션의 VOD ID를 업데이트 합니다.
+   */
+  async updateBroadcastSessionVODId(
+    broadcastId: number,
+    vodId: number
+  ): Promise<unknown> {
+    return await ipcClient(IpcRequestWithPayload.UpdateBroadcastSessionVODId, {
+      broadcastId,
+      vodId,
+    });
+  },
 };
 
 // Export individual functions for convenience
@@ -74,4 +87,5 @@ export const {
   searchBroadcastSessions,
   getBroadcastSessionDetail,
   updateBroadcastSessionEndTime,
+  updateBroadcastSessionVODId,
 } = broadcastSessionService;

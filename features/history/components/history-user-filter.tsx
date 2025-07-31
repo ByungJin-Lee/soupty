@@ -1,51 +1,57 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useEffect } from "react";
+import toast from "react-hot-toast";
 import { usePaginationContext } from "~/common/context/pagination";
 import {
   BroadcastSessionCondition,
   ChannelCondition,
-  EventTypeCondition,
   PeriodCondition,
   UserCondition,
-  UsernameCondition,
 } from "~/features/condition";
-import { HistoryEventFilterProvider } from "../context/history-event-filter-context";
-import { useHistoryEventSearchContext } from "../context/history-event-search-context";
+import { HistoryUserFilterProvider } from "../context/history-user-filter-context";
+import { useHistoryUserSearchContext } from "../context/history-user-search-context";
 import {
-  convertEventFilter,
-  useHistoryEventFilter,
-} from "../hooks/history-event-filter";
-import { EventCsvExportButton } from "./history-csv-export-button";
+  convertFilter,
+  useHistoryUserFilter,
+} from "../hooks/history-user-filter";
 
-export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
+export const HistoryUserFilter: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const pagination = usePaginationContext();
-  const search = useHistoryEventSearchContext().search;
-  const { filter, updateFilter } = useHistoryEventFilter();
+  const search = useHistoryUserSearchContext().search;
+  const { filter, updateFilter } = useHistoryUserFilter();
 
   const handleSearch = () => {
+    if (!filter.userId.trim()) {
+      toast.error("사용자 아이디를 입력해주세요.");
+      return;
+    }
     // 첫 페이지로 돌아갑니다.
-    search(convertEventFilter(filter), {
+    search(convertFilter(filter), {
       page: 1,
       pageSize: pagination.pageSize,
     });
     pagination.setPage(1);
   };
 
+  useEffect(() => {
+    if (filter.userId.length > 0) handleSearch();
+  }, []);
+
   return (
     <>
       <div className="bg-gray-50 p-3 rounded-lg mb-3 flex gap-2 flex-wrap">
-        <ChannelCondition
-          channel={filter.channel}
-          onSelect={updateFilter.setChannel}
-        />
         <UserCondition
           userId={filter.userId}
           onChange={updateFilter.setUserId}
         />
-        <UsernameCondition
-          username={filter.username}
-          onChange={updateFilter.setUsername}
+        <ChannelCondition
+          channel={filter.channel}
+          onSelect={updateFilter.setChannel}
+        />
+        <BroadcastSessionCondition
+          broadcastSession={filter.session}
+          onSelect={updateFilter.setSession}
         />
         <PeriodCondition
           startDate={filter.startDate}
@@ -53,16 +59,7 @@ export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
           onStartDateChange={updateFilter.setStartDate}
           onEndDateChange={updateFilter.setEndDate}
         />
-        <EventTypeCondition
-          eventType={filter.eventType}
-          onChange={updateFilter.setEventType}
-        />
-        <BroadcastSessionCondition
-          broadcastSession={filter.broadcastSession}
-          onSelect={updateFilter.setBroadcastSession}
-        />
         <div className="ml-auto flex gap-2">
-          <EventCsvExportButton filters={convertEventFilter(filter)} />
           <button
             onClick={updateFilter.reset}
             className="px-2 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
@@ -77,9 +74,9 @@ export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
           </button>
         </div>
       </div>
-      <HistoryEventFilterProvider value={convertEventFilter(filter)}>
+      <HistoryUserFilterProvider value={convertFilter(filter)}>
         {children}
-      </HistoryEventFilterProvider>
+      </HistoryUserFilterProvider>
     </>
   );
 };

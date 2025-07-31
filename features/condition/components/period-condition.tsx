@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Calendar, X } from "react-feather";
 import { formatDate } from "~/common/utils";
+import { DateTimePicker } from "~/common/ui";
 
 type Props = {
   startDate?: string;
@@ -69,23 +70,21 @@ export const PeriodCondition: React.FC<Props> = ({
               <label className="block text-sm font-medium mb-1">
                 시작 날짜
               </label>
-              <input
-                type="datetime-local"
-                step={86400}
-                value={startDate || ""}
-                onChange={(e) => onStartDateChange(e.target.value || undefined)}
-                className="w-full p-2 border rounded-md text-sm"
+              <DateTimePicker
+                selected={startDate ? new Date(startDate) : null}
+                onChange={(date) => onStartDateChange(date?.toISOString())}
+                placeholderText="시작 날짜 시간 선택"
               />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 종료 날짜
               </label>
-              <input
-                type="datetime-local"
-                value={endDate || ""}
-                onChange={(e) => onEndDateChange(e.target.value || undefined)}
-                className="w-full p-2 border rounded-md text-sm"
+              <DateTimePicker
+                selected={endDate ? new Date(endDate) : null}
+                onChange={(date) => onEndDateChange(date?.toISOString())}
+                placeholderText="종료 날짜 시간 선택"
+                minDate={startDate ? new Date(startDate) : undefined}
               />
             </div>
             <div className="flex gap-2 justify-end">

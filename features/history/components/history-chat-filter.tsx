@@ -26,7 +26,14 @@ export const HistoryChatFilter: React.FC<PropsWithChildren> = ({
   const search = useHistoryChatSearchContext().search;
   const { filter, updateFilter } = useHistoryChatFilter();
 
-  const handleSearch = () => search(convertFilter(filter), pagination);
+  const handleSearch = () => {
+    // 첫 페이지로 돌아갑니다.
+    search(convertFilter(filter), {
+      page: 1,
+      pageSize: pagination.pageSize,
+    });
+    pagination.setPage(1);
+  };
 
   return (
     <>

@@ -8,7 +8,7 @@ use crate::services::db::{
         BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult,
         ChannelData, ChatLogData, ChatLogResult, ChatSearchFilters, ChatSearchResult, DBCommand,
         EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams,
-        ReportInfo, ReportStatusInfo,
+        ReportInfo, ReportStatusInfo, UserSearchFilters, UserSearchResult,
     },
 };
 
@@ -220,6 +220,25 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
+    pub async fn search_user_logs(
+        &self,
+        filters: UserSearchFilters,
+        pagination: PaginationParams,
+    ) -> Result<UserSearchResult, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::SearchUserLogs {
+                filters,
+                pagination,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
     pub async fn delete_broadcast_session(&self, broadcast_id: i64) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();
         self.sender
@@ -280,6 +299,25 @@ impl DBService {
             .send(DBCommand::UpdateBroadcastSessionEndTime {
                 broadcast_id,
                 ended_at,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
+    pub async fn update_broadcast_vod_id(
+        &self,
+        broadcast_id: i64,
+        vod_id: u64,
+    ) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::UpdateBroadcastSessionVOD {
+                broadcast_id,
+                vod_id,
                 reply_to: tx,
             })
             .await

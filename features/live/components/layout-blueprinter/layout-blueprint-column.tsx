@@ -12,7 +12,7 @@ export const LayoutBlueprintColumn: React.FC<LayoutBlueprintColumnProps> = ({
   column,
 }) => {
   return (
-    <Panel className="overflow-y-scroll! invisible-scrollbar">
+    <Panel className="overflow-y-auto!">
       <ColumnContent column={column} />
     </Panel>
   );

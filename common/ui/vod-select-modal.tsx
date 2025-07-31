@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { Play, Video } from "react-feather";
 import { ChannelCondition } from "~/features/condition";
@@ -7,15 +6,30 @@ import { VODItem } from "~/features/vod/components/vod-item";
 import ipcService from "~/services/ipc";
 import { StreamerVOD } from "~/services/ipc/types";
 import { Channel } from "~/types";
+import { useVodSelectStore } from "../stores/vod-select-modal-store";
+import { Modal } from "./modal";
 
-export default function VODPage() {
+export const VodSelectModal: React.FC = () => {
+  const { status, title, selectedChannelId, confirm, cancel } =
+    useVodSelectStore();
   const [channel, setChannel] = useState<Channel>();
   const [vods, setVODs] = useState<StreamerVOD[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedVod, setSelectedVod] = useState<StreamerVOD | null>(null);
+
+  const handleClose = () => cancel();
+  const handleConfirm = () => confirm(selectedVod);
+
+  useEffect(() => {
+    if (status === "waiting" && selectedChannelId) {
+      setChannel({ id: selectedChannelId, label: selectedChannelId });
+    }
+  }, [status, selectedChannelId]);
 
   useEffect(() => {
     if (!channel) {
       setVODs([]);
+      setSelectedVod(null);
       return;
     }
 
@@ -29,6 +43,18 @@ export default function VODPage() {
         setLoading(false);
       });
   }, [channel]);
+
+  useEffect(() => {
+    if (status === "idle") {
+      setChannel(undefined);
+      setVODs([]);
+      setSelectedVod(null);
+    }
+  }, [status]);
+
+  const handleVodSelect = (vod: StreamerVOD) => {
+    setSelectedVod(selectedVod?.id === vod.id ? null : vod);
+  };
 
   const renderContent = () => {
     if (loading) {
@@ -50,7 +76,7 @@ export default function VODPage() {
             채널을 선택해주세요
           </h3>
           <p className="text-gray-500 max-w-sm">
-            VOD 목록을 보려면 위에서 채널을 선택해주세요.
+            VOD 목록을 보려면 채널을 선택해주세요.
           </p>
         </div>
       );
@@ -73,47 +99,55 @@ export default function VODPage() {
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {vods.map((v) => (
-          <VODItem key={v.id} data={v} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-90 overflow-y-auto p-1">
+        {vods.map((vod) => (
+          <div
+            key={vod.id}
+            onClick={() => handleVodSelect(vod)}
+            className={`cursor-pointer transition-all ${
+              selectedVod?.id === vod.id && "ring-2 ring-blue-500 bg-blue-50"
+            } rounded-lg`}
+          >
+            <VODItem data={vod} />
+          </div>
         ))}
       </div>
     );
   };
 
   return (
-    <div className="flex-1 overflow-y-scroll invisible-scrollbar">
-      {/* Header Section */}
-      <div className="bg-white border-b border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <Video className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">VOD 목록</h1>
-              <p className="text-gray-500 text-sm">
-                {channel
-                  ? `${channel.label}님의 VOD ${vods.length}개`
-                  : "채널을 선택하여 VOD를 확인하세요"}
-              </p>
-            </div>
-          </div>
+    <Modal isOpen={status === "waiting"} onClose={handleClose} title={title}>
+      <div className="w-full max-w-4xl">
+        <p className="text-gray-600 text-sm mb-6">
+          연결할 VOD를 선택해주세요. 선택된 VOD는 방송 세션과 연결됩니다.
+        </p>
+
+        <div className="mb-4 w-fit">
+          <ChannelCondition channel={channel} onSelect={setChannel} />
         </div>
 
-        {/* Filter Section */}
-        <div className="flex items-center space-x-3">
-          <ChannelCondition channel={channel} onSelect={setChannel} />
-          {channel && (
-            <div className="text-xs text-gray-500 px-3 py-2 bg-gray-50 rounded-md">
-              최근 VOD 목록
-            </div>
-          )}
+        {renderContent()}
+
+        <div className="flex justify-end gap-2 pt-2">
+          <button
+            onClick={handleClose}
+            className="px-4 py-1.5 text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            취소
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={!selectedVod}
+            className={`px-4 py-1.5 rounded-md transition-colors ${
+              selectedVod
+                ? "bg-blue-500 text-white hover:bg-blue-600"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            선택
+          </button>
         </div>
       </div>
-
-      {/* Content Section */}
-      <div className="p-6">{renderContent()}</div>
-    </div>
+    </Modal>
   );
-}
+};

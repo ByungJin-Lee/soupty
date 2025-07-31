@@ -13,10 +13,6 @@ const links: { href: string; label: string }[] = [
     label: "방송",
   },
   {
-    href: route.vod,
-    label: "다시보기",
-  },
-  {
     href: route.history,
     label: "기록",
   },

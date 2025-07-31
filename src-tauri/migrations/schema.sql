@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS target_users (
 CREATE TABLE IF NOT EXISTS broadcast_sessions (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     channel_id      TEXT NOT NULL,
+    vod_id          INTEGER NOT NULL Default 0, -- vod와 연결합니다.
     title           TEXT NOT NULL,
     started_at      DATETIME NOT NULL,
     ended_at        DATETIME, -- 방송 종료 시 기록

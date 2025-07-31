@@ -101,6 +101,13 @@ pub enum DBCommand {
         reply_to: oneshot::Sender<Result<(), String>>,
     },
 
+    // 방송 세션 vod 업데이트
+    UpdateBroadcastSessionVOD {
+        broadcast_id: i64,
+        vod_id: u64,
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
+
     // 리포트 관리
     CreateReport {
         broadcast_id: i64,
@@ -143,6 +150,13 @@ pub enum DBCommand {
         start_time: DateTime<Utc>,
         end_time: DateTime<Utc>,
         reply_to: oneshot::Sender<Result<Vec<EventLogResult>, String>>,
+    },
+
+    // 사용자 기록 검색 (채팅 로그와 이벤트 로그 통합)
+    SearchUserLogs {
+        filters: UserSearchFilters,
+        pagination: PaginationParams,
+        reply_to: oneshot::Sender<Result<UserSearchResult, String>>,
     },
 }
 
@@ -212,6 +226,7 @@ pub struct EventSearchFilters {
     pub user_id: Option<String>,
     pub username: Option<String>,
     pub event_type: Option<String>,
+    pub exclude_event_types: Vec<String>,
     pub start_date: Option<DateTime<Utc>>,
     pub end_date: Option<DateTime<Utc>>,
     pub broadcast_id: Option<i64>,
@@ -222,6 +237,17 @@ pub struct EventSearchFilters {
 #[serde(rename_all = "camelCase")]
 pub struct BroadcastSessionSearchFilters {
     pub channel_id: Option<String>,
+    pub start_date: Option<DateTime<Utc>>,
+    pub end_date: Option<DateTime<Utc>>,
+}
+
+// 사용자 검색 필터
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserSearchFilters {
+    pub user_id: String,
+    pub channel_id: Option<String>,
+    pub session_id: Option<i64>,
     pub start_date: Option<DateTime<Utc>>,
     pub end_date: Option<DateTime<Utc>>,
 }
@@ -267,6 +293,17 @@ pub struct BroadcastSessionSearchResult {
     pub total_pages: i64,
 }
 
+// 사용자 검색 결과 (채팅과 이벤트 로그 통합)
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserSearchResult {
+    pub logs: Vec<UserLogEntry>,
+    pub total_count: i64,
+    pub page: i64,
+    pub page_size: i64,
+    pub total_pages: i64,
+}
+
 // 방송 세션 결과
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -274,6 +311,7 @@ pub struct BroadcastSessionResult {
     pub id: i64,
     pub channel_id: String,
     pub channel_name: String,
+    pub vod_id: u64,
     pub title: String,
     pub started_at: DateTime<Utc>,
     pub ended_at: Option<DateTime<Utc>>,
@@ -308,6 +346,27 @@ pub struct EventLogResult {
     pub channel_id: String,
     pub channel_name: String,
     pub broadcast_title: String,
+}
+
+// 사용자 로그 엔트리 (채팅과 이벤트 통합)
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserLogEntry {
+    pub id: i64,
+    pub broadcast_id: i64,
+    pub user: User,
+    pub log_type: String, // "CHAT" | "EVENT"
+    pub timestamp: DateTime<Utc>,
+    pub channel_id: String,
+    pub channel_name: String,
+    pub broadcast_title: String,
+    // 채팅 로그 필드
+    pub message_type: Option<String>,
+    pub message: Option<String>,
+    pub metadata: Option<ChatMetadata>,
+    // 이벤트 로그 필드
+    pub event_type: Option<String>,
+    pub payload: Option<String>,
 }
 
 // 리포트 관련 구조체

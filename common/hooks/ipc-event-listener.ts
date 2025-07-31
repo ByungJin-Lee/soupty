@@ -14,7 +14,6 @@ export const useIpcEventListener = <T>(
 ) => {
   useEffect(() => {
     const unlistenPromise = listen(eventName, (e) => {
-      console.log(e);
       handler(e.payload as T);
     });
 
