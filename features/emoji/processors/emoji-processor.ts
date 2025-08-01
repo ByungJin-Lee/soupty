@@ -1,6 +1,6 @@
 import { splitTextMessageParts } from "~/features/chat/utils";
 import { EmojiStatic } from "~/types";
-import { MessagePart, MessageType } from "~/types/chat";
+import { MessagePart, MessageType } from "~/types/event";
 
 /**
  * 텍스트에서 emoji를 처리하여 MessagePart 배열로 변환하는 함수

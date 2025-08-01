@@ -175,6 +175,7 @@ impl DBActor {
                 end_time,
                 reply_to,
             ),
+            DBCommand::ResetAllData { reply_to } => handlers.handle_reset_all_data(reply_to),
         }
     }
 }

@@ -6,9 +6,21 @@ import { MissionType } from "~/types/event/mission";
 import { EventView } from "./event-view";
 
 const mockUsernames = [
-  "별풍선왕", "후원천사", "팬클럽장", "구독왕", "열혈팬123", 
-  "응원단장", "별빛요정", "도네이터", "서포터", "충성팬",
-  "별풍선러버", "후원마니아", "VIP회원", "스트리머팬", "굿팬"
+  "별풍선왕",
+  "후원천사",
+  "팬클럽장",
+  "구독왕",
+  "열혈팬123",
+  "응원단장",
+  "별빛요정",
+  "도네이터",
+  "서포터",
+  "충성팬",
+  "별풍선러버",
+  "후원마니아",
+  "VIP회원",
+  "스트리머팬",
+  "굿팬",
 ];
 
 const donationMessages = [
@@ -26,15 +38,15 @@ const donationMessages = [
   null,
   "감사합니다",
   "응원해요!",
-  "좋아요👍"
+  "좋아요👍",
 ];
 
 function generateMockDonationEvent(index: number): DomainEvent {
-  const timestamp = Date.now() - (40 - index) * 15000; // 15초 간격
+  const timestamp = new Date().toISOString();
   const username = mockUsernames[index % mockUsernames.length];
   const amount = [10, 50, 100, 500, 1000, 2000][index % 6];
   const message = donationMessages[index % donationMessages.length];
-  
+
   return {
     id: `mock-donation-${index}`,
     type: DomainEventType.Donation,
@@ -44,7 +56,8 @@ function generateMockDonationEvent(index: number): DomainEvent {
       amount,
       becomeTopFan: index % 10 === 0, // 10번에 1번 열혈팬
       channelId: "mock-channel",
-      donationType: index % 2 === 0 ? DonationType.Balloon : DonationType.ADBalloon,
+      donationType:
+        index % 2 === 0 ? DonationType.Balloon : DonationType.ADBalloon,
       fanClubOrdinal: index % 10 === 0 ? index / 10 + 1 : 0,
       from: `user-${index}`,
       fromLabel: username,
@@ -54,11 +67,11 @@ function generateMockDonationEvent(index: number): DomainEvent {
 }
 
 function generateMockSubscribeEvent(index: number): DomainEvent {
-  const timestamp = Date.now() - (40 - index) * 15000; // 15초 간격
+  const timestamp = new Date().toISOString();
   const username = mockUsernames[index % mockUsernames.length];
   const tier = [1, 2][index % 2];
   const renew = [1, 3, 6, 12][index % 4];
-  
+
   return {
     id: `mock-subscribe-${index}`,
     type: DomainEventType.Subscribe,
@@ -75,9 +88,9 @@ function generateMockSubscribeEvent(index: number): DomainEvent {
 }
 
 function generateMockEnterEvent(index: number): DomainEvent {
-  const timestamp = Date.now() - (40 - index) * 15000;
+  const timestamp = new Date().toISOString();
   const username = mockUsernames[index % mockUsernames.length];
-  
+
   return {
     id: `mock-enter-${index}`,
     type: DomainEventType.Enter,
@@ -103,9 +116,9 @@ function generateMockEnterEvent(index: number): DomainEvent {
 }
 
 function generateMockMuteEvent(index: number): DomainEvent {
-  const timestamp = Date.now() - (40 - index) * 15000;
+  const timestamp = new Date().toISOString();
   const username = mockUsernames[index % mockUsernames.length];
-  
+
   return {
     id: `mock-mute-${index}`,
     type: DomainEventType.Mute,
@@ -136,9 +149,9 @@ function generateMockMuteEvent(index: number): DomainEvent {
 }
 
 function generateMockMissionEvent(index: number): DomainEvent {
-  const timestamp = Date.now() - (40 - index) * 15000;
+  const timestamp = new Date().toISOString();
   const username = mockUsernames[index % mockUsernames.length];
-  
+
   return {
     id: `mock-mission-${index}`,
     type: DomainEventType.MissionDonation,
@@ -155,14 +168,14 @@ function generateMockMissionEvent(index: number): DomainEvent {
 }
 
 function generateMockNotificationEvent(index: number): DomainEvent {
-  const timestamp = Date.now() - (40 - index) * 15000;
+  const timestamp = new Date().toISOString();
   const messages = [
     "방송을 시작했습니다!",
     "후원 이벤트가 시작되었습니다",
     "새로운 게임을 시작합니다",
     "잠시 후 방송이 종료됩니다",
   ];
-  
+
   return {
     id: `mock-notification-${index}`,
     type: DomainEventType.Notification,

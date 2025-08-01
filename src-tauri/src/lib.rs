@@ -10,6 +10,7 @@ use crate::commands::{
     csv_export::{export_events_to_csv, get_supported_event_types},
     main_controller::{get_main_controller_context, start_main_controller, stop_main_controller},
     reports::{create_report, delete_report, get_report, get_report_status},
+    reset_app::reset_app,
     soop_api::{
         fetch_streamer_emoticon, fetch_streamer_live, fetch_streamer_station,
         fetch_streamer_vod_detail, fetch_streamer_vod_list,
@@ -75,7 +76,8 @@ pub fn run() {
             setup_app_state,
             show_main_window,
             export_events_to_csv,
-            get_supported_event_types
+            get_supported_event_types,
+            reset_app
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

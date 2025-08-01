@@ -1,5 +1,5 @@
 import { StreamerLive, StreamerStation } from "~/services/ipc/types";
-import { BroadcastState } from "./stores/channel";
+import { BroadcastState } from "../stores/channel";
 
 export const makeBroadcastState = (
   live: StreamerLive,

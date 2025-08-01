@@ -4,5 +4,6 @@ pub mod chat_history;
 pub mod csv_export;
 pub mod main_controller;
 pub mod reports;
+pub mod reset_app;
 pub mod soop_api;
 pub mod splash;

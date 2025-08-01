@@ -27,7 +27,9 @@ export const lineChartOptions: ChartOptions<"line"> = {
     y: {
       beginAtZero: true,
       display: false,
-      suggestedMax: (context) => {
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      suggestedMax: (context: any) => {
         const max = Math.max(
           ...(context.chart.data.datasets[0].data as number[])
         );
@@ -58,6 +60,7 @@ export const lineChartOptions: ChartOptions<"line"> = {
         family: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
       },
       color: "#374151",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       formatter: (value: any) => (value > 0 ? value : ""),
     },
     tooltip: {
@@ -126,6 +129,7 @@ export const doughnutChartOptions: ChartOptions<"doughnut"> = {
 
 export const totalTextPlugin = {
   id: "total-text",
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   afterDraw: (chart: any) => {
     const ctx = chart.ctx;
     const { top, left, width, height } = chart.chartArea;
@@ -176,13 +180,7 @@ export const wordCloudOptions: ChartOptions<"wordCloud"> = {
       minRotation: -30,
       maxRotation: 30,
       color: (ctx) => {
-        const colors = [
-          "#3498db",
-          "#e74c3c",
-          "#2ecc71",
-          "#f39c12",
-          "#9b59b6",
-        ];
+        const colors = ["#3498db", "#e74c3c", "#2ecc71", "#f39c12", "#9b59b6"];
         return colors[ctx.dataIndex % colors.length];
       },
       hoverColor: "#333333",

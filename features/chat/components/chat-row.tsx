@@ -1,7 +1,6 @@
 import { Fragment, memo } from "react";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
-import { MessagePart, MessageType } from "~/types/chat";
-import { ChatEvent } from "~/types/event";
+import { ChatEvent, MessagePart, MessageType } from "~/types/event";
 import { ChatBadge } from "./chat-badge";
 
 type Props = {

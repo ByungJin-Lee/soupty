@@ -1765,4 +1765,39 @@ impl<'a> CommandHandlers<'a> {
         rows.collect::<Result<Vec<_>, _>>()
             .map_err(|e| e.to_string())
     }
+
+    pub fn handle_reset_all_data(&self, reply_to: oneshot::Sender<Result<(), String>>) {
+        let result = self.reset_all_tables();
+        let _ = reply_to.send(result);
+    }
+
+    fn reset_all_tables(&self) -> Result<(), String> {
+        // 외래 키 제약 조건을 일시적으로 비활성화
+        self.conn
+            .execute("PRAGMA foreign_keys = OFF", [])
+            .map_err(|e| format!("Failed to disable foreign keys: {}", e))?;
+
+        // 모든 테이블의 데이터 삭제
+        let tables = [
+            "chat_logs",
+            "event_logs", 
+            "target_users",
+            "reports",
+            "broadcast_sessions",
+            "channels",
+        ];
+
+        for table in &tables {
+            self.conn
+                .execute(&format!("DELETE FROM {}", table), [])
+                .map_err(|e| format!("Failed to clear table {}: {}", table, e))?;
+        }
+
+        // 외래 키 제약 조건을 다시 활성화
+        self.conn
+            .execute("PRAGMA foreign_keys = ON", [])
+            .map_err(|e| format!("Failed to re-enable foreign keys: {}", e))?;
+
+        Ok(())
+    }
 }

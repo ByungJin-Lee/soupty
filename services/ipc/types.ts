@@ -8,6 +8,7 @@ export enum IpcRequestWithoutPayload {
   GetTargetUsers = "get_target_users",
   GetMainControllerContext = "get_main_controller_context",
   GetSupportedEventTypes = "get_supported_event_types",
+  ResetApp = "reset_app",
 }
 
 // 요청 Payload가 있는 request 객체입니다.
@@ -120,6 +121,10 @@ export interface IpcPayloadMap {
     broadcastId: number;
     vodId: number;
   };
+  [IpcRequestWithPayload.UpdateBroadcastSessionEndTime]: {
+    broadcastId: number;
+    endedAt: string;
+  };
 }
 
 /**
@@ -136,6 +141,7 @@ export interface IpcResponseMap {
   [IpcRequestWithoutPayload.GetTargetUsers]: TargetUser[];
   [IpcRequestWithoutPayload.GetMainControllerContext]: BroadcastMetadata | null;
   [IpcRequestWithoutPayload.GetSupportedEventTypes]: string[];
+  [IpcRequestWithoutPayload.ResetApp]: void;
   /// 라이브가 아닌 경우 null이 반환됩니다.
   [IpcRequestWithPayload.GetStreamerLive]: StreamerLive | null;
   [IpcRequestWithPayload.GetStreamerEmoji]: StreamerEmoji;
@@ -160,6 +166,7 @@ export interface IpcResponseMap {
   [IpcRequestWithPayload.GetStreamerVODList]: StreamerVOD[] | null;
   [IpcRequestWithPayload.GetVODDetail]: VODDetail | null;
   [IpcRequestWithPayload.UpdateBroadcastSessionVODId]: void;
+  [IpcRequestWithPayload.UpdateBroadcastSessionEndTime]: void;
 }
 
 export interface StreamerVOD {

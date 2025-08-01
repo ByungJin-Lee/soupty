@@ -471,4 +471,15 @@ impl DBService {
         rx.await
             .map_err(|_| "Failed to receive response".to_string())?
     }
+
+    pub async fn reset_all_data(&self) -> Result<(), String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::ResetAllData { reply_to: tx })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
 }

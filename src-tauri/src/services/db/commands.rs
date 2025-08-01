@@ -158,6 +158,11 @@ pub enum DBCommand {
         pagination: PaginationParams,
         reply_to: oneshot::Sender<Result<UserSearchResult, String>>,
     },
+
+    // 전체 데이터 초기화
+    ResetAllData {
+        reply_to: oneshot::Sender<Result<(), String>>,
+    },
 }
 
 #[derive(Debug, Clone, Serialize)]

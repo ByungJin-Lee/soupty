@@ -1,6 +1,7 @@
 "use client";
 
 import { connect } from "echarts";
+import { Suspense } from "react";
 import { BackButton, PrintButton } from "~/common/ui";
 import { BroadcastSessionDetailPage } from "~/features/report/components/pages";
 
@@ -13,7 +14,9 @@ export default function Page() {
         <BackButton />
         <PrintButton />
       </div>
-      <BroadcastSessionDetailPage />
+      <Suspense>
+        <BroadcastSessionDetailPage />
+      </Suspense>
     </>
   );
 }

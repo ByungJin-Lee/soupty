@@ -1,3 +1,4 @@
+import { app } from "./app";
 import { broadcastSessionService } from "./broadcast-session";
 import { channel } from "./channel";
 import { chatHistoryService } from "./chat-history";
@@ -9,6 +10,7 @@ import { targetUsers } from "./target-users";
  * @description Ipc Service 전체를 관리하는 객체입니다.
  */
 export const ipcService = Object.freeze({
+  app,
   soop,
   channel,
   targetUsers,

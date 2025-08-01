@@ -1,4 +1,4 @@
-import { MessagePart, MessageType } from "~/types/chat";
+import { MessagePart, MessageType } from "~/types/event";
 
 const urlRegex = /https?:\/\/[^\s]+/gi;
 

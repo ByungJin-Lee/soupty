@@ -1,8 +1,12 @@
 import { splitTextMessageParts } from "~/features/chat/utils";
 import { getNicknameColor } from "~/features/chat/utils/nickname-color";
 import { Badge } from "~/types/badge";
-import { MessagePart, MessageType } from "~/types/chat";
-import { ChatEvent, RawChatEvent } from "~/types/event";
+import {
+  ChatEvent,
+  MessagePart,
+  MessageType,
+  RawChatEvent,
+} from "~/types/event";
 
 /**
  * Chat 이벤트 처리를 담당하는 클래스

@@ -24,6 +24,7 @@ export enum MessageType {
   Text,
   Emoji,
   OGQ,
+  URL,
 }
 
 export interface MessageEmoji {
@@ -37,7 +38,8 @@ export interface MessageEmoji {
 export type MessagePart =
   | { type: MessageType.Text; value: string }
   | { type: MessageType.Emoji; value: MessageEmoji }
-  | { type: MessageType.OGQ; value: string };
+  | { type: MessageType.OGQ; value: string }
+  | { type: MessageType.URL; value: string };
 
 /**
  * @description 전처리를 거치지 않은 chat 이벤트입니다.

@@ -10,9 +10,7 @@ import {
  * @description Payload에 따라 Overload된 함수를 정의합니다
  */
 interface IpcClient {
-  <K extends IpcRequestWithoutPayload & keyof IpcResponseMap>(name: K): Promise<
-    IpcResponseMap[K]
-  >;
+  <K extends IpcRequestWithoutPayload>(name: K): Promise<IpcResponseMap[K]>;
   <K extends IpcRequestWithPayload>(
     name: K,
     payload: IpcPayloadMap[K]
