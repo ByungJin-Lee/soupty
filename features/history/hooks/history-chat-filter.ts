@@ -1,7 +1,11 @@
 import { useMemo, useState } from "react";
 import { useQueriesParam } from "~/common/hooks";
 import { route } from "~/constants";
-import { BroadcastSession, ChatSearchFilters } from "~/services/ipc/types";
+import {
+  BroadcastSession,
+  ChatSearchFilters,
+  SimplifiedBroadcastSession,
+} from "~/services/ipc/types";
 import { Channel } from "~/types";
 
 // Channel 선택, 사용자 아이디, 채팅 종류, 방송 아이디, 날짜
@@ -11,7 +15,7 @@ interface Filter {
   userId?: string;
   messageType?: string;
   messageContains?: string;
-  session?: BroadcastSession;
+  session?: SimplifiedBroadcastSession;
   startDate?: string;
   username?: string;
   endDate?: string;
@@ -44,8 +48,18 @@ export const useHistoryChatFilter = () => {
   );
 
   // 복잡한 객체들은 별도 상태로 관리
-  const [channel, setChannel] = useState<Channel>();
-  const [session, setSession] = useState<BroadcastSession>();
+  const [channel, setChannel] = useState<Channel | undefined>(
+    queryParams.channelId
+      ? { id: queryParams.channelId, label: "<임의지정>" }
+      : undefined
+  );
+  const [session, setSession] = useState<
+    SimplifiedBroadcastSession | undefined
+  >(
+    queryParams.sessionId
+      ? { id: Number(queryParams.sessionId), title: "<임의지정>" }
+      : undefined
+  );
 
   const filter = useMemo<Filter>(
     () => ({

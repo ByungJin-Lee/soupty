@@ -883,12 +883,12 @@ impl<'a> CommandHandlers<'a> {
         // Query combines both chat_logs and event_logs using UNION ALL
         let query = format!(
             "SELECT 
-                id, broadcast_id, user_id, username, user_flag, timestamp,
+                id, broadcast_id, user_id, username, timestamp,
                 channel_id, channel_name, title as broadcast_title, log_type,
                 message_type, message, metadata, event_type, payload
              FROM (
                  SELECT 
-                     cl.id, cl.broadcast_id, cl.user_id, cl.username, cl.user_flag, cl.timestamp,
+                     cl.id, cl.broadcast_id, cl.user_id, cl.username, cl.timestamp,
                      c.channel_id, c.channel_name, bs.title,
                      'CHAT' as log_type,
                      cl.message_type, cl.message, cl.metadata,
@@ -901,7 +901,7 @@ impl<'a> CommandHandlers<'a> {
                  UNION ALL
                  
                  SELECT 
-                     el.id, el.broadcast_id, el.user_id, el.username, el.user_flag, el.timestamp,
+                     el.id, el.broadcast_id, el.user_id, el.username, el.timestamp,
                      c.channel_id, c.channel_name, bs.title,
                      'EVENT' as log_type,
                      NULL as message_type, NULL as message, NULL as metadata,
@@ -934,33 +934,34 @@ impl<'a> CommandHandlers<'a> {
             .query_map(rusqlite::params_from_iter(all_params.iter()), |row| {
                 let user_id: String = row.get(2)?;
                 let username: String = row.get(3)?;
-                let user_flag: u32 = row.get(4)?;
-                let log_type: String = row.get(9)?;
+                // disable user flag
+                // let user_flag: u32 = row.get(4)?;
+                let log_type: String = row.get(8)?;
 
                 Ok(UserLogEntry {
                     id: row.get(0)?,
                     broadcast_id: row.get(1)?,
-                    user: parse_user_from_flag(user_flag, user_id, username),
+                    user: parse_user_from_flag(0, user_id, username),
                     log_type,
-                    timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(5)?)
+                    timestamp: DateTime::parse_from_rfc3339(&row.get::<_, String>(4)?)
                         .unwrap()
                         .with_timezone(&Utc),
-                    channel_id: row.get(6)?,
-                    channel_name: row.get(7)?,
-                    broadcast_title: row.get(8)?,
+                    channel_id: row.get(5)?,
+                    channel_name: row.get(6)?,
+                    broadcast_title: row.get(7)?,
                     // Chat log fields
-                    message_type: row.get(10)?,
-                    message: row.get(11)?,
+                    message_type: row.get(9)?,
+                    message: row.get(10)?,
                     metadata: {
-                        let metadata_str: Option<String> = row.get(12)?;
+                        let metadata_str: Option<String> = row.get(11)?;
                         match metadata_str {
                             Some(s) if !s.is_empty() => serde_json::from_str(&s).ok(),
                             _ => None,
                         }
                     },
                     // Event log fields
-                    event_type: row.get(13)?,
-                    payload: row.get(14)?,
+                    event_type: row.get(12)?,
+                    payload: row.get(13)?,
                 })
             })
             .map_err(|e| e.to_string())?;

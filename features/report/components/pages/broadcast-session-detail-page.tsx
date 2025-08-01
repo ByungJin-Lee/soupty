@@ -1,5 +1,6 @@
 import { useSearchParams } from "next/navigation";
 import { ErrorMessage, LoadingSpinner, NotFound } from "~/common/ui";
+import { BroadcastSessionProvider } from "~/features/broadcast";
 import { useBroadcastSessionDetail } from "~/features/report/hooks";
 import { ReportSection } from "../sections/report-section";
 import { BroadcastSessionHeader } from "../sections/session-header";
@@ -25,8 +26,10 @@ export const BroadcastSessionDetailPage = () => {
   return (
     <div className="py-2 flex-1 print:!block overflow-y-scroll invisible-scrollbar print:!overflow-visible">
       <div className="max-w-4xl mx-auto print:!p-6">
-        <BroadcastSessionHeader session={session} />
-        <ReportSection session={session} />
+        <BroadcastSessionProvider value={session}>
+          <BroadcastSessionHeader session={session} />
+          <ReportSection session={session} />
+        </BroadcastSessionProvider>
       </div>
     </div>
   );

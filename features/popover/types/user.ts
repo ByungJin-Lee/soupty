@@ -5,4 +5,6 @@ export interface UserPopoverPayload {
   label: string;
   status?: UserStatus;
   subscribe?: UserSubscribe;
+  // user 외 broadcast payload 등
+  broadcastSessionId?: number;
 }

@@ -1,3 +1,4 @@
+import { useBroadcastSessionContext } from "~/features/broadcast";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { ChatterRank } from "~/services/ipc/types";
 
@@ -7,7 +8,10 @@ type Props = {
 };
 
 export const TopChattersTableItem: React.FC<Props> = ({ rank, data }) => {
-  const handleUserClick = useUserPopoverDispatch(data?.user);
+  const session = useBroadcastSessionContext();
+  const handleUserClick = useUserPopoverDispatch(data?.user, {
+    broadcastSessionId: session.id,
+  });
 
   if (!data) return null;
 
@@ -25,7 +29,7 @@ export const TopChattersTableItem: React.FC<Props> = ({ rank, data }) => {
               : "bg-blue-100 text-blue-800"
           }`}
         >
-          {rank + 1}
+          {rank}
         </span>
       </td>
       <td className="px-4 py-3">

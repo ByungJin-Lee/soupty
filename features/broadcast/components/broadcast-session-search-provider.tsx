@@ -5,9 +5,9 @@ import {
   BroadcastSessionSearchResult,
   PaginationParams,
 } from "~/services/ipc/types";
-import { BroadcastSessionContextProvider } from "../context/broadcast-session-context";
+import { BroadcastSessionSearchContextProvider } from "../context/broadcast-session-search-context";
 
-export const BroadcastSessionProvider: React.FC<PropsWithChildren> = ({
+export const BroadcastSessionSearchProvider: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const [result, setResult] = useState<BroadcastSessionSearchResult | null>(
@@ -41,7 +41,7 @@ export const BroadcastSessionProvider: React.FC<PropsWithChildren> = ({
   }, []);
 
   return (
-    <BroadcastSessionContextProvider
+    <BroadcastSessionSearchContextProvider
       value={{
         result,
         loading,
@@ -49,6 +49,6 @@ export const BroadcastSessionProvider: React.FC<PropsWithChildren> = ({
       }}
     >
       {children}
-    </BroadcastSessionContextProvider>
+    </BroadcastSessionSearchContextProvider>
   );
 };

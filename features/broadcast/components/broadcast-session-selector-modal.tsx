@@ -7,12 +7,12 @@ import { PaginationProvider } from "~/common/ui/pagination-provider";
 import { ChannelCondition, PeriodCondition } from "~/features/condition";
 import { formatTimestamp } from "~/features/history/utils/format";
 import { BroadcastSession } from "~/services/ipc/types";
-import { useBroadcastSessionContext } from "../context/broadcast-session-context";
+import { useBroadcastSessionSearchContext } from "../context/broadcast-session-search-context";
 import {
   convertBroadcastSessionFilter,
   useBroadcastSessionFilter,
 } from "../hooks/use-broadcast-session-filter";
-import { BroadcastSessionProvider } from "./broadcast-session-provider";
+import { BroadcastSessionSearchProvider } from "./broadcast-session-search-provider";
 
 interface BroadcastSessionSelectorModalProps {
   isOpen: boolean;
@@ -24,7 +24,7 @@ const BroadcastSessionContent: React.FC<{
   onSelectSession?: (session: BroadcastSession) => void;
   onClose: () => void;
 }> = ({ onSelectSession, onClose }) => {
-  const { result, loading, search } = useBroadcastSessionContext();
+  const { result, loading, search } = useBroadcastSessionSearchContext();
   const pagination = usePaginationContext();
   const { watch, setValue, getValues } = useBroadcastSessionFilter();
 
@@ -172,12 +172,12 @@ export const BroadcastSessionSelectorModal: React.FC<
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="방송 세션 선택">
       <PaginationProvider>
-        <BroadcastSessionProvider>
+        <BroadcastSessionSearchProvider>
           <BroadcastSessionContent
             onSelectSession={onSelectSession}
             onClose={onClose}
           />
-        </BroadcastSessionProvider>
+        </BroadcastSessionSearchProvider>
       </PaginationProvider>
     </Modal>
   );

@@ -1,18 +1,7 @@
 import { createContext, useContext } from "react";
-import {
-  BroadcastSessionSearchFilters,
-  BroadcastSessionSearchResult,
-  PaginationParams,
-} from "~/services/ipc/types";
+import { BroadcastSession } from "~/services/ipc/types";
 
-interface BroadcastSessionContext {
-  result: BroadcastSessionSearchResult | null;
-  loading: boolean;
-  search(
-    filters: BroadcastSessionSearchFilters,
-    pagination: PaginationParams
-  ): Promise<void>;
-}
+type BroadcastSessionContext = BroadcastSession;
 
 const ctx = createContext<BroadcastSessionContext | null>(null);
 
@@ -21,7 +10,7 @@ export const BroadcastSessionContextProvider = ctx.Provider;
 export const useBroadcastSessionContext = () => {
   const context = useContext(ctx);
   if (!context) {
-    throw new Error("useBroadcastSessionContext must be used within BroadcastSessionContextProvider");
+    throw Error("BroadcastSession context 내에서 호출해야합니다.");
   }
   return context;
 };

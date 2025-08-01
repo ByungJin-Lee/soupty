@@ -1,7 +1,11 @@
 import { useMemo, useState } from "react";
 import { useQueriesParam } from "~/common/hooks";
 import { route } from "~/constants";
-import { BroadcastSession, EventSearchFilters } from "~/services/ipc/types";
+import {
+  BroadcastSession,
+  EventSearchFilters,
+  SimplifiedBroadcastSession,
+} from "~/services/ipc/types";
 import { Channel, DomainEventType } from "~/types";
 
 export interface EventFilter {
@@ -11,7 +15,7 @@ export interface EventFilter {
   startDate?: string;
   endDate?: string;
   username?: string;
-  broadcastSession?: BroadcastSession;
+  broadcastSession?: SimplifiedBroadcastSession;
 }
 
 export interface EventFilterQueries extends Record<string, unknown> {
@@ -39,8 +43,18 @@ export const useHistoryEventFilter = () => {
   );
 
   // 복잡한 객체들은 별도 상태로 관리
-  const [channel, setChannel] = useState<Channel>();
-  const [broadcastSession, setBroadcastSession] = useState<BroadcastSession>();
+  const [channel, setChannel] = useState<Channel | undefined>(
+    queryParams.channelId
+      ? { id: queryParams.channelId, label: "<임의지정>" }
+      : undefined
+  );
+  const [broadcastSession, setBroadcastSession] = useState<
+    SimplifiedBroadcastSession | undefined
+  >(
+    queryParams.sessionId
+      ? { id: Number(queryParams.sessionId), title: "<임의지정>" }
+      : undefined
+  );
 
   const filter = useMemo<EventFilter>(
     () => ({

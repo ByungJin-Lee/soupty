@@ -345,6 +345,11 @@ export interface BroadcastSession {
   vodId: number;
 }
 
+export interface SimplifiedBroadcastSession {
+  id: number;
+  title: string;
+}
+
 // 리포트 관련 타입
 export interface ReportInfo {
   broadcastId: number;

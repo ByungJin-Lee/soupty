@@ -1,7 +1,4 @@
 import { create } from "zustand";
-import { mergeWithDefault } from "~/features/emoji";
-import { useEmoji } from "~/features/emoji/stores/emoji";
-import { transformStreamerEmojis } from "~/features/emoji/utils";
 import ipcService from "~/services/ipc";
 import { StreamerLive } from "~/services/ipc/types";
 import { Channel, MetadataUpdateEvent } from "~/types";
@@ -78,17 +75,8 @@ export const useChannel = create<ChannelState>((set) => ({
       validateStreamerLive(streamerLive);
 
       // 방송 중이라면 관련 데이터를 가져옵니다.
-      // - 방송국 정보, 이모지 정보
-      const [station, emojis] = await Promise.all([
-        ipcService.soop.getStreamerStation(channel.id),
-        ipcService.soop.getStreamerEmoji(channel.id),
-      ]);
-
-      // 이모지 업데이트
-      const emojiStore = useEmoji.getState();
-      emojiStore.update(
-        mergeWithDefault(transformStreamerEmojis(channel.id, emojis))
-      );
+      // - 방송국 정보
+      const station = await ipcService.soop.getStreamerStation(channel.id);
 
       // 채널 업데이트
       set({
@@ -100,7 +88,7 @@ export const useChannel = create<ChannelState>((set) => ({
       await ipcService.channel.connectChannel(channel.id);
       set({ connectStatus: ConnectStatus.CONNECTED });
     } catch (error) {
-      console.error("Connection failed:", error);
+      console.error("연결 오류", error);
       set({ connectStatus: ConnectStatus.DISCONNECTED });
       throw error;
     }

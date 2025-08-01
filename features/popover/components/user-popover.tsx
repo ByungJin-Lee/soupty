@@ -18,16 +18,19 @@ import { UserPopoverPayload } from "../types/user";
 const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
   payload,
 }) => {
+  // ! Hook 정리 필요
   const { userInfo, isLoading, handleToggleTargetUser } =
     useUserPopover(payload);
   const router = useRouter();
   const openLiveUserHistory = useLiveUserHistoryStore((v) => v.open);
   const currentChannel = useChannel((v) => v.channel);
-  const openWholeUserHistory = (userId: string) => {
-    const channelQuery = currentChannel
+  const openWholeUserHistory = () => {
+    const query = payload.broadcastSessionId
+      ? `&sessionId=${payload.broadcastSessionId}`
+      : currentChannel
       ? `&channelId=${currentChannel.id}`
       : "";
-    router.push(`${route.history}?type=user&userId=${userId}${channelQuery}`);
+    router.push(`${route.history}?type=user&userId=${userInfo.userId}${query}`);
   };
 
   const isTarget = userInfo.userId ? isTargetUser(userInfo.userId) : false;
@@ -109,7 +112,7 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
         </p>
         <p
           className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"
-          onClick={() => openWholeUserHistory(userInfo.userId)}
+          onClick={openWholeUserHistory}
         >
           전체 기록
         </p>

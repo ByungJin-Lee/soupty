@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Radio, X } from "react-feather";
 import { BroadcastSessionSelectorModal } from "~/features/broadcast";
-import { BroadcastSession } from "~/services/ipc/types";
+import {
+  BroadcastSession,
+  SimplifiedBroadcastSession,
+} from "~/services/ipc/types";
 
 type Props = {
-  broadcastSession?: BroadcastSession;
+  broadcastSession?: SimplifiedBroadcastSession;
   onSelect(session?: BroadcastSession): void;
 };
 
@@ -27,15 +30,7 @@ export const BroadcastSessionCondition: React.FC<Props> = ({
   const getSessionDisplayText = () => {
     if (!broadcastSession) return "방송 세션 필터";
 
-    const date = new Date(broadcastSession.startedAt).toLocaleDateString(
-      "ko-KR",
-      {
-        month: "2-digit",
-        day: "2-digit",
-      }
-    );
-
-    return `${broadcastSession.title} (${date})`;
+    return broadcastSession.title;
   };
 
   return (

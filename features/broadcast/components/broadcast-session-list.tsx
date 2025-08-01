@@ -7,14 +7,14 @@ import { Pagination } from "~/common/ui/pagination";
 import { ChannelCondition, PeriodCondition } from "~/features/condition";
 import { formatTimestamp } from "~/features/history/utils/format";
 import { BroadcastSession } from "~/services/ipc/types";
-import { useBroadcastSessionContext } from "../context/broadcast-session-context";
+import { useBroadcastSessionSearchContext } from "../context/broadcast-session-search-context";
 import {
   convertBroadcastSessionFilter,
   useBroadcastSessionFilter,
 } from "../hooks/use-broadcast-session-filter";
 
 export const BroadcastSessionList: React.FC = () => {
-  const { result, loading, search } = useBroadcastSessionContext();
+  const { result, loading, search } = useBroadcastSessionSearchContext();
   const pagination = usePaginationContext();
   const { watch, setValue, getValues, reset } = useBroadcastSessionFilter();
   const router = useRouter();

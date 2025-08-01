@@ -1,3 +1,4 @@
+import { useBroadcastSessionContext } from "~/features/broadcast";
 import { useMuteLogPopoverDispatch } from "~/features/popover/hooks/mute-log-popover";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { MuteLog } from "./types";
@@ -8,7 +9,10 @@ type Props = {
 };
 
 export const UserHistoriesTableItem: React.FC<Props> = ({ rank, data }) => {
-  const handleUserClick = useUserPopoverDispatch(data?.user);
+  const session = useBroadcastSessionContext();
+  const handleUserClick = useUserPopoverDispatch(data?.user, {
+    broadcastSessionId: session.id,
+  });
   const handleMuteLogClick = useMuteLogPopoverDispatch(data);
 
   return (

@@ -12,6 +12,7 @@ type Props = {
   userLog: UserLogEntry;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const renderEventPayload = (eventType: DomainEventType, payload: any) => {
   try {
     const parsedPayload = JSON.parse(payload);
@@ -61,7 +62,7 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
         return (
           <div className="space-y-1">
             <div className="font-medium text-red-600">
-              뮤트됨 ({parsedPayload.seconds}초)
+              채팅금지 ({parsedPayload.seconds}초)
             </div>
             <div className="text-sm text-gray-600">
               실행자: {parsedPayload.by} • 누적: {parsedPayload.counts}회
@@ -70,7 +71,7 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
         );
 
       case DomainEventType.Kick:
-        return <div className="font-medium text-red-600">킥됨</div>;
+        return <div className="font-medium text-red-600">강제퇴장</div>;
 
       case DomainEventType.Enter:
         return <div className="text-green-600">입장</div>;
@@ -116,9 +117,11 @@ const UserLogItem: React.FC<Props> = ({ userLog }) => {
       return <div className="text-gray-900 mb-1">{userLog.message}</div>;
     } else {
       // 이벤트 로그 렌더링
-      return userLog.eventType && userLog.payload
-        ? renderEventPayload(userLog.eventType, userLog.payload)
-        : <div className="text-gray-500">이벤트</div>;
+      return userLog.eventType && userLog.payload ? (
+        renderEventPayload(userLog.eventType, userLog.payload)
+      ) : (
+        <div className="text-gray-500">이벤트</div>
+      );
     }
   };
 
@@ -211,7 +214,10 @@ export const HistoryUserResults: React.FC = () => {
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto">
         {result.logs.map((userLog) => (
-          <UserLogItem key={`${userLog.logType}-${userLog.id}`} userLog={userLog} />
+          <UserLogItem
+            key={`${userLog.logType}-${userLog.id}`}
+            userLog={userLog}
+          />
         ))}
       </div>
       <Pagination

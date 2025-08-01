@@ -1,7 +1,11 @@
 import { useMemo, useState } from "react";
 import { useQueriesParam } from "~/common/hooks";
 import { route } from "~/constants";
-import { BroadcastSession, UserSearchFilters } from "~/services/ipc/types";
+import {
+  BroadcastSession,
+  SimplifiedBroadcastSession,
+  UserSearchFilters,
+} from "~/services/ipc/types";
 import { Channel } from "~/types";
 
 // User 검색 필터: user_id (required), channel_id (optional), session_id (optional), period (optional)
@@ -9,7 +13,7 @@ import { Channel } from "~/types";
 interface Filter {
   userId: string;
   channel?: Channel;
-  session?: BroadcastSession;
+  session?: SimplifiedBroadcastSession;
   startDate?: string;
   endDate?: string;
 }
@@ -35,8 +39,18 @@ export const useHistoryUserFilter = () => {
   );
 
   // 복잡한 객체들은 별도 상태로 관리
-  const [channel, setChannel] = useState<Channel>();
-  const [session, setSession] = useState<BroadcastSession>();
+  const [channel, setChannel] = useState<Channel | undefined>(
+    queryParams.channelId
+      ? { id: queryParams.channelId, label: "<임의지정>" }
+      : undefined
+  );
+  const [session, setSession] = useState<
+    SimplifiedBroadcastSession | undefined
+  >(
+    queryParams.sessionId
+      ? { id: Number(queryParams.sessionId), title: "<임의지정>" }
+      : undefined
+  );
 
   const filter = useMemo<Filter>(
     () => ({
