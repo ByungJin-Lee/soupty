@@ -23,13 +23,13 @@ const LiveUserHistoryContent: React.FC<Props> = ({ userId }) => {
 };
 
 export const LiveUserHistoryModal = () => {
-  const { userId, close } = useLiveUserHistoryStore();
+  const { userId, username, close } = useLiveUserHistoryStore();
 
   return (
     <Modal
       isOpen={!!userId}
       onClose={close}
-      title={`'${userId}' 라이브 기록`}
+      title={`'${username}(${userId})' 라이브 기록`}
       ignoreBackdropClick
     >
       <PaginationProvider>

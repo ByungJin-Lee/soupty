@@ -1,15 +1,15 @@
-import { useMuteLogPopoverDispatch } from "~/features/popover/hooks/mute-log-popover";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
-import { MuteLog } from "./types";
+import { ChatterRank } from "~/services/ipc/types";
 
 type Props = {
   rank: number;
-  data: MuteLog | null;
+  data: ChatterRank | null;
 };
 
-export const UserHistoriesTableItem: React.FC<Props> = ({ rank, data }) => {
+export const TopChattersTableItem: React.FC<Props> = ({ rank, data }) => {
   const handleUserClick = useUserPopoverDispatch(data?.user);
-  const handleMuteLogClick = useMuteLogPopoverDispatch(data);
+
+  if (!data) return null;
 
   return (
     <>
@@ -22,26 +22,23 @@ export const UserHistoriesTableItem: React.FC<Props> = ({ rank, data }) => {
               ? "bg-gray-100 text-gray-800"
               : rank === 3
               ? "bg-orange-100 text-orange-800"
-              : "bg-green-100 text-green-800"
+              : "bg-blue-100 text-blue-800"
           }`}
         >
-          {rank}
+          {rank + 1}
         </span>
       </td>
       <td className="px-4 py-3">
         <span
           onClick={handleUserClick}
-          className="inline-block cursor-pointer bg-gray-100 text-gray-800 underline px-2 py-1 rounded-md text-sm font-medium"
+          className="cursor-pointer  bg-gray-100 text-gray-800 underline px-2 py-1 rounded-md text-sm font-medium"
         >
-          {data?.user.label}
+          {data.user.label}
         </span>
       </td>
       <td className="px-4 py-3 text-right">
-        <span
-          onClick={handleMuteLogClick}
-          className="text-sm cursor-pointer underline font-semibold text-gray-900"
-        >
-          {data?.logs.length.toLocaleString()}
+        <span className="text-sm font-semibold text-gray-900">
+          {data.messageCount.toLocaleString()}
         </span>
       </td>
     </>

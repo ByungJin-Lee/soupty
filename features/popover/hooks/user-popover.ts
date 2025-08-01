@@ -49,7 +49,10 @@ export const useUserPopover = (payload: UserPopoverPayload) => {
       if (isTargetUser(userInfo.userId)) {
         await removeTargetUser(userInfo.userId);
       } else {
-        await addTargetUser(userInfo.userId);
+        await addTargetUser({
+          userId: userInfo.userId,
+          username: userInfo.label,
+        });
       }
     } catch (error) {
       console.error("Failed to toggle target user:", error);

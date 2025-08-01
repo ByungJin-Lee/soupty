@@ -73,9 +73,7 @@ export interface IpcPayloadMap {
   [IpcRequestWithPayload.DeleteChannel]: {
     channelId: string;
   };
-  [IpcRequestWithPayload.AddTargetUser]: {
-    userId: string;
-  };
+  [IpcRequestWithPayload.AddTargetUser]: TargetUser;
   [IpcRequestWithPayload.RemoveTargetUser]: {
     userId: string;
   };
@@ -135,7 +133,7 @@ export interface IpcResponseMap {
     channelName: string;
     lastUpdated: number;
   }[];
-  [IpcRequestWithoutPayload.GetTargetUsers]: string[];
+  [IpcRequestWithoutPayload.GetTargetUsers]: TargetUser[];
   [IpcRequestWithoutPayload.GetMainControllerContext]: BroadcastMetadata | null;
   [IpcRequestWithoutPayload.GetSupportedEventTypes]: string[];
   /// 라이브가 아닌 경우 null이 반환됩니다.
@@ -495,6 +493,11 @@ export interface CsvExportOptions {
   channelId?: string | null;
   broadcastId?: number | null;
   outputPath: string;
+}
+
+export interface TargetUser {
+  userId: string;
+  username: string;
 }
 
 // CSV Export 옵션 검증 함수

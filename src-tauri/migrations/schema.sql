@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS channels (
 --------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS target_users (
     user_id         TEXT PRIMARY KEY NOT NULL,
+    username        TEXT NOT NULL Default '미설정',
     added_at        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     description     TEXT -- 추가된 이유나 설명 (선택사항)
 );

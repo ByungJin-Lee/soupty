@@ -1,4 +1,5 @@
 import { ChatterRank } from "~/services/ipc/types";
+import { TopChattersTableItem } from "./top-chatters-table-item";
 
 type Props = {
   topChatters: ChatterRank[];
@@ -43,71 +44,19 @@ export const TopChattersTable: React.FC<Props> = ({ topChatters }) => {
               {Array.from({
                 length: Math.ceil(topChatters.length / 2),
               }).map((_, rowIndex) => {
-                const leftIndex = rowIndex * 2;
-                const rightIndex = leftIndex + 1;
-                const leftChatter = topChatters[leftIndex];
-                const rightChatter = topChatters[rightIndex];
+                const leftIdx = rowIndex * 2;
+                const rightIdx = leftIdx + 1;
+                const lhs = topChatters[leftIdx];
+                const rhs = topChatters[rightIdx];
 
                 return (
                   <tr
                     key={`row-${rowIndex}`}
                     className="hover:bg-blue-25 transition-colors"
                   >
-                    <td className="px-4 py-3 text-center">
-                      <span
-                        className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                          leftIndex === 0
-                            ? "bg-yellow-100 text-yellow-800"
-                            : leftIndex === 1
-                            ? "bg-gray-100 text-gray-800"
-                            : leftIndex === 2
-                            ? "bg-orange-100 text-orange-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
-                      >
-                        {leftIndex + 1}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-medium text-gray-900">
-                        {leftChatter.user.label}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-sm font-semibold text-gray-900">
-                        {leftChatter.messageCount.toLocaleString()}
-                      </span>
-                    </td>
+                    <TopChattersTableItem rank={leftIdx + 1} data={lhs} />
                     <td className="px-2 border-l border-gray-200"></td>
-                    <td className="px-4 py-3 text-center">
-                      {rightChatter && (
-                        <span
-                          className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                            rightIndex === 0
-                              ? "bg-yellow-100 text-yellow-800"
-                              : rightIndex === 1
-                              ? "bg-gray-100 text-gray-800"
-                              : rightIndex === 2
-                              ? "bg-orange-100 text-orange-800"
-                              : "bg-blue-100 text-blue-800"
-                          }`}
-                        >
-                          {rightIndex + 1}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm font-medium text-gray-900">
-                        {rightChatter ? rightChatter.user.label : ""}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-sm font-semibold text-gray-900">
-                        {rightChatter
-                          ? rightChatter.messageCount.toLocaleString()
-                          : ""}
-                      </span>
-                    </td>
+                    <TopChattersTableItem rank={rightIdx + 1} data={rhs} />
                   </tr>
                 );
               })}

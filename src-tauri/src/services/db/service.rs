@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use std::path::Path;
+use tauri_plugin_log::Target;
 use tokio::sync::{mpsc, oneshot};
 
 use crate::services::db::{
@@ -8,7 +9,7 @@ use crate::services::db::{
         BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult,
         ChannelData, ChatLogData, ChatLogResult, ChatSearchFilters, ChatSearchResult, DBCommand,
         EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams,
-        ReportInfo, ReportStatusInfo, UserSearchFilters, UserSearchResult,
+        ReportInfo, ReportStatusInfo, TargetUser, UserSearchFilters, UserSearchResult,
     },
 };
 
@@ -138,7 +139,7 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
-    pub async fn get_target_users(&self) -> Result<Vec<String>, String> {
+    pub async fn get_target_users(&self) -> Result<Vec<TargetUser>, String> {
         let (tx, rx) = oneshot::channel();
         self.sender
             .send(DBCommand::GetTargetUsers { reply_to: tx })
@@ -151,13 +152,13 @@ impl DBService {
 
     pub async fn add_target_user(
         &self,
-        user_id: String,
+        user: TargetUser,
         description: Option<String>,
     ) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();
         self.sender
             .send(DBCommand::AddTargetUser {
-                user_id,
+                user,
                 description,
                 reply_to: tx,
             })

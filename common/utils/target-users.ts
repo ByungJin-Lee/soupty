@@ -3,16 +3,19 @@
  */
 
 import { ipcService } from "~/services/ipc";
+import { TargetUser } from "~/services/ipc/types";
 
 const TARGET_USERS_KEY = "targetUsers";
 
+type TargetUserCached = Record<string, TargetUser>;
+
 // 메모리 캐시 (Set 사용)
-let cachedTargetUsers: Set<string> | null = null;
+let cachedTargetUsers: TargetUserCached | null = null;
 
 /**
  * localStorage에서 targetUsers Set을 가져옵니다 (캐시 사용)
  */
-export function getTargetUsers(): Set<string> {
+export const getTargetUsers = (): TargetUserCached => {
   // 캐시가 있으면 바로 반환
   if (cachedTargetUsers !== null) {
     return cachedTargetUsers;
@@ -20,86 +23,88 @@ export function getTargetUsers(): Set<string> {
 
   try {
     const stored = localStorage.getItem(TARGET_USERS_KEY);
-    const usersArray = stored ? JSON.parse(stored) : [];
-    
-    // Set으로 변환하고 캐시에 저장
-    cachedTargetUsers = new Set(usersArray);
-    return cachedTargetUsers;
+    cachedTargetUsers = stored ? JSON.parse(stored) : {};
   } catch (error) {
-    console.error("Failed to parse targetUsers from localStorage:", error);
-    
-    // 오류 시 빈 Set을 캐시에 저장
-    cachedTargetUsers = new Set();
-    return cachedTargetUsers;
+    console.error(
+      "로컬스토리지에서 TargetUser 데이터를 읽을 수 없습니다.",
+      error
+    );
+    cachedTargetUsers = {};
   }
-}
+  return cachedTargetUsers!;
+};
 
 /**
  * localStorage에 targetUsers를 저장합니다
  */
-export function setTargetUsers(userIds: string[] | Set<string>): void {
+export const setTargetUsers = (targetUsers: TargetUser[]): void => {
   try {
-    const usersArray = Array.isArray(userIds) ? userIds : Array.from(userIds);
-    localStorage.setItem(TARGET_USERS_KEY, JSON.stringify(usersArray));
-    
-    // 캐시 업데이트 (Set으로 저장)
-    cachedTargetUsers = new Set(usersArray);
+    const data = targetUsers.reduce<TargetUserCached>((acc, v) => {
+      acc[v.userId] = v;
+      return acc;
+    }, {});
+    updateTargetUserCache(data);
   } catch (error) {
     console.error("Failed to save targetUsers to localStorage:", error);
   }
-}
+};
+
+const updateTargetUserCache = (cache: TargetUserCached): void => {
+  localStorage.setItem(TARGET_USERS_KEY, JSON.stringify(cache));
+  cachedTargetUsers = cache;
+};
 
 /**
  * targetUsers에 사용자를 추가합니다 (백엔드와 동기화)
  */
-export async function addTargetUser(userId: string): Promise<void> {
+export const addTargetUser = async (user: TargetUser) => {
   try {
+    const cache = getTargetUsers();
+
+    if (user.userId in cache) return;
+
     // 백엔드에 추가 요청
-    await ipcService.targetUsers.addTargetUser(userId);
-    
+    await ipcService.targetUsers.addTargetUser(user);
     // 로컬 캐시 업데이트
-    const current = getTargetUsers();
-    if (!current.has(userId)) {
-      current.add(userId);
-      setTargetUsers(current);
-    }
+    cache[user.userId] = user;
+    updateTargetUserCache(cache);
   } catch (error) {
     console.error("Failed to add target user:", error);
     throw error;
   }
-}
+};
 
 /**
  * targetUsers에서 사용자를 제거합니다 (백엔드와 동기화)
  */
-export async function removeTargetUser(userId: string): Promise<void> {
+export const removeTargetUser = async (userId: string) => {
   try {
     // 백엔드에 제거 요청
     await ipcService.targetUsers.removeTargetUser(userId);
-    
+
     // 로컬 캐시 업데이트
     const current = getTargetUsers();
-    if (current.has(userId)) {
-      current.delete(userId);
-      setTargetUsers(current);
+    if (userId in current) {
+      delete current[userId];
+      updateTargetUserCache(current);
     }
   } catch (error) {
     console.error("Failed to remove target user:", error);
     throw error;
   }
-}
+};
 
 /**
  * 캐시를 강제로 무효화합니다 (테스트나 디버깅용)
  */
-export function clearCache(): void {
+export const clearCache = () => {
   cachedTargetUsers = null;
-}
+};
 
 /**
  * 특정 사용자가 targetUsers에 포함되어 있는지 확인합니다
  */
-export function isTargetUser(userId: string): boolean {
+export const isTargetUser = (userId: string): boolean => {
   const targetUsers = getTargetUsers();
-  return targetUsers.has(userId);
-}
+  return userId in targetUsers;
+};

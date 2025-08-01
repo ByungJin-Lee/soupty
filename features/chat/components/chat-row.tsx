@@ -60,6 +60,13 @@ export const ChatMessage: React.FC<MessageProps> = memo(({ parts }) => {
           case MessageType.Text:
             content = p.value;
             break;
+          case MessageType.URL:
+            content = (
+              <a href={p.value} className="text-blue-400 underline">
+                {p.value}
+              </a>
+            );
+            break;
           case MessageType.Emoji:
             content = (
               <img

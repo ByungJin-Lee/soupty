@@ -2,6 +2,7 @@ import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import {
   BlackEvent,
   FreezeEvent,
+  freezeTargetLabel,
   KickCancelEvent,
   KickEvent,
   MuteEvent,
@@ -164,12 +165,8 @@ export const FreezeRow: React.FC<FreezeProps> = ({ data }) => {
             개 이상
           </span>
           {data.targets.length > 0 ? (
-            <div className="text-white-100 bg-blue-500/20 px-2 py-1 rounded-lg mt-2">
-              {data.targets.map((v) => (
-                <span className="p-1" key={v}>
-                  {v}
-                </span>
-              ))}
+            <div className="text-white font-light bg-red-700/50 px-2 py-1 rounded-lg mt-2">
+              {data.targets.map((v) => freezeTargetLabel[v]).join("  ")}
             </div>
           ) : null}
         </div>

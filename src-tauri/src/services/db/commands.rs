@@ -49,10 +49,10 @@ pub enum DBCommand {
 
     // Target Users 관리
     GetTargetUsers {
-        reply_to: oneshot::Sender<Result<Vec<String>, String>>,
+        reply_to: oneshot::Sender<Result<Vec<TargetUser>, String>>,
     },
     AddTargetUser {
-        user_id: String,
+        user: TargetUser,
         description: Option<String>,
         reply_to: oneshot::Sender<Result<(), String>>,
     },
@@ -388,4 +388,11 @@ pub struct ReportStatusInfo {
     pub status: String,
     pub progress_percentage: Option<f64>,
     pub error_message: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TargetUser {
+    pub user_id: String,
+    pub username: String,
 }

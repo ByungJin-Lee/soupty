@@ -77,10 +77,10 @@ impl DBActor {
             DBCommand::GetChannels { reply_to } => handlers.handle_get_channels(reply_to),
             DBCommand::GetTargetUsers { reply_to } => handlers.handle_get_target_users(reply_to),
             DBCommand::AddTargetUser {
-                user_id,
+                user,
                 description,
                 reply_to,
-            } => handlers.handle_add_target_user(user_id, description, reply_to),
+            } => handlers.handle_add_target_user(user, description, reply_to),
             DBCommand::RemoveTargetUser { user_id, reply_to } => {
                 handlers.handle_remove_target_user(user_id, reply_to)
             }

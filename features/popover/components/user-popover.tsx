@@ -47,12 +47,12 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
           disabled={isLoading}
           className={`p-1 rounded-md transition-colors border border-gray-300 text-gray-500 ${
             isTarget ? "" : ""
-          } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+          } ${isLoading ? "cursor-not-allowed" : ""}`}
         >
           <Star
             size={20}
             fill={isTarget ? "yellow" : "none"}
-            fillOpacity={0.5}
+            fillOpacity={0.9}
             strokeWidth={1.2}
           />
         </button>
@@ -103,7 +103,7 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
       <div className="border-t border-gray-200 mt-2">
         <p
           className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"
-          onClick={() => openLiveUserHistory(userInfo.userId)}
+          onClick={() => openLiveUserHistory(userInfo.userId, userInfo.label)}
         >
           라이브 기록
         </p>

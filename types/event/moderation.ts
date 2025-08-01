@@ -1,5 +1,5 @@
-import { BaseEvent } from "./base";
 import { User } from "../soop";
+import { BaseEvent } from "./base";
 
 export interface KickEvent extends BaseEvent {
   channelId: string;
@@ -31,8 +31,26 @@ export interface FreezeEvent extends BaseEvent {
   freezed: boolean;
   limitSubscriptionMonth: number;
   limitBalloons: number;
-  targets: string[];
+  targets: FreezeTarget[];
 }
+
+export enum FreezeTarget {
+  Supporter = "SUPPORTER",
+  TopFan = "TOP_FAN",
+  Follower = "FOLLOWER",
+  Manager = "MANAGER",
+  BJ = "BJ",
+  Fan = "FAN",
+}
+
+export const freezeTargetLabel: Record<FreezeTarget, string> = {
+  [FreezeTarget.Supporter]: "서포터",
+  [FreezeTarget.TopFan]: "열혈",
+  [FreezeTarget.Follower]: "구독자",
+  [FreezeTarget.Manager]: "매니저",
+  [FreezeTarget.BJ]: "방장",
+  [FreezeTarget.Fan]: "팬",
+};
 
 export interface SlowEvent extends BaseEvent {
   channelId: string;

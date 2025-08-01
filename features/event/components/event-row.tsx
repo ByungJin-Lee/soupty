@@ -29,7 +29,6 @@ type Props = {
 };
 
 export const EventRow: React.FC<Props> = ({ data }) => {
-  console.log(data.type);
   switch (data.type) {
     // Lifecycle events
     case DomainEventType.Connected:

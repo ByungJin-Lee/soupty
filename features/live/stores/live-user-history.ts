@@ -2,10 +2,11 @@ import { create } from "zustand";
 
 interface LiveUserHistoryState {
   userId?: string;
+  username?: string;
 }
 
 interface LiveUserHistoryAction {
-  open(userId: string): void;
+  open(userId: string, username?: string): void;
   close(): void;
 }
 
@@ -13,10 +14,10 @@ export const useLiveUserHistoryStore = create<
   LiveUserHistoryAction & LiveUserHistoryState
 >((set) => ({
   user: undefined,
-  open(userId) {
-    set({ userId });
+  open(userId, username) {
+    set({ userId, username });
   },
   close() {
-    set({ userId: undefined });
+    set({ userId: undefined, username: undefined });
   },
 }));

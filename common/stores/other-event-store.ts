@@ -25,7 +25,7 @@ export const useOtherEventStore = create<OtherEventState & OtherEventActions>()(
 
       handleOtherEvent(e) {
         try {
-          if (!e.payload.id) return;
+          if (!("payload" in e)) return;
           // Other 이벤트 처리 로직
           const processed: DomainEvent = {
             id: e.payload.id,

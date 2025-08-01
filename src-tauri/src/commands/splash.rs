@@ -1,3 +1,4 @@
+use crate::services::db::commands::TargetUser;
 use crate::services::db::service::DBService;
 use crate::state::AppState;
 use anyhow::{Context, Result as AnyhowResult};
@@ -114,16 +115,20 @@ pub async fn setup_app_state(app_handle: AppHandle) -> Result<(), String> {
 }
 
 #[tauri::command]
-pub async fn get_target_users(app_state: State<'_, AppState>) -> Result<Vec<String>, String> {
+pub async fn get_target_users(app_state: State<'_, AppState>) -> Result<Vec<TargetUser>, String> {
     app_state.db.get_target_users().await
 }
 
 #[tauri::command]
 pub async fn add_target_user(
     user_id: String,
+    username: String,
     app_state: State<'_, AppState>,
 ) -> Result<(), String> {
-    app_state.db.add_target_user(user_id, None).await
+    app_state
+        .db
+        .add_target_user(TargetUser { user_id, username }, None)
+        .await
 }
 
 #[tauri::command]

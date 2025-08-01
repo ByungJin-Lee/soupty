@@ -4,10 +4,7 @@ use tokio::sync::oneshot;
 
 use crate::services::addons::db_logger::user_flag::parse_user_from_flag;
 use crate::services::db::commands::{
-    BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult,
-    ChannelData, ChatLogData, ChatLogResult, ChatMetadata, ChatSearchFilters, ChatSearchResult,
-    EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams,
-    ReportInfo, ReportStatusInfo, UserLogEntry, UserSearchFilters, UserSearchResult,
+    BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult, ChannelData, ChatLogData, ChatLogResult, ChatMetadata, ChatSearchFilters, ChatSearchResult, EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams, ReportInfo, ReportStatusInfo, TargetUser, UserLogEntry, UserSearchFilters, UserSearchResult
 };
 use crate::util::hangul::decompose_hangul_to_string;
 
@@ -279,20 +276,21 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
-    pub fn handle_get_target_users(&self, reply_to: oneshot::Sender<Result<Vec<String>, String>>) {
+    pub fn handle_get_target_users(&self, reply_to: oneshot::Sender<Result<Vec<TargetUser>, String>>) {
         let result = (|| {
             let mut stmt = self
                 .conn
-                .prepare("SELECT user_id FROM target_users ORDER BY added_at")
+                .prepare("SELECT user_id, username FROM target_users ORDER BY added_at")
                 .map_err(|e| e.to_string())?;
             let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
 
-            let mut user_ids: Vec<String> = Vec::new();
+            let mut users: Vec<TargetUser> = Vec::new();
             while let Some(row) = rows.next().map_err(|e| e.to_string())? {
                 let user_id: String = row.get(0).map_err(|e| e.to_string())?;
-                user_ids.push(user_id);
+                let username: String = row.get(1).map_err(|e| e.to_string())?;
+                users.push(TargetUser { user_id,  username  });
             }
-            Ok(user_ids)
+            Ok(users)
         })();
 
         let _ = reply_to.send(result);
@@ -300,17 +298,17 @@ impl<'a> CommandHandlers<'a> {
 
     pub fn handle_add_target_user(
         &self,
-        user_id: String,
+        user: TargetUser,
         description: Option<String>,
         reply_to: oneshot::Sender<Result<(), String>>,
     ) {
         let result = self
             .conn
             .prepare_cached(
-                "INSERT INTO target_users (user_id, description) VALUES (?1, ?2) ON CONFLICT(user_id) DO UPDATE SET description = excluded.description"
+                "INSERT INTO target_users (user_id, username, description) VALUES (?1, ?2, ?3) ON CONFLICT(user_id) DO UPDATE SET description = excluded.description, username = excluded.username"
             )
             .and_then(|mut stmt| {
-                stmt.execute([&user_id, &description.unwrap_or_default()])?;
+                stmt.execute([&user.user_id, &user.username, &description.unwrap_or_default()])?;
                 Ok(())
             })
             .map_err(|e| e.to_string());

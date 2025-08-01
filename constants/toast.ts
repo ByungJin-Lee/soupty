@@ -4,6 +4,7 @@ export const toastOptions: DefaultToastOptions = {
   success: {
     style: {
       background: "green",
+      color: "white",
     },
   },
   error: {
