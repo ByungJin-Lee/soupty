@@ -1,0 +1,5 @@
+{
+  "bundle": {
+    "resources": ["lib/onnxruntime.dll", "ai/model.onnx", "ai/tokenizer.json"]
+  }
+}

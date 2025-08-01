@@ -69,7 +69,7 @@ pub async fn setup_ai(app_handle: AppHandle) -> Result<(), String> {
         .map_err(|e| format!("AI 모델 디렉토리 경로 확보 실패: {}", e))?;
 
     // Windows용 ONNX Runtime 초기화
-    #[cfg(target_os = "windows")]
+    #[cfg(all(target_os = "windows", feature = "ai"))]
     {
         let resource_path = app_handle
             .path()

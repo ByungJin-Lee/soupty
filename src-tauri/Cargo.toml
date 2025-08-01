@@ -14,6 +14,10 @@ rust-version = "1.77.2"
 name = "app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+default = []
+ai = ["dep:ort", "dep:ndarray"]
+
 [build-dependencies]
 tauri-build = { version = "2.2.0", features = [] }
 
@@ -23,8 +27,8 @@ serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
 tauri = { version = "2.5.0", features = ["macos-private-api"] }
 tauri-plugin-log = "2.0.0-rc"
-ort = { version = "=2.0.0-rc.10" }
-ndarray = "0.16.1"
+ort = { version = "=2.0.0-rc.10", optional = true }
+ndarray = { version = "0.16.1", optional = true }
 tokenizers = "0.21.1"
 anyhow = "1.0.98"
 rusqlite = { version = "0.36.0", features = ["bundled", "functions"] }
@@ -41,4 +45,4 @@ tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
 
 [target.'cfg(windows)'.dependencies]
-ort = { version = "=2.0.0-rc.10", features = ["load-dynamic"] }
+ort = { version = "=2.0.0-rc.10", features = ["load-dynamic"], optional = true }

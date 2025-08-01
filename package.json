@@ -6,7 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "tauri:dev": "tauri dev",
+    "tauri:dev:ai": "tauri dev --features ai",
+    "tauri:build": "tauri build -c src-tauri/tauri.light.conf.json",
+    "tauri:build:light": "tauri build -c src-tauri/tauri.light.conf.json",
+    "tauri:build:ai": "tauri build --features ai"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.5.0",

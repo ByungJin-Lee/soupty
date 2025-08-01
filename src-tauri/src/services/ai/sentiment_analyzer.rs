@@ -1,12 +1,17 @@
 use anyhow::Result;
-use ndarray::{Array, Ix2};
-use ort::execution_providers::CPUExecutionProvider;
-use ort::session::Session;
-use ort::value::Value;
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
 use tokenizers::Tokenizer;
+
+#[cfg(feature = "ai")]
+use ndarray::{Array, Ix2};
+#[cfg(feature = "ai")]
+use ort::execution_providers::CPUExecutionProvider;
+#[cfg(feature = "ai")]
+use ort::session::Session;
+#[cfg(feature = "ai")]
+use ort::value::Value;
 
 pub const SENTIMENT_THRESHOLD: f32 = 1.7;
 
@@ -26,6 +31,7 @@ pub enum Sentiment {
 
 /// ONNX 세션과 토크나이저를 함께 보관할 구조체입니다.
 pub struct SentimentAnalyzer {
+    #[cfg(feature = "ai")]
     session: Mutex<Session>,
     tokenizer: Mutex<Tokenizer>,
 }
@@ -34,6 +40,7 @@ static GLOBAL_SENTIMENT_ANALYZER: OnceLock<SentimentAnalyzer> = OnceLock::new();
 
 impl SentimentAnalyzer {
     /// 글로벌 인스턴스 초기화 (splash.rs에서 호출)
+    #[cfg(feature = "ai")]
     pub fn initialize(model_dir: PathBuf) -> Result<()> {
         println!(
             "Loading ONNX model and tokenizer from '{}'...",
@@ -60,12 +67,20 @@ impl SentimentAnalyzer {
         Ok(())
     }
 
+    /// AI feature가 비활성화된 경우의 더미 초기화
+    #[cfg(not(feature = "ai"))]
+    pub fn initialize(_model_dir: PathBuf) -> Result<()> {
+        println!("AI feature disabled - skipping model initialization");
+        Ok(())
+    }
+
     /// 글로벌 인스턴스 반환
     pub fn global() -> Option<&'static SentimentAnalyzer> {
         GLOBAL_SENTIMENT_ANALYZER.get()
     }
 
     /// 텍스트 감정 분석 수행
+    #[cfg(feature = "ai")]
     pub fn analyze(&self, text: &str) -> Result<AnalysisResult, String> {
         let tokenizer = self
             .tokenizer
@@ -146,6 +161,15 @@ impl SentimentAnalyzer {
         Ok(AnalysisResult {
             sentiment,
             score: final_score,
+        })
+    }
+
+    /// AI feature가 비활성화된 경우의 더미 분석
+    #[cfg(not(feature = "ai"))]
+    pub fn analyze(&self, _text: &str) -> Result<AnalysisResult, String> {
+        Ok(AnalysisResult {
+            sentiment: Sentiment::Neutral,
+            score: 0.0,
         })
     }
 }
