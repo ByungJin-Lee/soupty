@@ -5,8 +5,8 @@ type ChatType = "TEXT" | "EMOTICON" | "STICKER";
 
 const CHAT_TYPE_OPTIONS: { value: ChatType; label: string }[] = [
   { value: "TEXT", label: "텍스트" },
-  { value: "EMOTICON", label: "이모티콘" },
-  { value: "STICKER", label: "스티커" },
+  { value: "EMOTICON", label: "OGQ" },
+  // { value: "STICKER", label: "스티커" },
 ];
 
 type Props = {
@@ -14,10 +14,7 @@ type Props = {
   onChange(chatType?: string): void;
 };
 
-export const ChatTypeCondition: React.FC<Props> = ({
-  chatType,
-  onChange,
-}) => {
+export const ChatTypeCondition: React.FC<Props> = ({ chatType, onChange }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const handleReset = (e: React.MouseEvent) => {
@@ -60,7 +57,7 @@ export const ChatTypeCondition: React.FC<Props> = ({
       </div>
 
       {showDropdown && (
-        <div className="absolute top-full left-0 mt-2 bg-white border rounded-lg shadow-lg z-10 min-w-max">
+        <div className="absolute top-full left-0 mt-2 bg-white border rounded-lg border-gray-400/40 shadow-lg z-10 min-w-max">
           <div className="py-1">
             {CHAT_TYPE_OPTIONS.map((option) => (
               <button

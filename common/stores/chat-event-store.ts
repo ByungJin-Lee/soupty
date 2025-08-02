@@ -25,7 +25,15 @@ interface ChatEventActions {
 
 export const useChatEventStore = create<ChatEventState & ChatEventActions>()(
   subscribeWithSelector((set, get) => {
-    const forceUpdate = () => set({ lastUpdate: Date.now() });
+    let throttleTimer: NodeJS.Timeout | null = null;
+    const forceUpdate = () => {
+      if (throttleTimer) return;
+      
+      throttleTimer = setTimeout(() => {
+        set({ lastUpdate: Date.now() });
+        throttleTimer = null;
+      }, 16); // ~60fps
+    };
 
     return {
       chatQueue: new CircularQueue<ChatEvent>(MAX_QUEUE_CAPACITY),

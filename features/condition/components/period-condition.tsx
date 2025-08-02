@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Calendar, X } from "react-feather";
-import { formatDate } from "~/common/utils";
 import { DateTimePicker } from "~/common/ui";
+import { formatDate } from "~/common/utils";
 
 type Props = {
   startDate?: string;
@@ -64,7 +64,7 @@ export const PeriodCondition: React.FC<Props> = ({
       </div>
 
       {showDatePicker && (
-        <div className="absolute top-full left-0 mt-2 p-4 bg-white border rounded-lg shadow-lg z-10 min-w-max">
+        <div className="absolute top-full left-0 mt-2 p-4 bg-white border rounded-lg border-gray-400/40 shadow-lg z-10 min-w-max">
           <div className="flex flex-col gap-3">
             <div>
               <label className="block text-sm font-medium mb-1">

@@ -7,6 +7,7 @@ type Callbacks = {
   chat: (e: RawChatEvent) => void;
   other: (e: RawDomainEvent) => void;
   stats: (e: Stats) => void;
+  disconnect?: () => void;
 };
 
 export default class GlobalEventManger {
@@ -40,6 +41,9 @@ export default class GlobalEventManger {
       });
       listen<Stats>(ipcEvents.log.stats, (e) => {
         this.callbacks?.stats(e.payload);
+      });
+      listen("disconnect", () => {
+        this.callbacks?.disconnect?.();
       });
       // remove listener 등록
       this.isListening = true;

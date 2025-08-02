@@ -2,11 +2,17 @@ import { useState } from "react";
 import { Settings, X } from "react-feather";
 import { domainEventLabel, DomainEventType } from "~/types";
 
-const EVENT_TYPE_OPTIONS: { value: DomainEventType; label: string }[] =
-  Object.entries(domainEventLabel).map(([value, label]) => ({
-    value: value as DomainEventType,
-    label,
-  }));
+const EVENT_TYPE_OPTIONS = [
+  DomainEventType.Donation,
+  DomainEventType.Subscribe,
+  DomainEventType.MissionDonation,
+  DomainEventType.Kick,
+  DomainEventType.Freeze,
+  DomainEventType.MissionTotal,
+  DomainEventType.BattleMissionResult,
+  DomainEventType.ChallengeMissionResult,
+  DomainEventType.Slow,
+].map((v) => ({ value: v, label: domainEventLabel[v] }));
 
 type Props = {
   eventType?: DomainEventType;
@@ -54,7 +60,7 @@ export const EventTypeCondition: React.FC<Props> = ({
       </div>
 
       {showDropdown && (
-        <div className="absolute top-full left-0 mt-2 bg-white border rounded-lg w-fit shadow-lg z-10">
+        <div className="absolute top-full left-0 mt-2 bg-white border rounded-lg w-[130px] shadow-lg z-10 border-gray-400/40">
           <div className="py-1">
             {EVENT_TYPE_OPTIONS.map((option) => (
               <button

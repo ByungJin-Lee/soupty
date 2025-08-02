@@ -3,7 +3,12 @@ import { Pagination } from "~/common/ui/pagination";
 import { route } from "~/constants";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { EventLogResult } from "~/services/ipc/types";
-import { domainEventLabel, DomainEventType } from "~/types";
+import {
+  domainEventLabel,
+  DomainEventType,
+  DonationType,
+  donationTypeLabel,
+} from "~/types";
 import { useHistoryEventFilterCtx } from "../context/history-event-filter-context";
 import { useHistoryEventSearchContext } from "../context/history-event-search-context";
 import { formatTimestamp } from "../utils/format";
@@ -32,7 +37,7 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
               </div>
             )}
             <div className="text-sm text-gray-600">
-              타입: {payload.donationType}
+              타입: {donationTypeLabel[payload.donationType as DonationType]}
               {payload.becomeTopFan && " • 새로운 탑팬!"}
             </div>
           </div>

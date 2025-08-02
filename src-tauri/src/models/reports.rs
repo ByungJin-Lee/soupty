@@ -1,7 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use soup_sdk::chat::types::User;
-use std::collections::HashMap;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ReportStatus {
@@ -126,6 +125,7 @@ pub struct Matrix {
 #[serde(rename_all = "camelCase")]
 pub struct ChatVital {
     pub total_count: usize,
+    pub lol_score: usize,
     #[serde(skip)]
     pub top_chatters: Vec<ChatterRank>,
     #[serde(skip)]

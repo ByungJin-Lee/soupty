@@ -1,6 +1,5 @@
 use chrono::{DateTime, Utc};
 use std::path::Path;
-use tauri_plugin_log::Target;
 use tokio::sync::{mpsc, oneshot};
 
 use crate::services::db::{

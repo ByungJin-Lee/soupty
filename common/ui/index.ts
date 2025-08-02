@@ -1,7 +1,9 @@
 export { BackButton } from "./back-button";
+export { Button } from "./button";
 export { ClipboardButton } from "./clipboard-button";
 export { DateTimePicker } from "./date-time-picker";
 export { ErrorBoundary } from "./error-boundary";
+export { FilterButton } from "./filter-button";
 export { CloseButton } from "./modal/close-button";
 export { mounted } from "./mounted";
 export { Pagination } from "./pagination";

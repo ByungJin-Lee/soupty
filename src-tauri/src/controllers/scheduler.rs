@@ -7,8 +7,6 @@ use std::time::Duration;
 use tauri::async_runtime::{spawn, JoinHandle};
 use tokio::sync::Mutex;
 
-pub type BoxFuture<T> = Pin<Box<dyn Future<Output = T> + Send + 'static>>;
-
 #[derive(Clone)]
 pub struct Scheduler {
     tasks: Arc<Mutex<HashMap<String, JoinHandle<()>>>>,
@@ -43,12 +41,12 @@ impl Scheduler {
         }
     }
 
-    pub async fn cancel_task(&self, id: &str) {
-        let mut tasks = self.tasks.lock().await;
-        if let Some(task) = tasks.remove(id) {
-            task.abort();
-        }
-    }
+    // pub async fn cancel_task(&self, id: &str) {
+    //     let mut tasks = self.tasks.lock().await;
+    //     if let Some(task) = tasks.remove(id) {
+    //         task.abort();
+    //     }
+    // }
 
     pub async fn cancel_all(&self) {
         let mut tasks = self.tasks.lock().await;

@@ -14,5 +14,7 @@ export const transformPaginationParams = (page: number, pageSize: number) => {
   };
 };
 
-export const transformVODURL = (id: number) =>
-  `https://vod.sooplive.co.kr/player/${id}`;
+export const transformVODURL = (id: number, changeSeconds?: number) =>
+  `https://vod.sooplive.co.kr/player/${id}${
+    changeSeconds ? `?change_second=${changeSeconds}` : ""
+  }`;

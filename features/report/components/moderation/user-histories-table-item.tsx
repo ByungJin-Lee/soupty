@@ -5,7 +5,7 @@ import { MuteLog } from "./types";
 
 type Props = {
   rank: number;
-  data: MuteLog | null;
+  data: MuteLog;
 };
 
 export const UserHistoriesTableItem: React.FC<Props> = ({ rank, data }) => {
@@ -37,7 +37,7 @@ export const UserHistoriesTableItem: React.FC<Props> = ({ rank, data }) => {
           onClick={handleUserClick}
           className="inline-block cursor-pointer bg-gray-100 text-gray-800 underline px-2 py-1 rounded-md text-sm font-medium"
         >
-          {data?.user.label}
+          {data.user.label}
         </span>
       </td>
       <td className="px-4 py-3 text-right">
@@ -45,7 +45,7 @@ export const UserHistoriesTableItem: React.FC<Props> = ({ rank, data }) => {
           onClick={handleMuteLogClick}
           className="text-sm cursor-pointer underline font-semibold text-gray-900"
         >
-          {data?.logs.length.toLocaleString()}
+          {data.logs.length.toLocaleString()}
         </span>
       </td>
     </>

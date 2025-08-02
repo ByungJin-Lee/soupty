@@ -6,6 +6,12 @@ export enum DonationType {
   VODBalloon = "VODBalloon",
 }
 
+export const donationTypeLabel: Record<DonationType, string> = {
+  [DonationType.Balloon]: "별풍선",
+  [DonationType.ADBalloon]: "AD별풍선",
+  [DonationType.VODBalloon]: "영상풍선",
+};
+
 export interface DonationEvent extends BaseEvent {
   /**
    * @description 수량

@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePromptStore } from "../stores/prompt-modal-store";
+import { Button } from "./button";
 import { Modal } from "./modal";
 
 export const PromptModal: React.FC = () => {
@@ -20,22 +21,16 @@ export const PromptModal: React.FC = () => {
       <input
         type="text"
         value={text}
-        className=" bg-gray-100 rounded-md py-1 px-2 outline-none text-gray-800"
+        className="bg-gray-100 rounded-md py-1 px-2 outline-none text-gray-800"
         onChange={(e) => setText(e.target.value)}
       />
       <div className="flex justify-end gap-2 mt-2">
-        <button
-          onClick={handleClose}
-          className="px-2 py-1 text-gray-600 hover:text-gray-800"
-        >
+        <Button variant="secondary" size="sm" onClick={handleClose}>
           취소
-        </button>
-        <button
-          onClick={handleConfirm}
-          className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
+        </Button>
+        <Button variant="primary" size="sm" onClick={handleConfirm}>
           확인
-        </button>
+        </Button>
       </div>
     </Modal>
   );

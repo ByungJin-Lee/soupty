@@ -18,16 +18,6 @@ pub enum SystemEvent {
     SystemStarted,
     SystemStopping,
     SystemStopped,
-
-    // Timer events
-    DonationFlushRequested,
-    MetadataUpdateRequested,
-
-    // Error events
-    ComponentError {
-        component: String,
-        error: String,
-    },
 }
 
 pub type EventReceiver = mpsc::UnboundedReceiver<SystemEvent>;
@@ -101,15 +91,15 @@ impl EventBusManager {
         bus.publish(event);
     }
 
-    pub async fn unsubscribe(&self, subscriber_id: &str) {
-        let mut bus = self.bus.lock().await;
-        bus.unsubscribe(subscriber_id);
-    }
+    // pub async fn unsubscribe(&self, subscriber_id: &str) {
+    //     let mut bus = self.bus.lock().await;
+    //     bus.unsubscribe(subscriber_id);
+    // }
 
-    pub async fn subscriber_count(&self) -> usize {
-        let bus = self.bus.lock().await;
-        bus.subscriber_count()
-    }
+    // pub async fn subscriber_count(&self) -> usize {
+    //     let bus = self.bus.lock().await;
+    //     bus.subscriber_count()
+    // }
 }
 
 impl Default for EventBusManager {

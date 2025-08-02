@@ -1,5 +1,5 @@
-import { X } from "react-feather";
 import { prompt } from "~/common/stores/prompt-modal-store";
+import { FilterButton } from "~/common/ui";
 
 type Props = {
   username?: string;
@@ -17,30 +17,17 @@ export const UsernameCondition: React.FC<Props> = ({
     }
   };
 
-  const handleReset = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleReset = () => {
     onChange();
   };
 
   return (
-    <>
-      <div
-        onClick={handlePrompt}
-        className="flex items-center py-1.5 px-2 bg-gray-200 rounded-md text-sm gap-2 cursor-pointer"
-      >
-        {username ? (
-          <>
-            <span>유저이름:{username}</span>
-            <button className="py-1" onClick={handleReset}>
-              <X size={14} />
-            </button>
-          </>
-        ) : (
-          <>
-            <span>유저 이름 필터</span>
-          </>
-        )}
-      </div>
-    </>
+    <FilterButton
+      value={username}
+      placeholder="유저 이름 필터"
+      displayValue={username ? `유저이름:${username}` : undefined}
+      onClick={handlePrompt}
+      onReset={handleReset}
+    />
   );
 };

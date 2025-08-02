@@ -72,49 +72,49 @@ pub fn create_user_flag(user: &User) -> u32 {
 }
 
 /// UserStatus와 UserSubscribe로부터 user_flag를 생성하는 함수
-pub fn create_user_flag_from_status(status: &UserStatus, subscribe: Option<&UserSubscribe>) -> u32 {
-    let mut flag = 0u32;
+// pub fn create_user_flag_from_status(status: &UserStatus, subscribe: Option<&UserSubscribe>) -> u32 {
+//     let mut flag = 0u32;
 
-    // UserStatus 기반 플래그 설정
-    if status.is_bj {
-        flag |= UserFlags::BJ;
-    }
+//     // UserStatus 기반 플래그 설정
+//     if status.is_bj {
+//         flag |= UserFlags::BJ;
+//     }
 
-    if status.is_manager {
-        flag |= UserFlags::MANAGER;
-    }
+//     if status.is_manager {
+//         flag |= UserFlags::MANAGER;
+//     }
 
-    if status.is_top_fan {
-        flag |= UserFlags::TOP_FAN;
-    }
+//     if status.is_top_fan {
+//         flag |= UserFlags::TOP_FAN;
+//     }
 
-    if status.is_fan {
-        flag |= UserFlags::FAN;
-    }
+//     if status.is_fan {
+//         flag |= UserFlags::FAN;
+//     }
 
-    if status.is_supporter {
-        flag |= UserFlags::SUPPORTER;
-    }
+//     if status.is_supporter {
+//         flag |= UserFlags::SUPPORTER;
+//     }
 
-    // 구독 티어 설정 (follow 필드와 subscribe 정보 모두 사용)
-    // UserStatus의 follow 필드를 우선 사용
-    let subscribe_tier = if status.follow > 0 {
-        status.follow as u32
-    } else if let Some(sub) = subscribe {
-        // follow가 0이면 subscribe 정보 사용
-        sub.current
-    } else {
-        0
-    };
+//     // 구독 티어 설정 (follow 필드와 subscribe 정보 모두 사용)
+//     // UserStatus의 follow 필드를 우선 사용
+//     let subscribe_tier = if status.follow > 0 {
+//         status.follow as u32
+//     } else if let Some(sub) = subscribe {
+//         // follow가 0이면 subscribe 정보 사용
+//         sub.current
+//     } else {
+//         0
+//     };
 
-    match subscribe_tier {
-        1 => flag |= UserFlags::SUB_TIER_1,
-        2 => flag |= UserFlags::SUB_TIER_2,
-        _ => {} // 0이거나 다른 값일 경우 구독 플래그 없음
-    }
+//     match subscribe_tier {
+//         1 => flag |= UserFlags::SUB_TIER_1,
+//         2 => flag |= UserFlags::SUB_TIER_2,
+//         _ => {} // 0이거나 다른 값일 경우 구독 플래그 없음
+//     }
 
-    flag
-}
+//     flag
+// }
 
 /// user_flag로부터 UserStatus를 파싱하는 함수
 pub fn parse_user_status_from_flag(flag: u32) -> UserStatus {
@@ -161,42 +161,5 @@ pub fn parse_user_from_flag(flag: u32, id: String, label: String) -> User {
         label,
         status: parse_user_status_from_flag(flag),
         subscribe: parse_user_subscribe_from_flag(flag),
-    }
-}
-
-/// user_flag를 사람이 읽을 수 있는 문자열로 변환하는 함수
-pub fn flag_to_string(flag: u32) -> String {
-    let mut parts = Vec::new();
-
-    if flag & UserFlags::BJ != 0 {
-        parts.push("BJ");
-    }
-
-    if flag & UserFlags::MANAGER != 0 {
-        parts.push("MANAGER");
-    }
-
-    if flag & UserFlags::TOP_FAN != 0 {
-        parts.push("TOP_FAN");
-    }
-
-    if flag & UserFlags::FAN != 0 {
-        parts.push("FAN");
-    }
-
-    if flag & UserFlags::SUPPORTER != 0 {
-        parts.push("SUPPORTER");
-    }
-
-    if flag & UserFlags::SUB_TIER_2 != 0 {
-        parts.push("SUB_TIER_2");
-    } else if flag & UserFlags::SUB_TIER_1 != 0 {
-        parts.push("SUB_TIER_1");
-    }
-
-    if parts.is_empty() {
-        "NONE".to_string()
-    } else {
-        parts.join(" | ")
     }
 }

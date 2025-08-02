@@ -56,7 +56,9 @@ export const TopChattersTable: React.FC<Props> = ({ topChatters }) => {
                   >
                     <TopChattersTableItem rank={leftIdx + 1} data={lhs} />
                     <td className="px-2 border-l border-gray-200"></td>
-                    <TopChattersTableItem rank={rightIdx + 1} data={rhs} />
+                    {rhs && (
+                      <TopChattersTableItem rank={rightIdx + 1} data={rhs} />
+                    )}
                   </tr>
                 );
               })}

@@ -2,7 +2,7 @@
 
 :root {
   overflow: hidden;
-  --stats-chart-size: 100%;
+  --stats-chart-size: 250px;
 }
 
 @layer base {
@@ -44,7 +44,9 @@
 
   .stats-chart {
     min-width: var(--stats-chart-size);
-    height: 280px;
+    width: 100%;
+    aspect-ratio: 2/1;
+    max-height: 280px;
   }
 
   .badge-streamer {

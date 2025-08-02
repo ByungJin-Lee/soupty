@@ -81,7 +81,9 @@ export const UserHistoriesTable: React.FC<Props> = ({ histories, title }) => {
                   >
                     <UserHistoriesTableItem rank={leftIdx + 1} data={lhs} />
                     <td className="px-2 border-l border-gray-200"></td>
-                    <UserHistoriesTableItem rank={rightIdx + 1} data={rhs} />
+                    {rhs && (
+                      <UserHistoriesTableItem rank={rightIdx + 1} data={rhs} />
+                    )}
                   </tr>
                 );
               })}

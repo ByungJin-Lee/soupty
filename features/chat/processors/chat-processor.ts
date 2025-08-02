@@ -39,6 +39,7 @@ export class ChatProcessor {
           type: MessageType.OGQ,
           value: `https://ogq-sticker-global-cdn-z01.sooplive.co.kr/sticker/${p.id}/${p.number}_80.${p.ext}?ver=${p.version}`,
         },
+        ...splitTextMessageParts(raw.comment),
       ];
     } else {
       const message = raw.comment;

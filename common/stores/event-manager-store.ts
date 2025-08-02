@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
-import { useChannel } from "~/features/soop/stores/channel";
+import { useChannel, ConnectStatus } from "~/features/soop/stores/channel";
 import GlobalEventManger from "~/services/manager/event-manager";
 import { DomainEventType, MetadataUpdateEvent, RawDomainEvent } from "~/types";
 import { useChatEventStore } from "./chat-event-store";
@@ -41,10 +41,18 @@ export const useEventManagerStore = create<
             }
           };
 
+          const disconnectHandler = () => {
+            const channelState = useChannel.getState();
+            if (channelState.connectStatus === ConnectStatus.CONNECTED) {
+              channelState.disconnect(false);
+            }
+          };
+
           eventManager.setCallbacks({
             chat: chatHandler,
             other: customOtherHandler,
             stats: statsHandler,
+            disconnect: disconnectHandler,
           });
 
           eventManager.start();

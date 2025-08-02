@@ -7,3 +7,4 @@ pub mod reports;
 pub mod reset_app;
 pub mod soop_api;
 pub mod splash;
+pub mod utils;

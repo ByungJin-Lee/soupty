@@ -1,7 +1,7 @@
 import { toast } from "react-hot-toast";
 import useSWR, { mutate } from "swr";
 import { prompt } from "~/common/stores/prompt-modal-store";
-import { ClipboardButton } from "~/common/ui";
+import { Button, ClipboardButton } from "~/common/ui";
 import { addTargetUser, removeTargetUser } from "~/common/utils/target-users";
 import { ipcService } from "~/services/ipc";
 
@@ -89,23 +89,26 @@ export const FavoritesSettingsTab = () => {
                   <ClipboardButton value={user.userId} />
                 </div>
 
-                <button
-                  className="text-red-500 hover:text-red-700"
+                <Button
+                  variant="danger"
+                  size="sm"
                   onClick={() => handleRemoveUser(user.userId)}
+                  className="bg-transparent text-red-500 hover:bg-red-50 hover:text-red-700"
                 >
                   삭제
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         )}
 
-        <button
-          className="mt-3 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+        <Button
+          className="mt-3"
+          variant="success"
           onClick={handleAddUser}
         >
           사용자 추가
-        </button>
+        </Button>
       </div>
     </div>
   );

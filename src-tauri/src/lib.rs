@@ -19,6 +19,7 @@ use crate::commands::{
         add_target_user, check_for_updates, connect_database, get_target_users, remove_target_user,
         setup_ai, setup_app_state, show_main_window,
     },
+    utils::open_app_data_dir,
 };
 
 mod commands;
@@ -77,7 +78,8 @@ pub fn run() {
             show_main_window,
             export_events_to_csv,
             get_supported_event_types,
-            reset_app
+            reset_app,
+            open_app_data_dir
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

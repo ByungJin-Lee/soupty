@@ -4,7 +4,7 @@ import { ChatterRank } from "~/services/ipc/types";
 
 type Props = {
   rank: number;
-  data: ChatterRank | null;
+  data: ChatterRank;
 };
 
 export const TopChattersTableItem: React.FC<Props> = ({ rank, data }) => {
@@ -12,8 +12,6 @@ export const TopChattersTableItem: React.FC<Props> = ({ rank, data }) => {
   const handleUserClick = useUserPopoverDispatch(data?.user, {
     broadcastSessionId: session.id,
   });
-
-  if (!data) return null;
 
   return (
     <>

@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { useEffect, useCallback } from "react";
+import { Button } from "~/common/ui";
 import { Channel } from "~/types";
 
 interface ChannelFormData {
@@ -109,30 +110,32 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
       <div className="flex justify-between items-center pt-4">
         <div>
           {mode === "edit" && onDelete && (
-            <button
+            <Button
               type="button"
+              variant="danger"
               onClick={handleDelete}
-              className="px-4 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
+              className="bg-transparent text-red-600 hover:bg-red-50 hover:text-red-800"
             >
               삭제
-            </button>
+            </Button>
           )}
         </div>
         <div className="flex gap-2">
-          <button
+          <Button
             type="button"
+            variant="secondary"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+            className="border-0 bg-transparent"
           >
             취소
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
+            variant="primary"
             disabled={!isValid}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {mode === "create" ? "생성" : "수정"}
-          </button>
+          </Button>
         </div>
       </div>
     </form>

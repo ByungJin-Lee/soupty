@@ -32,7 +32,7 @@ interface ChannelState {
   setBroadcast(broadcast: Partial<BroadcastState>): void;
   setConnectStatus(status: ConnectStatus): void;
   connect(channel: Channel): Promise<void>;
-  disconnect(): Promise<void>;
+  disconnect(sendCommand?: boolean): Promise<void>;
   reset(): void;
   handleMetadataUpdate(e: MetadataUpdateEvent): void;
   restoreFromMainController(): Promise<void>;
@@ -93,10 +93,11 @@ export const useChannel = create<ChannelState>((set) => ({
       throw error;
     }
   },
-  async disconnect() {
-    set({ connectStatus: ConnectStatus.CONNECTING });
+  async disconnect(sendCommand = true) {
     try {
-      await ipcService.channel.disconnectChannel();
+      if (sendCommand) {
+        await ipcService.channel.disconnectChannel();
+      }
       set({
         channel: null,
         broadcast: null,

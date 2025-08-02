@@ -43,9 +43,12 @@ export const UserDistributionChart: React.FC<Props> = ({
         position: function (pt: [number, string]) {
           return [pt[0], "10%"];
         },
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formatter: function (params: any) {
           const time = new Date(params[0].axisValue).toLocaleTimeString();
           let result = `시간: ${time}<br/>`;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           params.forEach((param: any) => {
             result += `${
               param.seriesName

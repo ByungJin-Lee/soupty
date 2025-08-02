@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { User, X } from "react-feather";
+import { User } from "react-feather";
+import { FilterButton } from "~/common/ui";
 import { ChannelSelectModal } from "~/features/soop/components/channel";
 import { ChannelAvatar } from "~/features/soop/components/channel/channel-avatar";
 import { Channel } from "~/types";
@@ -15,38 +16,31 @@ export const ChannelCondition: React.FC<Props> = ({
 }) => {
   const [openModal, setOpenModal] = useState(false);
 
-  const handleReset = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleReset = () => {
     onSelect();
   };
 
+  const prefix = channel ? (
+    <ChannelAvatar
+      className="rounded-full"
+      channel={channel}
+      size={24}
+    />
+  ) : (
+    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
+      <User className="w-4 h-4 text-gray-500" />
+    </div>
+  );
+
   return (
     <>
-      <div
+      <FilterButton
+        value={channel?.label}
+        placeholder="채널 필터"
         onClick={() => setOpenModal(true)}
-        className="flex items-center py-1.5 px-2 bg-gray-200 rounded-md text-sm gap-2 cursor-pointer"
-      >
-        {channel ? (
-          <>
-            <ChannelAvatar
-              className="rounded-full"
-              channel={channel}
-              size={24}
-            />
-            <span>{channel.label}</span>
-            <button className="py-1" onClick={handleReset}>
-              <X size={14} />
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-gray-500" />
-            </div>
-            <span>채널 필터</span>
-          </>
-        )}
-      </div>
+        onReset={handleReset}
+        prefix={prefix}
+      />
       <ChannelSelectModal
         isOpen={openModal}
         onClose={() => setOpenModal(false)}

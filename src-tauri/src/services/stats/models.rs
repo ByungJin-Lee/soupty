@@ -3,7 +3,7 @@ use serde::Serialize;
 use soup_sdk::chat::types::User;
 use uuid::Uuid;
 
-use crate::services::ai::sentiment_analyzer::{AnalysisResult, Sentiment};
+use crate::services::ai::sentiment_analyzer::AnalysisResult;
 
 #[derive(Debug, Clone, Serialize)]
 pub struct EnrichedChatData {

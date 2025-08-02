@@ -55,10 +55,6 @@ impl SystemInitializer {
                         // Could trigger system stop
                         event_bus.publish(SystemEvent::SystemStopping).await;
                     }
-                    SystemEvent::ComponentError { component, error } => {
-                        eprintln!("Component {} error: {}", component, error);
-                        // Handle component errors
-                    }
                     SystemEvent::SystemStopping => {
                         // Handle system stopping
                         break;
@@ -107,7 +103,9 @@ impl SystemInitializer {
     }
 
     fn initialize_addon_manager(&self, app_handle: AppHandle) -> AddonManager {
-        let addon_manager = AddonManager::new().with_event_bus(self.event_bus.clone());
+        let addon_manager = AddonManager::new()
+            .with_event_bus(self.event_bus.clone())
+            .with_app_handle(app_handle.clone());
 
         // Addon 등록
         addon_manager.register(Arc::new(DefaultUIAddon::new()));

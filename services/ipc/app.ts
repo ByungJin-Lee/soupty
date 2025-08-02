@@ -11,4 +11,11 @@ export const app = Object.freeze({
   resetApp: async (): Promise<void> => {
     await ipcClient(IpcRequestWithoutPayload.ResetApp);
   },
+
+  /**
+   * @description 앱 데이터 디렉토리를 파일 탐색기로 엽니다.
+   */
+  openAppDataDir: async (): Promise<void> => {
+    await ipcClient(IpcRequestWithoutPayload.OpenAppDataDir);
+  },
 });

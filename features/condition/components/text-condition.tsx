@@ -1,5 +1,5 @@
-import { X } from "react-feather";
 import { prompt } from "~/common/stores/prompt-modal-store";
+import { FilterButton } from "~/common/ui";
 
 type Props = {
   text?: string;
@@ -14,30 +14,17 @@ export const TextCondition: React.FC<Props> = ({ text, onChange }) => {
     }
   };
 
-  const handleReset = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleReset = () => {
     onChange();
   };
 
   return (
-    <>
-      <div
-        onClick={handlePrompt}
-        className="flex items-center py-1.5 px-2 bg-gray-200 rounded-md text-sm gap-2 cursor-pointer"
-      >
-        {text ? (
-          <>
-            <span>단어:{text}</span>
-            <button className="py-1" onClick={handleReset}>
-              <X size={14} />
-            </button>
-          </>
-        ) : (
-          <>
-            <span>단어 필터</span>
-          </>
-        )}
-      </div>
-    </>
+    <FilterButton
+      value={text}
+      placeholder="단어 필터"
+      displayValue={text ? `단어:${text}` : undefined}
+      onClick={handlePrompt}
+      onReset={handleReset}
+    />
   );
 };

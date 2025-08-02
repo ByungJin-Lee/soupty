@@ -9,6 +9,7 @@ export enum IpcRequestWithoutPayload {
   GetMainControllerContext = "get_main_controller_context",
   GetSupportedEventTypes = "get_supported_event_types",
   ResetApp = "reset_app",
+  OpenAppDataDir = "open_app_data_dir",
 }
 
 // 요청 Payload가 있는 request 객체입니다.
@@ -138,6 +139,7 @@ export interface IpcResponseMap {
     channelName: string;
     lastUpdated: number;
   }[];
+  [IpcRequestWithoutPayload.OpenAppDataDir]: void;
   [IpcRequestWithoutPayload.GetTargetUsers]: TargetUser[];
   [IpcRequestWithoutPayload.GetMainControllerContext]: BroadcastMetadata | null;
   [IpcRequestWithoutPayload.GetSupportedEventTypes]: string[];
@@ -438,6 +440,7 @@ export interface Matrix {
 
 export interface ChatVital {
   popularWords: WordCount[];
+  lolScore: number;
   topChatters: ChatterRank[];
   totalCount: number;
 }

@@ -4,7 +4,7 @@ use tokio::sync::oneshot;
 
 use crate::services::addons::db_logger::user_flag::parse_user_from_flag;
 use crate::services::db::commands::{
-    BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult, ChannelData, ChatLogData, ChatLogResult, ChatMetadata, ChatSearchFilters, ChatSearchResult, EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams, ReportInfo, ReportStatusInfo, TargetUser, UserLogEntry, UserSearchFilters, UserSearchResult
+    BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult, ChannelData, ChatLogData, ChatLogResult,  ChatSearchFilters, ChatSearchResult, EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams, ReportInfo, ReportStatusInfo, TargetUser, UserLogEntry, UserSearchFilters, UserSearchResult
 };
 use crate::util::hangul::decompose_hangul_to_string;
 
@@ -529,12 +529,8 @@ impl<'a> CommandHandlers<'a> {
         offset: i64,
     ) -> Result<Vec<ChatLogResult>, String> {
         let search_term = filters.message_contains.as_ref().unwrap();
-        let message_contains = if search_term.chars().count() == 1 {
-            // 단일 문자 검색의 경우 와일드카드 패턴 사용
-            format!("{}*", decompose_hangul_to_string(search_term))
-        } else {
-            decompose_hangul_to_string(search_term)
-        };
+        // FTS에서 prefix 검색을 위한 와일드카드 패턴 사용
+        let message_contains = format!("{}*", decompose_hangul_to_string(search_term));
 
         let additional_where = if where_clause.is_empty() {
             String::new()
@@ -765,12 +761,8 @@ impl<'a> CommandHandlers<'a> {
 
         let count = if filters.message_contains.is_some() {
             let search_term = filters.message_contains.as_ref().unwrap();
-            let message_contains = if search_term.chars().count() == 1 {
-                // 단일 문자 검색의 경우 와일드카드 패턴 사용
-                format!("{}*", decompose_hangul_to_string(search_term))
-            } else {
-                decompose_hangul_to_string(search_term)
-            };
+            // FTS에서 prefix 검색을 위한 와일드카드 패턴 사용
+            let message_contains = format!("{}*", decompose_hangul_to_string(search_term));
             let mut all_params = vec![message_contains.as_str()];
             all_params.extend(params);
             stmt.query_row(rusqlite::params_from_iter(all_params.iter()), |row| {
@@ -1299,7 +1291,7 @@ impl<'a> CommandHandlers<'a> {
                 let ended_at_opt: Option<String> = row.get(5)?;
 
                 let started_at = DateTime::parse_from_rfc3339(&started_at_str)
-                    .map_err(|e| {
+                    .map_err(|_| {
                         rusqlite::Error::InvalidColumnType(
                             4,
                             "started_at".to_string(),
@@ -1311,7 +1303,7 @@ impl<'a> CommandHandlers<'a> {
                 let ended_at = if let Some(ended_at_str) = ended_at_opt {
                     Some(
                         DateTime::parse_from_rfc3339(&ended_at_str)
-                            .map_err(|e| {
+                            .map_err(|_| {
                                 rusqlite::Error::InvalidColumnType(
                                     5,
                                     "ended_at".to_string(),

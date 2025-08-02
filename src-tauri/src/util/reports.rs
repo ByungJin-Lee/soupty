@@ -196,6 +196,22 @@ fn create_moderation_vital(event_logs: &[EventLogResult]) -> ModerationVital {
     }
 }
 
+fn calculate_lol_score(chat_logs: &[ChatLogResult]) -> usize {
+    chat_logs
+        .iter()
+        .filter(|v| v.message.contains("ㅋ"))
+        .count()
+}
+
+fn create_chat_vital(chat_logs: &[ChatLogResult], token_analyzer: &TokenAnalyzer) -> ChatVital {
+    ChatVital {
+        total_count: chat_logs.len(),
+        lol_score: calculate_lol_score(chat_logs),
+        top_chatters: create_top_chatters(chat_logs),
+        popular_words: create_popular_words(chat_logs, token_analyzer),
+    }
+}
+
 pub fn create_report_chunk(
     timestamp: DateTime<Utc>,
     chat_logs: &[ChatLogResult],
@@ -207,11 +223,7 @@ pub fn create_report_chunk(
     ReportChunk {
         timestamp,
         user: create_user_vital(chat_logs),
-        chat: ChatVital {
-            total_count: chat_logs.len(),
-            top_chatters: create_top_chatters(chat_logs),
-            popular_words: create_popular_words(chat_logs, token_analyzer),
-        },
+        chat: create_chat_vital(chat_logs, token_analyzer),
         event: create_event_vital(event_logs),
         moderation: create_moderation_vital(event_logs),
         viewer_count,

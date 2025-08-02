@@ -1,5 +1,6 @@
 "use client";
 import { useConfirmStore } from "../stores/confirm-modal-store";
+import { Button } from "./button";
 import { Modal } from "./modal";
 
 export const ConfirmModal: React.FC = () => {
@@ -13,18 +14,12 @@ export const ConfirmModal: React.FC = () => {
       <div className="space-y-4">
         <p className="text-gray-600">{message}</p>
         <div className="flex justify-end gap-2">
-          <button
-            onClick={handleCancel}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-          >
+          <Button variant="secondary" onClick={handleCancel}>
             취소
-          </button>
-          <button
-            onClick={handleConfirm}
-            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-          >
+          </Button>
+          <Button variant="danger" onClick={handleConfirm}>
             삭제
-          </button>
+          </Button>
         </div>
       </div>
     </Modal>

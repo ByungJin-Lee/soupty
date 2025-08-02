@@ -3,7 +3,7 @@ use std::{
     sync::{Arc, Mutex},
 };
 
-use tauri::async_runtime::spawn;
+use tauri::{async_runtime::spawn, AppHandle, Emitter};
 use uuid::Uuid;
 
 use crate::{
@@ -19,6 +19,7 @@ use crate::{
 pub struct AddonManager {
     addons: Arc<Mutex<HashMap<String, Arc<dyn Addon>>>>,
     event_bus: Option<EventBusManager>,
+    app_handle: Option<AppHandle>,
 }
 
 impl Default for AddonManager {
@@ -32,6 +33,7 @@ impl AddonManager {
         Self {
             addons: Arc::new(Mutex::new(HashMap::new())),
             event_bus: None,
+            app_handle: None,
         }
     }
 
@@ -40,10 +42,16 @@ impl AddonManager {
         self
     }
 
+    pub fn with_app_handle(mut self, app_handle: AppHandle) -> Self {
+        self.app_handle = Some(app_handle);
+        self
+    }
+
     pub async fn start_event_listener(&self) {
         if let Some(event_bus) = &self.event_bus {
             let mut receiver = event_bus.subscribe(ADDON_MANAGER_SUBSCRIBER).await;
             let addons = self.addons.clone();
+            let app_handle = self.app_handle.clone();
 
             spawn(async move {
                 while let Some(event) = receiver.recv().await {
@@ -66,6 +74,12 @@ impl AddonManager {
                         SystemEvent::SystemStopping => {
                             // Handle system stopping
                             break;
+                        }
+                        SystemEvent::SystemStopped => {
+                            // Emit disconnect event to frontend
+                            if let Some(app_handle) = &app_handle {
+                                let _ = app_handle.emit("disconnect", ());
+                            }
                         }
                         _ => {}
                     }
