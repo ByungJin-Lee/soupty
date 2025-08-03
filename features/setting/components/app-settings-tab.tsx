@@ -44,6 +44,8 @@ export const AppSettingsTab = () => {
         <h3 className="text-lg font-medium mb-1">데이터 폴더</h3>
         <p className="text-sm text-gray-600 mb-1">
           앱 데이터가 저장된 폴더를 엽니다. DB 파일 import/export 시 사용하세요.
+          <br />
+          (앱 종료 후 작업해주세요.)
         </p>
         <Button onClick={handleOpenDataDir} variant="secondary">
           데이터 폴더 열기

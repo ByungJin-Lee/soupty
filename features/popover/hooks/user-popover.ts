@@ -1,3 +1,5 @@
+import { openUrl } from "@tauri-apps/plugin-opener";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { PopoverId, usePopoverStore } from "~/common/stores/popover-store";
 import {
@@ -5,13 +7,29 @@ import {
   isTargetUser,
   removeTargetUser,
 } from "~/common/utils/target-users";
+import { API_ENDPOINTS, route } from "~/constants";
+import { useLiveUserHistoryStore } from "~/features/live/stores/live-user-history";
+import { useChannel } from "~/features/soop";
 import { UserPopoverPayload } from "../types/user";
+
+interface UserInfo {
+  userId: string;
+  isManager: boolean;
+  label: string;
+  isFollower: boolean | 0;
+  isFollowPlus: boolean;
+  isFollowBasic: boolean;
+  isBj: boolean;
+  isTopFan: boolean;
+  isFan: boolean;
+  isSupporter: boolean;
+}
 
 export const useUserPopover = (payload: UserPopoverPayload) => {
   const [isLoading, setIsLoading] = useState(false);
 
   // 계산된 값들을 메모화
-  const userInfo = useMemo(() => {
+  const userInfo = useMemo<UserInfo>(() => {
     const userId = payload.id;
     const isManager = payload.status?.isManager || false;
 
@@ -93,3 +111,45 @@ const mergeUserPopoverPayload = (
   value: UserPopoverPayload,
   partial: Partial<UserPopoverPayload>
 ): UserPopoverPayload => ({ ...value, ...partial });
+
+export const useUserPopoverHandler = (
+  userInfo: UserInfo,
+  payload: UserPopoverPayload
+) => {
+  const router = useRouter();
+  const currentChannel = useChannel((v) => v.channel);
+  // 사용자 실시간 기록
+  const openLiveUserHistory = useLiveUserHistoryStore((v) => v.open).bind(
+    null,
+    userInfo.userId,
+    userInfo.label
+  );
+  // 사용자 전체 기록
+  const openWholeUserHistory = () => {
+    const url = buildUserHistoryUrl(userInfo.userId, {
+      channelId: currentChannel?.id,
+      sessionId: payload.broadcastSessionId,
+    });
+    router.push(url);
+  };
+  // 방송국 바로가기
+  const openUserPage = () => openUrl(API_ENDPOINTS.USER_PAGE(userInfo.userId));
+
+  return {
+    openWholeUserHistory,
+    openLiveUserHistory,
+    openUserPage,
+  };
+};
+
+const buildUserHistoryUrl = (
+  userId: string,
+  option: { channelId?: string | null; sessionId?: number | null }
+) => {
+  const query = option.sessionId
+    ? `&sessionId=${option.sessionId}`
+    : option.channelId
+    ? `&channelId=${option.channelId}`
+    : "";
+  return `${route.history}?type=user&userId=${userId}${query}`;
+};

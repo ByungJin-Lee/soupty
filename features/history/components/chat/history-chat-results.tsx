@@ -1,7 +1,7 @@
-import { Pagination } from "~/common/ui";
-import { useHistoryChatFilterCtx } from "../context/history-chat-filter-context";
-import { useHistoryChatSearchContext } from "../context/history-chat-search-context";
-import { HistoryChatItem } from "./chat/history-chat-item";
+import { Pagination } from "~/common/ui/pagination";
+import { useHistoryChatFilterCtx } from "../../context/history-chat-filter-context";
+import { useHistoryChatSearchContext } from "../../context/history-chat-search-context";
+import { HistoryChatItem } from "./history-chat-item";
 
 export const HistoryChatResults: React.FC = () => {
   const { result, search } = useHistoryChatSearchContext();

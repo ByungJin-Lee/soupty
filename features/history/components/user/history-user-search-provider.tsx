@@ -5,7 +5,7 @@ import {
   UserSearchFilters,
   UserSearchResult,
 } from "~/services/ipc/types";
-import { HistoryUserSearchContextProvider } from "../context/history-user-search-context";
+import { HistoryUserSearchContextProvider } from "../../context/history-user-search-context";
 
 export const HistoryUserSearchProvider: React.FC<PropsWithChildren> = ({
   children,

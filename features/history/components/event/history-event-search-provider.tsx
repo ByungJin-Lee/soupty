@@ -5,7 +5,7 @@ import {
   EventSearchResult,
   PaginationParams,
 } from "~/services/ipc/types";
-import { HistoryEventSearchContextProvider } from "../context/history-event-search-context";
+import { HistoryEventSearchContextProvider } from "../../context/history-event-search-context";
 
 export const HistoryEventSearchProvider: React.FC<PropsWithChildren> = ({
   children,

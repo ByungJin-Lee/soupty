@@ -3,10 +3,10 @@
 import { Suspense } from "react";
 import { useQueryParam } from "~/common/hooks";
 import { BackButton } from "~/common/ui";
-import { HistoryChatTab } from "~/features/history/components/history-chat-tab";
-import { HistoryEventTab } from "~/features/history/components/history-event-tab";
+import { HistoryChatTab } from "~/features/history/components/chat/history-chat-tab";
+import { HistoryEventTab } from "~/features/history/components/event/history-event-tab";
 import { HistoryTabSelector } from "~/features/history/components/history-tab-selector";
-import { HistoryUserTab } from "~/features/history/components/history-user-tab";
+import { HistoryUserTab } from "~/features/history/components/user/history-user-tab";
 import { HistoryType } from "~/features/history/types/tab";
 
 export default function HistoryPage() {

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Star } from "react-feather";
 import { ClipboardButton } from "~/common/ui/clipboard-button";
 import {
@@ -9,29 +8,15 @@ import {
   withPopover,
 } from "~/common/ui/popover";
 import { isTargetUser } from "~/common/utils/target-users";
-import { route } from "~/constants";
-import { useLiveUserHistoryStore } from "~/features/live/stores/live-user-history";
-import { useChannel } from "~/features/soop";
-import { useUserPopover } from "../hooks/user-popover";
+import { useUserPopover, useUserPopoverHandler } from "../hooks/user-popover";
 import { UserPopoverPayload } from "../types/user";
 
 const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
   payload,
 }) => {
-  // ! Hook 정리 필요
   const { userInfo, isLoading, handleToggleTargetUser } =
     useUserPopover(payload);
-  const router = useRouter();
-  const openLiveUserHistory = useLiveUserHistoryStore((v) => v.open);
-  const currentChannel = useChannel((v) => v.channel);
-  const openWholeUserHistory = () => {
-    const query = payload.broadcastSessionId
-      ? `&sessionId=${payload.broadcastSessionId}`
-      : currentChannel
-      ? `&channelId=${currentChannel.id}`
-      : "";
-    router.push(`${route.history}?type=user&userId=${userInfo.userId}${query}`);
-  };
+  const hlr = useUserPopoverHandler(userInfo, payload);
 
   const isTarget = userInfo.userId ? isTargetUser(userInfo.userId) : false;
 
@@ -106,15 +91,21 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
       <div className="border-t border-gray-200 mt-2">
         <p
           className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"
-          onClick={() => openLiveUserHistory(userInfo.userId, userInfo.label)}
+          onClick={hlr.openLiveUserHistory}
         >
           라이브 기록
         </p>
         <p
           className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"
-          onClick={openWholeUserHistory}
+          onClick={hlr.openWholeUserHistory}
         >
           전체 기록
+        </p>
+        <p
+          className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"
+          onClick={hlr.openUserPage}
+        >
+          방송국 바로가기
         </p>
       </div>
     </div>

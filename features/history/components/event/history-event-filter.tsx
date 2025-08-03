@@ -1,34 +1,31 @@
-// Channel 선택, 사용자 아이디, 이벤트 종류, 방송 아이디, 날짜
-
 import { PropsWithChildren } from "react";
 import { usePaginationContext } from "~/common/context/pagination";
 import {
   BroadcastSessionCondition,
   ChannelCondition,
-  ChatTypeCondition,
+  EventTypeCondition,
   PeriodCondition,
-  TextCondition,
   UserCondition,
   UsernameCondition,
 } from "~/features/condition";
-import { HistoryChatFilterProvider } from "../context/history-chat-filter-context";
-import { useHistoryChatSearchContext } from "../context/history-chat-search-context";
+import { HistoryEventFilterProvider } from "../../context/history-event-filter-context";
+import { useHistoryEventSearchContext } from "../../context/history-event-search-context";
 import {
-  convertFilter,
-  useHistoryChatFilter,
-} from "../hooks/history-chat-filter";
-import { ChatCsvExportButton } from "./history-csv-export-button";
+  convertEventFilter,
+  useHistoryEventFilter,
+} from "../../hooks/history-event-filter";
+import { EventCsvExportButton } from "../history-csv-export-button";
 
-export const HistoryChatFilter: React.FC<PropsWithChildren> = ({
+export const HistoryEventFilter: React.FC<PropsWithChildren> = ({
   children,
 }) => {
   const pagination = usePaginationContext();
-  const search = useHistoryChatSearchContext().search;
-  const { filter, updateFilter } = useHistoryChatFilter();
+  const search = useHistoryEventSearchContext().search;
+  const { filter, updateFilter } = useHistoryEventFilter();
 
   const handleSearch = () => {
     // 첫 페이지로 돌아갑니다.
-    search(convertFilter(filter), {
+    search(convertEventFilter(filter), {
       page: 1,
       pageSize: pagination.pageSize,
     });
@@ -56,20 +53,16 @@ export const HistoryChatFilter: React.FC<PropsWithChildren> = ({
           onStartDateChange={updateFilter.setStartDate}
           onEndDateChange={updateFilter.setEndDate}
         />
-        <ChatTypeCondition
-          chatType={filter.messageType}
-          onChange={updateFilter.setMessageType}
-        />
-        <TextCondition
-          text={filter.messageContains}
-          onChange={updateFilter.setMessageContains}
+        <EventTypeCondition
+          eventType={filter.eventType}
+          onChange={updateFilter.setEventType}
         />
         <BroadcastSessionCondition
-          broadcastSession={filter.session}
-          onSelect={updateFilter.setSession}
+          broadcastSession={filter.broadcastSession}
+          onSelect={updateFilter.setBroadcastSession}
         />
         <div className="ml-auto flex gap-2">
-          <ChatCsvExportButton filters={convertFilter(filter)} />
+          <EventCsvExportButton filters={convertEventFilter(filter)} />
           <button
             onClick={updateFilter.reset}
             className="px-2 py-1 bg-gray-500 text-white rounded-md hover:bg-gray-600"
@@ -84,9 +77,9 @@ export const HistoryChatFilter: React.FC<PropsWithChildren> = ({
           </button>
         </div>
       </div>
-      <HistoryChatFilterProvider value={convertFilter(filter)}>
+      <HistoryEventFilterProvider value={convertEventFilter(filter)}>
         {children}
-      </HistoryChatFilterProvider>
+      </HistoryEventFilterProvider>
     </>
   );
 };

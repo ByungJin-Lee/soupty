@@ -5,7 +5,7 @@ import {
   ChatSearchResult,
   PaginationParams,
 } from "~/services/ipc/types";
-import { HistoryChatSearchContextProvider } from "../context/history-chat-search-context";
+import { HistoryChatSearchContextProvider } from "../../context/history-chat-search-context";
 
 export const HistoryChatSearchProvider: React.FC<PropsWithChildren> = ({
   children,

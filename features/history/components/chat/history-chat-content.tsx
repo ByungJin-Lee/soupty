@@ -12,7 +12,7 @@ export const HistoryChatContent: React.FC<HistoryChatContentProps> = ({
     const imageUrl = `https://ogq-sticker-global-cdn-z01.sooplive.co.kr/sticker/${id}/${number}_80.${ext}?ver=${version}`;
 
     return (
-      <div className="flex items-center gap-2 mb-1">
+      <div className="flex items-center gap-2">
         {chatLog.message && (
           <span className="text-gray-900">{chatLog.message}</span>
         )}
@@ -29,5 +29,5 @@ export const HistoryChatContent: React.FC<HistoryChatContentProps> = ({
     );
   }
 
-  return <div className="text-gray-900 mb-1">{chatLog.message}</div>;
+  return <div className="text-gray-900">{chatLog.message}</div>;
 };

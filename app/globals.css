@@ -104,4 +104,46 @@
   .bg-gradient-accent {
     @apply bg-gradient-to-br from-blue-500 to-purple-600;
   }
+
+  .chat-log-table-grid {
+    display: grid;
+    grid-template-columns: 120px 180px 1fr 100px 100px;
+  }
+
+  .chat-log-table-grid > div {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .chat-log-table-grid > div:hover {
+    background-color: #f9fafb;
+  }
+
+  .event-log-table-grid {
+    display: grid;
+    grid-template-columns: 120px 180px 120px 1fr 100px 100px;
+  }
+
+  .event-log-table-grid > div {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .event-log-table-grid > div:hover {
+    background-color: #f9fafb;
+  }
+
+  .user-log-table-grid {
+    display: grid;
+    grid-template-columns: 120px 180px 120px 1fr 100px 100px;
+  }
+
+  .user-log-table-grid > div {
+    padding: 8px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .user-log-table-grid > div:hover {
+    background-color: #f9fafb;
+  }
 }
