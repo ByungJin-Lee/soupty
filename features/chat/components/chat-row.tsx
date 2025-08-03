@@ -1,15 +1,24 @@
-import { Fragment, memo } from "react";
+import { Fragment, memo, useEffect, useRef } from "react";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { ChatEvent, MessagePart, MessageType } from "~/types/event";
 import { ChatBadge } from "./chat-badge";
 
 type Props = {
   data: ChatEvent;
+  onMeasure?: (element: HTMLElement, itemId: string) => void;
 };
 
-export const ChatRow: React.FC<Props> = memo(({ data }) => {
+export const ChatRow: React.FC<Props> = memo(({ data, onMeasure }) => {
+  const rowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (rowRef.current && onMeasure) {
+      onMeasure(rowRef.current, data.id);
+    }
+  }, [data.id, onMeasure]);
+
   return (
-    <div className="flex gap-x-1 mt-3">
+    <div ref={rowRef} className="flex gap-x-1 py-1.5 box-border">
       <Header data={data} />
       <ChatMessage parts={data.parts} />
     </div>

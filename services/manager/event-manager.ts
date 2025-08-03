@@ -42,7 +42,7 @@ export default class GlobalEventManger {
       listen<Stats>(ipcEvents.log.stats, (e) => {
         this.callbacks?.stats(e.payload);
       });
-      listen("disconnect", () => {
+      listen(ipcEvents.event.disconnect, () => {
         this.callbacks?.disconnect?.();
       });
       // remove listener 등록

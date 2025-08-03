@@ -41,6 +41,8 @@ interface UseAutoScrollReturn {
   isAtBottom: boolean;
   /** 수동으로 최하단으로 스크롤 */
   scrollToBottom: () => void;
+  /** 스크롤 위치 보정 (큐에서 항목이 제거될 때 사용) */
+  adjustScrollPosition: (removedItemHeight: number) => void;
 }
 
 /**
@@ -85,6 +87,20 @@ export function useAutoScroll(
     }
   }, [behavior]);
 
+  // 스크롤 위치 보정 (큐에서 항목이 제거될 때 사용)
+  const adjustScrollPosition = useCallback((removedItemHeight: number) => {
+    if (!scrollAnchorRef.current || isAtBottom) return;
+    
+    const scrollParent = getScrollParent(scrollAnchorRef.current);
+    
+    if (scrollParent === window) {
+      window.scrollBy(0, -removedItemHeight);
+    } else {
+      const element = scrollParent as Element;
+      element.scrollTop = Math.max(0, element.scrollTop - removedItemHeight);
+    }
+  }, [isAtBottom]);
+
   // 트리거 변경 시 조건부 자동 스크롤
   useEffect(() => {
     if (isAtBottom) {
@@ -109,5 +125,6 @@ export function useAutoScroll(
     scrollAnchorRef,
     isAtBottom,
     scrollToBottom,
+    adjustScrollPosition,
   };
 }

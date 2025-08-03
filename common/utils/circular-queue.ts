@@ -18,11 +18,20 @@ export default class CircularQueue<T> {
     this.size = 0;
   }
 
-  public push(item: T) {
+  public push(item: T): T | undefined {
+    let removedItem: T | undefined = undefined;
+    
+    // 큐가 가득 찬 경우, 가장 오래된 항목이 제거됨
+    if (this.size === this.capacity) {
+      removedItem = this.buffer[this.head];
+    }
+
     this.buffer[this.head] = item;
     this.head = (this.head + 1) % this.capacity;
 
     if (this.size < this.capacity) this.size++;
+    
+    return removedItem;
   }
 
   public getAll() {
@@ -76,4 +85,5 @@ export default class CircularQueue<T> {
 
     return result.reverse();
   }
+
 }
