@@ -211,6 +211,27 @@ fn map_sdk_to_domain_legacy(channel_id: &str, sdk_event: &SdkEvent) -> Option<Do
             duration: sdk_slow.duration,
         })),
 
+        SdkEvent::Gift(sdk_gift) => Some(DomainEvent::Gift(GiftEvent {
+            id: Uuid::new_v4(),
+            timestamp: sdk_gift.meta.received_time,
+            channel_id: channel_id.to_string(),
+            gift_type: sdk_gift.gift_type.clone(),
+            sender_id: sdk_gift.sender_id.clone(),
+            sender_label: sdk_gift.sender_label.clone(),
+            receiver_id: sdk_gift.receiver_id.clone(),
+            receiver_label: sdk_gift.receiver_label.clone(),
+            gift_code: sdk_gift.gift_code.clone(),
+        })),
+
+        SdkEvent::Sticker(sdk_sticker) => Some(DomainEvent::Sticker(StickerEvent {
+            id: Uuid::new_v4(),
+            timestamp: sdk_sticker.meta.received_time,
+            channel_id: channel_id.to_string(),
+            from: sdk_sticker.from.clone(),
+            from_label: sdk_sticker.from_label.clone(),
+            amount: sdk_sticker.amount,
+            supporter_ordinal: sdk_sticker.supporter_ordinal,
+        })),
         // 처리하지 않는 이벤트들
         _ => None,
     }

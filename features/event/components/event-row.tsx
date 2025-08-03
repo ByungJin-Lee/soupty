@@ -2,6 +2,7 @@ import { ChatRow } from "~/features/chat/components/chat-row";
 import { DomainEvent, DomainEventType } from "~/types";
 import { DonationRow } from "./events/donation";
 import { EnterRow, ExitRow } from "./events/enter-exit";
+import { GiftRow } from "./events/gift";
 import {
   BJStateChangeRow,
   ConnectedRow,
@@ -22,6 +23,7 @@ import {
   SlowRow,
 } from "./events/moderation";
 import { NotificationRow } from "./events/notification";
+import { StickerRow } from "./events/sticker";
 import { SubscribeRow } from "./events/subscribe";
 
 type Props = {
@@ -45,6 +47,10 @@ export const EventRow: React.FC<Props> = ({ data }) => {
       return <DonationRow data={data.payload} />;
     case DomainEventType.Subscribe:
       return <SubscribeRow data={data.payload} />;
+    case DomainEventType.Sticker:
+      return <StickerRow data={data.payload} />;
+    case DomainEventType.Gift:
+      return <GiftRow data={data.payload} />;
 
     // User events
     case DomainEventType.Enter:
@@ -81,7 +87,6 @@ export const EventRow: React.FC<Props> = ({ data }) => {
       return <NotificationRow data={data.payload} />;
 
     case DomainEventType.MetadataUpdate:
-      console.log("MetadataUpdate event:", data);
       break;
     default:
       return (

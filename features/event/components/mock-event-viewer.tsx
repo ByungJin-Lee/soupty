@@ -1,5 +1,6 @@
 "use client";
 
+import { GiftType } from "~/types";
 import { DomainEvent, DomainEventType } from "~/types/event/domain";
 import { DonationType } from "~/types/event/donation";
 import { MissionType } from "~/types/event/mission";
@@ -62,6 +63,47 @@ function generateMockDonationEvent(index: number): DomainEvent {
       from: `user-${index}`,
       fromLabel: username,
       message,
+    },
+  };
+}
+
+function generateMockStickerEvent(index: number): DomainEvent {
+  const timestamp = new Date().toISOString();
+  const username = mockUsernames[index % mockUsernames.length];
+  const amount = [10, 50, 100, 500, 1000, 2000][index % 6];
+
+  return {
+    id: `mock-sticker-${index}`,
+    type: DomainEventType.Sticker,
+    payload: {
+      id: `mock-sticker-${index}`,
+      channelId: "ssss",
+      timestamp,
+      amount,
+      supporterOrdinal: 1,
+      from: username,
+      fromLabel: username,
+    },
+  };
+}
+
+function generateMockGiftEvent(index: number): DomainEvent {
+  const timestamp = new Date().toISOString();
+  const username = mockUsernames[index % mockUsernames.length];
+
+  return {
+    id: `mock-gift-${index}`,
+    type: DomainEventType.Gift,
+    payload: {
+      id: `mock-gift-${index}`,
+      channelId: "ssss",
+      timestamp,
+      senderId: username,
+      senderLabel: username,
+      receiverId: "ddd",
+      receiverLabel: "ddd",
+      giftType: GiftType.Subscription,
+      giftCode: "3",
     },
   };
 }
@@ -193,7 +235,9 @@ const mockEventData: DomainEvent[] = Array.from({ length: 40 }, (_, i) => {
   const eventType = i % 8;
   switch (eventType) {
     case 0:
+      return generateMockStickerEvent(i);
     case 1:
+      return generateMockGiftEvent(i);
     case 2: // 30% 도네이션
       return generateMockDonationEvent(i);
     case 3:

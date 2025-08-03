@@ -1,6 +1,7 @@
 import { ChatEvent } from "./chat";
 import { DonationEvent } from "./donation";
 import { EnterEvent, ExitEvent } from "./enter-exit";
+import { GiftEvent } from "./gift";
 import {
   BJStateChangeEvent,
   ConnectedEvent,
@@ -22,6 +23,7 @@ import {
   SlowEvent,
 } from "./moderation";
 import { NotificationEvent } from "./notification";
+import { StickerEvent } from "./sticker";
 import { SubscribeEvent } from "./subscribe";
 
 export enum DomainEventType {
@@ -34,6 +36,8 @@ export enum DomainEventType {
   Chat = "Chat",
   Donation = "Donation",
   Subscribe = "Subscribe",
+  Sticker = "Sticker",
+  Gift = "Gift",
 
   // User events
   Enter = "Enter",
@@ -59,6 +63,8 @@ export enum DomainEventType {
 }
 
 export const domainEventLabel: Record<DomainEventType, string> = {
+  [DomainEventType.Sticker]: "스티커",
+  [DomainEventType.Gift]: "선물",
   [DomainEventType.Donation]: "후원",
   [DomainEventType.Subscribe]: "구독",
   [DomainEventType.Kick]: "강제퇴장",
@@ -104,6 +110,8 @@ export type DomainEvent =
   | _DomainMap<DomainEventType.Chat, ChatEvent>
   | _DomainMap<DomainEventType.Donation, DonationEvent>
   | _DomainMap<DomainEventType.Subscribe, SubscribeEvent>
+  | _DomainMap<DomainEventType.Sticker, StickerEvent>
+  | _DomainMap<DomainEventType.Gift, GiftEvent>
 
   // User events
   | _DomainMap<DomainEventType.Enter, EnterEvent>

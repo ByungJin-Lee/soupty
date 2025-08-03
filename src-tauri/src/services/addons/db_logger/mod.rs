@@ -111,6 +111,60 @@ impl Addon for DBLoggerAddon {
         }
     }
 
+    async fn on_sticker(&self, ctx: &AddonContext, event: &StickerEvent) {
+        let mut buffer_guard = self.buffer.lock().await;
+        if let Err(e) = self
+            .event_processor
+            .process_event_log(
+                ctx,
+                &event.channel_id,
+                Some(&event.from),       // user_id
+                Some(&event.from_label), // username
+                None,                    // user_flag
+                EVENT_TYPE_STICKER,
+                event,
+                event.timestamp,
+                &mut buffer_guard,
+            )
+            .await
+        {
+            eprintln!("[DBLoggerAddon] Error logging sticker: {}", e);
+            return;
+        }
+        drop(buffer_guard);
+
+        if let Err(e) = self.should_flush_and_process(ctx).await {
+            eprintln!("[DBLoggerAddon] Error during flush check: {}", e);
+        }
+    }
+
+    async fn on_gift(&self, ctx: &AddonContext, event: &GiftEvent) {
+        let mut buffer_guard = self.buffer.lock().await;
+        if let Err(e) = self
+            .event_processor
+            .process_event_log(
+                ctx,
+                &event.channel_id,
+                Some(&event.sender_id),    // user_id
+                Some(&event.sender_label), // username
+                None,                      // user_flag
+                EVENT_TYPE_GIFT,
+                event,
+                event.timestamp,
+                &mut buffer_guard,
+            )
+            .await
+        {
+            eprintln!("[DBLoggerAddon] Error logging gift: {}", e);
+            return;
+        }
+        drop(buffer_guard);
+
+        if let Err(e) = self.should_flush_and_process(ctx).await {
+            eprintln!("[DBLoggerAddon] Error during flush check: {}", e);
+        }
+    }
+
     async fn on_donation(&self, ctx: &AddonContext, event: &DonationEvent) {
         let mut buffer_guard = self.buffer.lock().await;
         if let Err(e) = self

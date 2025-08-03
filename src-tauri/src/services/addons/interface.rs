@@ -41,6 +41,8 @@ pub trait Addon: Send + Sync {
     async fn on_kick(&self, _ctx: &AddonContext, _event: &UserEvent) {}
     async fn on_kick_cancel(&self, _ctx: &AddonContext, _event: &SimplifiedUserEvent) {}
     async fn on_mute(&self, _ctx: &AddonContext, _event: &MuteEvent) {}
+    async fn on_sticker(&self, _ctx: &AddonContext, _event: &StickerEvent) {}
+    async fn on_gift(&self, _ctx: &AddonContext, _event: &GiftEvent) {}
     async fn on_black(&self, _ctx: &AddonContext, _event: &SimplifiedUserEvent) {}
     async fn on_freeze(&self, _ctx: &AddonContext, _event: &FreezeEvent) {}
     async fn on_notification(&self, _ctx: &AddonContext, _event: &NotificationEvent) {}

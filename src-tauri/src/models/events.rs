@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use soup_sdk::chat::types::{ChatType, DonationType, Emoticon, MissionType, User};
+use soup_sdk::chat::types::{ChatType, DonationType, Emoticon, GiftType, MissionType, User};
 
 // 이벤트 타입 상수
 // Lifecycle events
@@ -12,6 +12,8 @@ pub const EVENT_TYPE_BJ_STATE_CHANGE: &str = "BJStateChange";
 pub const EVENT_TYPE_CHAT: &str = "Chat";
 pub const EVENT_TYPE_DONATION: &str = "Donation";
 pub const EVENT_TYPE_SUBSCRIBE: &str = "Subscribe";
+pub const EVENT_TYPE_STICKER: &str = "Sticker";
+pub const EVENT_TYPE_GIFT: &str = "Gift";
 
 // User events
 pub const EVENT_TYPE_ENTER: &str = "Enter";
@@ -59,7 +61,35 @@ pub enum DomainEvent {
     MissionTotal(MissionTotalEvent),
     BattleMissionResult(BattleMissionResultEvent),
     ChallengeMissionResult(ChallengeMissionResultEvent),
+    Sticker(StickerEvent),
+    Gift(GiftEvent),
     Slow(SlowEvent),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StickerEvent {
+    pub id: uuid::Uuid,
+    pub timestamp: DateTime<Utc>,
+    pub channel_id: String,
+    pub from: String,
+    pub from_label: String,
+    pub amount: u32,            // 스티커 갯수 금액
+    pub supporter_ordinal: u32, // 서포터 순번
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GiftEvent {
+    pub id: uuid::Uuid,
+    pub timestamp: DateTime<Utc>,
+    pub channel_id: String,
+    pub gift_type: GiftType,
+    pub sender_id: String,
+    pub sender_label: String,
+    pub receiver_id: String,
+    pub receiver_label: String,
+    pub gift_code: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

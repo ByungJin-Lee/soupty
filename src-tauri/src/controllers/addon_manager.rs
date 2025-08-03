@@ -93,6 +93,8 @@ impl AddonManager {
                 // 채팅 관련 이벤트
                 DomainEvent::BJStateChange => addon.on_bj_state_change(context).await,
                 DomainEvent::Chat(e) => addon.on_chat(context, e).await,
+                DomainEvent::Sticker(e) => addon.on_sticker(context, e).await,
+                DomainEvent::Gift(e) => addon.on_gift(context, e).await,
                 DomainEvent::Donation(e) => addon.on_donation(context, e).await,
                 DomainEvent::Subscribe(e) => addon.on_subscribe(context, e).await,
 

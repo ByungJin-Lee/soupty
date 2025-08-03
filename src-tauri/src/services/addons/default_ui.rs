@@ -52,6 +52,16 @@ impl Addon for DefaultUIAddon {
         let _ = ctx.app_handle.emit(event_name::LOG_EVENT, domain_event);
     }
 
+    async fn on_sticker(&self, ctx: &AddonContext, event: &StickerEvent) {
+        let domain_event = DomainEvent::Sticker(event.clone());
+        let _ = ctx.app_handle.emit(event_name::LOG_EVENT, domain_event);
+    }
+
+    async fn on_gift(&self, ctx: &AddonContext, event: &GiftEvent) {
+        let domain_event = DomainEvent::Gift(event.clone());
+        let _ = ctx.app_handle.emit(event_name::LOG_EVENT, domain_event);
+    }
+
     async fn on_subscribe(&self, ctx: &AddonContext, event: &SubscribeEvent) {
         let domain_event = DomainEvent::Subscribe(event.clone());
         let _ = ctx.app_handle.emit(event_name::LOG_EVENT, domain_event);
