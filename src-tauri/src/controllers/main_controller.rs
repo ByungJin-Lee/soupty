@@ -62,7 +62,11 @@ impl MainController {
         app_handle: AppHandle,
         db: Arc<DBService>,
     ) -> Result<()> {
-        let initializer = SystemInitializer::new(self.event_bus.clone(), self.scheduler.clone());
+        let initializer = SystemInitializer::new(
+            self.event_bus.clone(),
+            self.scheduler.clone(),
+            app_handle.clone(),
+        );
         let task_scheduler = TaskScheduler::new(self.scheduler.clone());
 
         initializer.initialize_event_subscribers().await;

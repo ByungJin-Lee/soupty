@@ -1,11 +1,12 @@
 use std::sync::Arc;
 
+use crate::services::event_name;
 use anyhow::Result;
 use soup_sdk::{
     chat::{SoopChatConnection, SoopChatOptions},
     SoopHttpClient,
 };
-use tauri::{async_runtime::spawn, AppHandle};
+use tauri::{async_runtime::spawn, AppHandle, Emitter};
 use tokio::sync::Mutex;
 
 use crate::{
@@ -32,13 +33,15 @@ use crate::{
 pub struct SystemInitializer {
     event_bus: EventBusManager,
     scheduler: Scheduler,
+    app_handle: AppHandle,
 }
 
 impl SystemInitializer {
-    pub fn new(event_bus: EventBusManager, scheduler: Scheduler) -> Self {
+    pub fn new(event_bus: EventBusManager, scheduler: Scheduler, app_handle: AppHandle) -> Self {
         Self {
             event_bus,
             scheduler,
+            app_handle,
         }
     }
 
@@ -46,6 +49,7 @@ impl SystemInitializer {
         // Subscribe to system events for error handling
         let mut receiver = self.event_bus.subscribe(MAIN_CONTROLLER_SUBSCRIBER).await;
         let event_bus = self.event_bus.clone();
+        let app_handle_clone = self.app_handle.clone();
 
         spawn(async move {
             while let Some(event) = receiver.recv().await {
@@ -54,6 +58,7 @@ impl SystemInitializer {
                         eprintln!("Metadata fetch failed: {}", error);
                         // Could trigger system stop
                         event_bus.publish(SystemEvent::SystemStopping).await;
+                        let _ = app_handle_clone.emit(event_name::DISCONNECT_EVENT, ());
                     }
                     SystemEvent::SystemStopping => {
                         // Handle system stopping
@@ -103,9 +108,7 @@ impl SystemInitializer {
     }
 
     fn initialize_addon_manager(&self, app_handle: AppHandle) -> AddonManager {
-        let addon_manager = AddonManager::new()
-            .with_event_bus(self.event_bus.clone())
-            .with_app_handle(app_handle.clone());
+        let addon_manager = AddonManager::new().with_event_bus(self.event_bus.clone());
 
         // Addon 등록
         addon_manager.register(Arc::new(DefaultUIAddon::new()));
