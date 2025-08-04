@@ -4,7 +4,7 @@ const urlRegex = /https?:\/\/[^\s]+/gi;
 
 export const splitTextMessageParts = (message: string): MessagePart[] => {
   return message
-    .split(/([^ ]+)/)
+    .split(/([^\s]+)/)
     .filter((part) => part !== "")
     .map((part) => {
       if (urlRegex.test(part)) {

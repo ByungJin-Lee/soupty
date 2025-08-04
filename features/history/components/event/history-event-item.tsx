@@ -6,6 +6,7 @@ import {
   DomainEventType,
   DonationType,
   donationTypeLabel,
+  unpackGift,
 } from "~/types";
 import { formatYYYYMMDDHHMMSS } from "../../utils/format";
 
@@ -39,6 +40,10 @@ const getEventTypeColor = (eventType: DomainEventType): string => {
       return "text-indigo-600";
     case DomainEventType.Exit:
       return "text-gray-600";
+    case DomainEventType.Sticker:
+      return "text-purple-600";
+    case DomainEventType.Gift:
+      return "text-rose-600";
     default:
       return "text-gray-700";
   }
@@ -51,6 +56,35 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
       case DomainEventType.Chat:
         // 해당 이벤트는 chat log에서 핸들링 됩니다.
         return null;
+
+      case DomainEventType.Gift:
+        return (
+          <div>
+            <div>
+              <span className="text-rose-500">
+                {unpackGift(payload.giftType, payload.giftCode)}
+              </span>{" "}
+              선물
+            </div>
+            <div className="text-sm text-gray-600">
+              to. {payload.receiverLabel}
+            </div>
+          </div>
+        );
+
+      case DomainEventType.Sticker:
+        return (
+          <div>
+            <div className="">
+              <span className="text-purple-600">{payload.amount}</span>개 후원
+            </div>
+            {payload.supporterOrdinal > 0 ? (
+              <div className="text-sm text-gray-600">
+                서포터 가입 {payload.supporterOrdinal}번째
+              </div>
+            ) : null}
+          </div>
+        );
 
       case DomainEventType.Donation:
         return (
@@ -66,9 +100,14 @@ const renderEventPayload = (eventType: DomainEventType, payload: any) => {
                 &quot;{payload.message}&quot;
               </div>
             )}
-            <div className="text-sm text-gray-600">
-              {payload.becomeTopFan && " • 새로운 탑팬!"}
-            </div>
+            {payload.becomeTopFan && (
+              <div className="text-sm text-gray-600">• 새로운 탑팬!</div>
+            )}
+            {payload.fanClubOrdinal > 0 ? (
+              <div className="text-sm text-gray-600">
+                팬가입 {payload.fanClubOrdinal}번째
+              </div>
+            ) : null}
           </div>
         );
 
@@ -216,6 +255,18 @@ const getUser = (
       return {
         id: payload.from || "",
         label: payload.fromLabel || "",
+      };
+
+    case DomainEventType.Sticker:
+      return {
+        id: payload.from || "",
+        label: payload.fromLabel || "",
+      };
+
+    case DomainEventType.Gift:
+      return {
+        id: payload.senderId || "",
+        label: payload.senderLabel || "",
       };
 
     case DomainEventType.Subscribe:

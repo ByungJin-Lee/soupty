@@ -18,7 +18,7 @@ const ChannelDisplayComponent: React.FC<ChannelDisplayProps> = ({
 }) => {
   return (
     <div
-      className="flex w-[110px] items-center h-8 gap-3 px-2 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer flex-1 bg-gradient-accent"
+      className="flex w-[90px] sm:w-[110px] items-center h-8 gap-3 px-2 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer flex-1 bg-gradient-accent"
       onClick={onClick}
       role="button"
     >

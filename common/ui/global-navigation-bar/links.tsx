@@ -31,7 +31,7 @@ export const Links = () => {
   const pathname = usePathname();
 
   return (
-    <div className="flex gap-4 items-center mx-auto">
+    <div className="flex gap-1 items-center mx-auto">
       {links.map((l) => {
         return (
           <Fragment key={l.href}>

@@ -137,7 +137,7 @@ export const useStatsEventStore = create<StatsEventState & StatsEventActions>()(
             update("sentiment", e.payload);
             break;
           default:
-            console.log(e);
+          // console.log(e);
         }
       },
       clearStats() {},

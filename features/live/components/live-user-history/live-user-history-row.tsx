@@ -1,6 +1,6 @@
 import { formatDayTimestamp } from "~/common/utils";
 import { ChatMessage } from "~/features/chat";
-import { DomainEvent, DomainEventType, MissionType } from "~/types";
+import { DomainEvent, DomainEventType, MissionType, unpackGift } from "~/types";
 import { History } from "../../hooks/live-user-history";
 
 type Props = {
@@ -46,6 +46,17 @@ const EventRow: React.FC<EventRowProps> = ({ data }) => {
           별풍선 {data.payload.amount}개
         </p>
       );
+    case DomainEventType.Gift:
+      return (
+        <p className="text-rose-400">
+          {unpackGift(data.payload.giftType, data.payload.giftCode)} to{" "}
+          {data.payload.receiverLabel}
+        </p>
+      );
+
+    case DomainEventType.Sticker:
+      return <p className="text-purple-400">스티커 {data.payload.amount}개</p>;
+
     case DomainEventType.Subscribe:
       return (
         <p className="text-amber-500">

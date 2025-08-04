@@ -9,7 +9,7 @@ export const GlobalNavigationBar: React.FC = () => {
     >
       <span
         data-tauri-drag-region
-        className="text-gradient-accent font-semibold ml-4"
+        className="text-gradient-accent font-semibold ml-3 hidden sm:inline"
       >
         Soupty
       </span>

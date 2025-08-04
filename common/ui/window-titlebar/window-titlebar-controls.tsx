@@ -23,7 +23,7 @@ export const WindowTitlebarControls = () => {
   const reload = () => window.location.reload();
 
   return (
-    <div className="flex *:w-11 *:hover:text-white h-full">
+    <div className="flex *:w-8 sm:*:w-11 *:hover:text-white h-full">
       <button className="hover:bg-purple-500" onClick={reload}>
         <RefreshCw className="mx-auto" strokeWidth={1} size={16} />
       </button>

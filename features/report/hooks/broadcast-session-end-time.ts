@@ -14,8 +14,6 @@ export const useBroadcastSessionEndTime = (session: BroadcastSession) => {
   const [isEditing, switchMode] = useState(false);
   const [endTime, changeEndTime] = useState(getDefaultTime(session.endedAt));
 
-  console.log(endTime);
-
   const handleSave = async () => {
     try {
       if (!endTime) return;
