@@ -37,8 +37,8 @@ export const ChatViewer: React.FC<Props> = ({ className = "" }) => {
     []
   );
 
-  useEffect(() => {
-    const handle = (removedItems: ChatEvent[]) => {
+  const handleRemoveItems = useCallback(
+    (removedItems: ChatEvent[]) => {
       if (removedItems.length === 0) return;
 
       let totalRemovedHeight = 0;
@@ -58,9 +58,13 @@ export const ChatViewer: React.FC<Props> = ({ className = "" }) => {
       if (totalRemovedHeight > 0) {
         adjustScrollPosition(totalRemovedHeight);
       }
-    };
-    setOnRemoveItems(handle);
-  }, [adjustScrollPosition, setOnRemoveItems]);
+    },
+    [adjustScrollPosition]
+  );
+
+  useEffect(() => {
+    setOnRemoveItems(handleRemoveItems);
+  }, [setOnRemoveItems, handleRemoveItems]);
 
   const messages = chatQueue.getAll();
 

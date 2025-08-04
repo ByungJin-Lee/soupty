@@ -2,9 +2,22 @@
 
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Maximize, Minus, RefreshCw, X } from "react-feather";
+import { useChannel } from "~/features/soop";
+import { ConnectStatus } from "~/features/soop/stores/channel";
 
 export const WindowTitlebarControls = () => {
-  const close = () => getCurrentWindow().close();
+  const connectStatus = useChannel((state) => state.connectStatus);
+  const disconnect = useChannel((state) => state.disconnect);
+
+  const close = async () => {
+    try {
+      if (connectStatus === ConnectStatus.CONNECTED) {
+        await disconnect();
+      }
+    } finally {
+      getCurrentWindow().close();
+    }
+  };
   const minimize = () => getCurrentWindow().minimize();
   const maximize = () => getCurrentWindow().toggleMaximize();
   const reload = () => window.location.reload();

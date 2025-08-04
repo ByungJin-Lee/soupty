@@ -82,6 +82,12 @@ export const ChatMessage: React.FC<MessageProps> = memo(({ parts }) => {
                 title={p.value.title}
                 src={p.value.imageUrl}
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+                onLoad={(e) => {
+                  e.currentTarget.style.display = 'inline-block';
+                }}
               />
             );
             break;
@@ -92,6 +98,12 @@ export const ChatMessage: React.FC<MessageProps> = memo(({ parts }) => {
                 title="OGQ"
                 src={p.value}
                 referrerPolicy="no-referrer"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
+                onLoad={(e) => {
+                  e.currentTarget.style.display = 'inline-block';
+                }}
               />
             );
             break;

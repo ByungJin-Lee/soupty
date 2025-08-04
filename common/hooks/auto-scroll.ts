@@ -113,11 +113,12 @@ export function useAutoScroll(
     if (!scrollAnchorRef.current) return;
 
     const scrollParent = getScrollParent(scrollAnchorRef.current);
+    const handleScroll = checkIfAtBottom;
 
-    scrollParent.addEventListener("scroll", checkIfAtBottom, { passive: true });
+    scrollParent.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      scrollParent.removeEventListener("scroll", checkIfAtBottom);
+      scrollParent.removeEventListener("scroll", handleScroll);
     };
   }, [checkIfAtBottom]);
 
