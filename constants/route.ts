@@ -4,7 +4,7 @@ export const route = Object.freeze({
   clip: "/clip",
   broadcast: "/broadcast",
   broadcastSession(id: number | string) {
-    return `${this.broadcast}/session?id=${id}`;
+    return `/session?id=${id}`;
   },
   history: "/history",
   setting: "/setting",

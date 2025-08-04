@@ -1,7 +1,8 @@
 "use client";
 
+import { useCallback, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useEffect, useCallback } from "react";
+import { confirm } from "~/common/stores/confirm-modal-store";
 import { Button } from "~/common/ui";
 import { Channel } from "~/types";
 
@@ -38,9 +39,14 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
     },
   });
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
     if (channel && onDelete) {
-      if (confirm(`"${channel.label}" 채널을 삭제하시겠습니까?`)) {
+      if (
+        await confirm(
+          "채널 삭제",
+          `"${channel.label}" 채널을 삭제하시겠습니까?`
+        )
+      ) {
         onDelete(channel.id);
       }
     }
@@ -86,7 +92,10 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
       </div>
 
       <div>
-        <label htmlFor="channelLabel" className="block text-sm font-medium mb-1">
+        <label
+          htmlFor="channelLabel"
+          className="block text-sm font-medium mb-1"
+        >
           채널명
         </label>
         <input
@@ -109,12 +118,12 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
 
       <div className="flex justify-between items-center pt-4">
         <div>
-          {mode === "edit" && onDelete && (
+          {mode === "edit" && (
             <Button
               type="button"
               variant="danger"
               onClick={handleDelete}
-              className="bg-transparent text-red-600 hover:bg-red-50 hover:text-red-800"
+              className="bg-red-400 hover:bg-red-600"
             >
               삭제
             </Button>
@@ -129,11 +138,7 @@ export const ChannelForm: React.FC<ChannelFormProps> = ({
           >
             취소
           </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={!isValid}
-          >
+          <Button type="submit" variant="primary" disabled={!isValid}>
             {mode === "create" ? "생성" : "수정"}
           </Button>
         </div>

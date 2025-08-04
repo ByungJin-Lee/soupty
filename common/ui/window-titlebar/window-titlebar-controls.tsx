@@ -1,15 +1,19 @@
 "use client";
 
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Maximize, Minus, X } from "react-feather";
+import { Maximize, Minus, RefreshCw, X } from "react-feather";
 
 export const WindowTitlebarControls = () => {
   const close = () => getCurrentWindow().close();
   const minimize = () => getCurrentWindow().minimize();
   const maximize = () => getCurrentWindow().toggleMaximize();
+  const reload = () => window.location.reload();
 
   return (
     <div className="flex *:w-11 *:hover:text-white h-full">
+      <button className="hover:bg-purple-500" onClick={reload}>
+        <RefreshCw className="mx-auto" strokeWidth={1} size={16} />
+      </button>
       <button className="hover:bg-amber-300" onClick={minimize}>
         <Minus className="mx-auto" strokeWidth={1} size={16} />
       </button>

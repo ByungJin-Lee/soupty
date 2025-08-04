@@ -11,10 +11,9 @@ export interface LayoutBlueprintEditColumnProps {
   index: number;
 }
 
-export const LayoutBlueprintEditColumn: React.FC<LayoutBlueprintEditColumnProps> = ({
-  column,
-  index,
-}) => {
+export const LayoutBlueprintEditColumn: React.FC<
+  LayoutBlueprintEditColumnProps
+> = ({ column, index }) => {
   const { removeColumn, updateColumn } = useLayoutBlueprintStore();
 
   const handleRemove = () => {
@@ -24,13 +23,13 @@ export const LayoutBlueprintEditColumn: React.FC<LayoutBlueprintEditColumnProps>
   const handleTypeChange = (newType: BlueprintColumnType) => {
     const newColumn: BlueprintColumn = {
       type: newType,
-      width: column.width,
       ...(newType === BlueprintColumnType.StatsViewer && { components: [] }),
     } as BlueprintColumn;
 
     updateColumn(index, newColumn);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleStatsComponentsChange = (newComponents: any) => {
     if (column.type === BlueprintColumnType.StatsViewer) {
       const updatedColumn = {
@@ -42,7 +41,7 @@ export const LayoutBlueprintEditColumn: React.FC<LayoutBlueprintEditColumnProps>
   };
 
   return (
-    <Panel className="overflow-y-scroll! invisible-scrollbar">
+    <Panel className="overflow-y-scroll! invisible-scrollbar w-full">
       <ColumnHeader
         column={column}
         onRemove={handleRemove}
@@ -58,15 +57,18 @@ export const LayoutBlueprintEditColumn: React.FC<LayoutBlueprintEditColumnProps>
 
 const EditColumnContent: React.FC<{
   column: BlueprintColumn;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onStatsComponentsChange: (components: any) => void;
 }> = ({ column, onStatsComponentsChange }) => {
   switch (column.type) {
     case BlueprintColumnType.ChatViewer:
-      return <MockChatViewer />;
+      return <MockChatViewer className="w-full" />;
     case BlueprintColumnType.EventViewer:
-      return <MockEventViewer />;
+      return <MockEventViewer className="w-full" />;
     case BlueprintColumnType.Blank:
-      return <div className="w-full bg-gray-200 p-4">Blank Column (Edit Mode)</div>;
+      return (
+        <div className="w-full bg-gray-200 p-4">Blank Column (Edit Mode)</div>
+      );
     case BlueprintColumnType.StatsViewer:
       return (
         <EditStatsViewer
@@ -75,6 +77,10 @@ const EditColumnContent: React.FC<{
         />
       );
     default:
-      return <div className="w-full bg-gray-200 p-4">Unknown Column Type (Edit Mode)</div>;
+      return (
+        <div className="w-full bg-gray-200 p-4">
+          Unknown Column Type (Edit Mode)
+        </div>
+      );
   }
 };

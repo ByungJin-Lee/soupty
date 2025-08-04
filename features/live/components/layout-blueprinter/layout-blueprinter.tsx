@@ -22,7 +22,7 @@ export const LayoutBluePrinter: React.FC<Props> = ({ blueprint }) => {
       ) : (
         <PanelGroup direction="horizontal" className="w-full flex-1">
           {blueprint.columns.map((col, index) => (
-            <Fragment key={`${col.type}-${index}`}>
+            <Fragment key={index}>
               {isEditMode ? (
                 <LayoutBlueprintEditColumn column={col} index={index} />
               ) : (

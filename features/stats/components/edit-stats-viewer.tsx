@@ -24,7 +24,7 @@ export const EditStatsViewer: React.FC<EditStatsViewerProps> = ({
   };
 
   return (
-    <div className="bg-gray-50 p-4">
+    <div className="bg-gray-50 p-4 w-full">
       <div className="mb-6">
         <h3 className="text-lg font-medium text-gray-900 mb-2">
           통계 뷰어 편집

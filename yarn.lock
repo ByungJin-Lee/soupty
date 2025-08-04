@@ -482,6 +482,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@microsoft/clarity@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@microsoft/clarity@npm:1.0.0"
+  checksum: 10c0/31dcd690e478f5b21604f280aa33fbd26d0842989c4c698de0485746b3f3920fb0a969a633e0724cfbe887dffee7ac0932274637540f645e3ce93cb7cac87cce
+  languageName: node
+  linkType: hard
+
 "@napi-rs/wasm-runtime@npm:^0.2.10, @napi-rs/wasm-runtime@npm:^0.2.11":
   version: 0.2.11
   resolution: "@napi-rs/wasm-runtime@npm:0.2.11"
@@ -4069,6 +4076,7 @@ __metadata:
   resolution: "soupty@workspace:."
   dependencies:
     "@eslint/eslintrc": "npm:^3"
+    "@microsoft/clarity": "npm:^1.0.0"
     "@tailwindcss/postcss": "npm:^4"
     "@tauri-apps/api": "npm:^2.5.0"
     "@tauri-apps/cli": "npm:^2.5.0"

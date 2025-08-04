@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { route } from "~/constants";
+import { openBroadcastSession } from "~/features/broadcast/utils/opener";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { EventLogResult } from "~/services/ipc/types";
 import {
@@ -308,12 +307,12 @@ export const HistoryEventItem: React.FC<Props> = ({ eventLog }) => {
       <div>{renderEventPayload(eventLog.eventType, eventLog.payload)}</div>
       <div className="text-gray-600 text-center">{eventLog.channelName}</div>
       <div className="overflow-hidden text-ellipsis min-w-0">
-        <Link
-          href={route.broadcastSession(eventLog.broadcastId)}
+        <button
+          onClick={() => openBroadcastSession(eventLog.broadcastId)}
           className="text-blue-600 hover:underline text-nowrap"
         >
           {eventLog.broadcastTitle}
-        </Link>
+        </button>
       </div>
     </>
   );

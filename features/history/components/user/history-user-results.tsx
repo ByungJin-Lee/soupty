@@ -1,8 +1,12 @@
-import Link from "next/link";
 import { Pagination } from "~/common/ui/pagination";
-import { route } from "~/constants";
+import { openBroadcastSession } from "~/features/broadcast/utils/opener";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
-import { UserLogEntry, ChatLogResult, EventLogResult, ChatLogMessageType } from "~/services/ipc/types";
+import {
+  ChatLogMessageType,
+  ChatLogResult,
+  EventLogResult,
+  UserLogEntry,
+} from "~/services/ipc/types";
 import { useHistoryUserFilterCtx } from "../../context/history-user-filter-context";
 import { useHistoryUserSearchContext } from "../../context/history-user-search-context";
 import { formatYYYYMMDDHHMMSS } from "../../utils/format";
@@ -14,7 +18,8 @@ const userLogToChatLog = (userLog: UserLogEntry): ChatLogResult => ({
   id: userLog.id,
   broadcastId: userLog.broadcastId,
   user: userLog.user,
-  messageType: (userLog.messageType as ChatLogMessageType) || ChatLogMessageType.Text,
+  messageType:
+    (userLog.messageType as ChatLogMessageType) || ChatLogMessageType.Text,
   message: userLog.message || "",
   metadata: userLog.metadata,
   timestamp: userLog.timestamp,
@@ -55,20 +60,18 @@ const UserChatLogItem: React.FC<{ userLog: UserLogEntry }> = ({ userLog }) => {
       <div className="text-gray-600">
         {formatYYYYMMDDHHMMSS(userLog.timestamp)}
       </div>
-      <div className="text-md text-center text-blue-500">
-        채팅
-      </div>
+      <div className="text-md text-center text-blue-500">채팅</div>
       <div>
         <HistoryChatContent chatLog={chatLog} />
       </div>
       <div className="text-gray-600 text-center">{userLog.channelName}</div>
       <div className="overflow-hidden text-ellipsis min-w-0">
-        <Link
-          href={route.broadcastSession(userLog.broadcastId)}
+        <button
+          onClick={() => openBroadcastSession(userLog.broadcastId)}
           className="text-blue-600 hover:underline text-nowrap"
         >
           {userLog.broadcastTitle}
-        </Link>
+        </button>
       </div>
     </>
   );

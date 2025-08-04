@@ -123,15 +123,7 @@ impl<'a> CommandHandlers<'a> {
         channel_id: String,
         reply_to: oneshot::Sender<Result<(), String>>,
     ) {
-        let result = self
-            .conn
-            .prepare_cached("DELETE FROM channels where channel_id = ?1")
-            .and_then(|mut stmt| {
-                stmt.execute([channel_id])?;
-                Ok(())
-            })
-            .map_err(|e| e.to_string());
-
+        let result = self.delete_channel_impl(channel_id);
         let _ = reply_to.send(result);
     }
 
@@ -1791,5 +1783,49 @@ impl<'a> CommandHandlers<'a> {
             .map_err(|e| format!("Failed to re-enable foreign keys: {}", e))?;
 
         Ok(())
+    }
+
+    // 채널 삭제 구현
+    fn delete_channel_impl(&self, channel_id: String) -> Result<(), String> {
+        // 1. 채널과 연관된 모든 broadcast_session을 조회
+        let broadcast_sessions = self.get_broadcast_sessions_by_channel(&channel_id)?;
+        
+        // 2. 각 broadcast_session을 삭제 (연관된 데이터도 함께 삭제됨)
+        for session_id in broadcast_sessions {
+            self.delete_broadcast_session_impl(session_id)?;
+        }
+        
+        // 3. 마지막으로 채널 삭제
+        let rows_affected = self
+            .conn
+            .execute("DELETE FROM channels WHERE channel_id = ?1", [&channel_id])
+            .map_err(|e| format!("Channel deletion failed: {}", e))?;
+
+        if rows_affected == 0 {
+            return Err(format!("Channel with id {} not found", channel_id));
+        }
+
+        Ok(())
+    }
+
+    // 채널의 모든 broadcast_session ID 조회
+    fn get_broadcast_sessions_by_channel(&self, channel_id: &str) -> Result<Vec<i64>, String> {
+        let mut stmt = self
+            .conn
+            .prepare_cached("SELECT id FROM broadcast_sessions WHERE channel_id = ?1")
+            .map_err(|e| e.to_string())?;
+
+        let rows = stmt
+            .query_map([channel_id], |row| {
+                row.get::<_, i64>(0)
+            })
+            .map_err(|e| e.to_string())?;
+
+        let mut session_ids = Vec::new();
+        for row in rows {
+            session_ids.push(row.map_err(|e| e.to_string())?);
+        }
+
+        Ok(session_ids)
     }
 }

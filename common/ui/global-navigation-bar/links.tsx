@@ -1,9 +1,11 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Fragment } from "react";
 import { route } from "~/constants/route";
+import { openHistory } from "~/features/history/utils/opener";
 
-const links: { href: string; label: string }[] = [
+const links: { href: string; label: string; handler?: () => void }[] = [
   {
     href: route.live,
     label: "라이브",
@@ -15,6 +17,9 @@ const links: { href: string; label: string }[] = [
   {
     href: route.history,
     label: "기록",
+    handler() {
+      openHistory();
+    },
   },
   {
     href: route.setting,
@@ -29,15 +34,25 @@ export const Links = () => {
     <div className="flex gap-4 items-center mx-auto">
       {links.map((l) => {
         return (
-          <Link
-            key={l.href}
-            href={l.href}
-            className={`text-sm text-gray-500 rounded-md py-0.5 px-2 ${
-              pathname === l.href ? "text-white bg-gradient-accent" : ""
-            }`}
-          >
-            {l.label}
-          </Link>
+          <Fragment key={l.href}>
+            {l.handler ? (
+              <button
+                onClick={l.handler}
+                className={`text-sm text-gray-500 rounded-md py-0.5 px-2`}
+              >
+                {l.label}
+              </button>
+            ) : (
+              <Link
+                href={l.href}
+                className={`text-sm text-gray-500 rounded-md py-0.5 px-2 ${
+                  pathname === l.href ? "text-white bg-gradient-accent" : ""
+                }`}
+              >
+                {l.label}
+              </Link>
+            )}
+          </Fragment>
         );
       })}
     </div>

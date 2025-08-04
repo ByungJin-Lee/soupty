@@ -20,9 +20,9 @@ export default function HistoryPage() {
 const PageContent = () => {
   const [activeTab, setActiveTab] = useQueryParam<HistoryType>("type", "chat");
   return (
-    <div className="p-2 flex flex-col flex-1 overflow-y-scroll invisible-scrollbar">
+    <div className="py-1 flex flex-col flex-1 overflow-y-scroll invisible-scrollbar">
       <div className="flex gap-2">
-        <BackButton />
+        <BackButton className="ml-4" />
         {/* 탭 네비게이션 */}
         <HistoryTabSelector currentTab={activeTab} onChange={setActiveTab} />
       </div>

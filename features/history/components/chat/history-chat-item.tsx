@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { route } from "~/constants";
+import { openBroadcastSession } from "~/features/broadcast/utils/opener";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { ChatLogResult } from "~/services/ipc/types";
 import { formatYYYYMMDDHHMMSS } from "../../utils/format";
@@ -30,12 +29,12 @@ export const HistoryChatItem: React.FC<Props> = ({ chatLog }) => {
       </div>
       <div className="text-gray-600 text-center">{chatLog.channelName}</div>
       <div className="overflow-hidden text-ellipsis min-w-0">
-        <Link
-          href={route.broadcastSession(chatLog.broadcastId)}
+        <button
+          onClick={() => openBroadcastSession(chatLog.broadcastId)}
           className="text-blue-600 hover:underline text-nowrap"
         >
           {chatLog.broadcastTitle}
-        </Link>
+        </button>
       </div>
     </>
   );

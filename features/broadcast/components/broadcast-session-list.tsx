@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { usePaginationContext } from "~/common/context/pagination";
 import { Pagination } from "~/common/ui/pagination";
@@ -12,12 +11,12 @@ import {
   convertBroadcastSessionFilter,
   useBroadcastSessionFilter,
 } from "../hooks/use-broadcast-session-filter";
+import { openBroadcastSession } from "../utils/opener";
 
 export const BroadcastSessionList: React.FC = () => {
   const { result, loading, search } = useBroadcastSessionSearchContext();
   const pagination = usePaginationContext();
   const { watch, setValue, getValues, reset } = useBroadcastSessionFilter();
-  const router = useRouter();
 
   const filters = watch();
 
@@ -27,7 +26,7 @@ export const BroadcastSessionList: React.FC = () => {
   };
 
   const handleSelectSession = (session: BroadcastSession) => {
-    router.push(`/broadcast/session?id=${session.id}`);
+    openBroadcastSession(session.id);
   };
 
   // 페이지네이션 변경 시 재검색

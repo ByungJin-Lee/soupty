@@ -30,7 +30,7 @@
         "label": "main",
         "title": "soupty",
         "width": 800,
-        "minWidth": 460,
+        "minWidth": 620,
         "minHeight": 500,
         "height": 600,
         "resizable": true,
@@ -43,7 +43,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.clarity.ms; connect-src 'self' https://www.clarity.ms https://c.clarity.ms  https://v.clarity.ms"
     }
   },
   "bundle": {

@@ -43,6 +43,7 @@ lazy_static = "1.5.0"
 csv = "1.3"
 tauri-plugin-dialog = "2"
 tauri-plugin-opener = "2"
+dotenvy_macro = "0.15.7"
 
 [target.'cfg(windows)'.dependencies]
 ort = { version = "=2.0.0-rc.10", features = ["load-dynamic"], optional = true }

@@ -1,5 +1,4 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import { PopoverId, usePopoverStore } from "~/common/stores/popover-store";
 import {
@@ -7,7 +6,8 @@ import {
   isTargetUser,
   removeTargetUser,
 } from "~/common/utils/target-users";
-import { API_ENDPOINTS, route } from "~/constants";
+import { API_ENDPOINTS } from "~/constants";
+import { openHistory } from "~/features/history/utils/opener";
 import { useLiveUserHistoryStore } from "~/features/live/stores/live-user-history";
 import { useChannel } from "~/features/soop";
 import { UserPopoverPayload } from "../types/user";
@@ -116,7 +116,6 @@ export const useUserPopoverHandler = (
   userInfo: UserInfo,
   payload: UserPopoverPayload
 ) => {
-  const router = useRouter();
   const currentChannel = useChannel((v) => v.channel);
   // 사용자 실시간 기록
   const openLiveUserHistory = useLiveUserHistoryStore((v) => v.open).bind(
@@ -126,11 +125,12 @@ export const useUserPopoverHandler = (
   );
   // 사용자 전체 기록
   const openWholeUserHistory = () => {
-    const url = buildUserHistoryUrl(userInfo.userId, {
+    openHistory({
+      type: "user",
+      userId: userInfo.userId,
       channelId: currentChannel?.id,
       sessionId: payload.broadcastSessionId,
     });
-    router.push(url);
   };
   // 방송국 바로가기
   const openUserPage = () => openUrl(API_ENDPOINTS.USER_PAGE(userInfo.userId));
@@ -140,16 +140,4 @@ export const useUserPopoverHandler = (
     openLiveUserHistory,
     openUserPage,
   };
-};
-
-const buildUserHistoryUrl = (
-  userId: string,
-  option: { channelId?: string | null; sessionId?: number | null }
-) => {
-  const query = option.sessionId
-    ? `&sessionId=${option.sessionId}`
-    : option.channelId
-    ? `&channelId=${option.channelId}`
-    : "";
-  return `${route.history}?type=user&userId=${userId}${query}`;
 };

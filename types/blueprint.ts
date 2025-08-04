@@ -12,13 +12,11 @@ export type BlueprintColumn =
 
 export interface WithComponent<T, C> {
   type: T;
-  width: number;
   components: C;
 }
 
 export interface WithoutComponent<T> {
   type: T;
-  width: number;
 }
 
 export enum BlueprintColumnType {

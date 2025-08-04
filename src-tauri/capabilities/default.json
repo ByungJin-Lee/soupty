@@ -2,10 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "enables the default permissions",
-  "windows": [
-    "main",
-    "splashscreen"
-  ],
+  "windows": ["*"],
   "permissions": [
     "core:default",
     "core:window:allow-close",
@@ -15,6 +12,7 @@
     "core:webview:allow-print",
     "dialog:default",
     "dialog:allow-save",
-    "opener:default"
+    "opener:default",
+    "core:webview:allow-create-webview-window"
   ]
 }
