@@ -8,7 +8,6 @@ export const EmptyState: React.FC = () => {
   const handleAddColumn = () => {
     addColumn({
       type: BlueprintColumnType.Blank,
-      width: 300,
     });
   };
 
