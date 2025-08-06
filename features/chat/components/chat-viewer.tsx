@@ -19,7 +19,7 @@ export const ChatViewer: React.FC<Props> = ({ className = "" }) => {
     lastChatUpdate,
     {
       threshold: 100,
-      behavior: "smooth",
+      behavior: "instant",
     }
   );
 

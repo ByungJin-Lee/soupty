@@ -1,0 +1,72 @@
+# .github/workflows/release.yml
+
+name: "release"
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+
+jobs:
+  build-tauri:
+    # Use a strategy matrix to build on both windows and macos
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - os: macos-latest # Apple Silicon (ARM64)
+          # - os: macos-13 # Intel (x86_64)
+          - os: windows-latest # Windows (x86_64)
+
+    runs-on: ${{ matrix.platform.os }}
+    steps:
+      # 1. Checkout the repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Install Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3. Install Rust toolchain
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      # 4. Install frontend dependencies
+      #    We specify the working-directory to run this command inside the 'app/' folder.
+      - name: Install app dependencies
+        run: yarn install
+        working-directory: ./
+
+      # 5. Build the Tauri application and create a GitHub release
+      - name: Build and release Tauri app
+        # This is an official action from the Tauri team.
+        uses: tauri-apps/tauri-action@v0
+        env:
+          # This token is provided by GitHub Actions for free.
+          # It's required to create a release.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        with:
+          # This is the most important part:
+          # It tells the action that your Tauri project is in the 'app/' directory.
+          projectPath: ./
+
+          # Config for the GitHub Release
+          tagName: ${{ github.ref_name }} # Uses the tag name that triggered the workflow (e.g., v1.0.0)
+          releaseName: "soupty v${{ github.ref_name }}"
+          releaseBody: |
+            This is an automated release.
+            See the assets below to download the application for your operating system.
+
+          # Creates a draft release. You must manually publish it after the workflow is done.
+          # This is safer as it allows you to review and add changelogs.
+          releaseDraft: true
+
+          # Set to true if your tag is a pre-release like v1.0.0-beta.1
+          prerelease: false

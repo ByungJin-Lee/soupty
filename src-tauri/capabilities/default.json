@@ -12,7 +12,12 @@
     "core:webview:allow-print",
     "dialog:default",
     "dialog:allow-save",
+    "dialog:allow-ask",
+    "dialog:allow-message",
     "opener:default",
-    "core:webview:allow-create-webview-window"
+    "core:webview:allow-create-webview-window",
+    "updater:default",
+    "updater:allow-check",
+    "updater:allow-download-and-install"
   ]
 }

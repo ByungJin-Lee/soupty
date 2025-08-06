@@ -4,7 +4,10 @@ use tokio::sync::oneshot;
 
 use crate::services::addons::db_logger::user_flag::parse_user_from_flag;
 use crate::services::db::commands::{
-    BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult, ChannelData, ChatLogData, ChatLogResult,  ChatSearchFilters, ChatSearchResult, EventLogData, EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams, ReportInfo, ReportStatusInfo, TargetUser, UserLogEntry, UserSearchFilters, UserSearchResult
+    BroadcastSessionResult, BroadcastSessionSearchFilters, BroadcastSessionSearchResult,
+    ChannelData, ChatLogData, ChatLogResult, ChatSearchFilters, ChatSearchResult, EventLogData,
+    EventLogResult, EventSearchFilters, EventSearchResult, PaginationParams, ReportInfo,
+    ReportStatusInfo, TargetUser, UserLogEntry, UserSearchFilters, UserSearchResult,
 };
 use crate::util::hangul::decompose_hangul_to_string;
 
@@ -79,7 +82,7 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
-        pub fn handle_vod_broadcast_session(
+    pub fn handle_vod_broadcast_session(
         &self,
         broadcast_id: i64,
         vod_id: u64,
@@ -273,7 +276,10 @@ impl<'a> CommandHandlers<'a> {
         let _ = reply_to.send(result);
     }
 
-    pub fn handle_get_target_users(&self, reply_to: oneshot::Sender<Result<Vec<TargetUser>, String>>) {
+    pub fn handle_get_target_users(
+        &self,
+        reply_to: oneshot::Sender<Result<Vec<TargetUser>, String>>,
+    ) {
         let result = (|| {
             let mut stmt = self
                 .conn
@@ -285,7 +291,7 @@ impl<'a> CommandHandlers<'a> {
             while let Some(row) = rows.next().map_err(|e| e.to_string())? {
                 let user_id: String = row.get(0).map_err(|e| e.to_string())?;
                 let username: String = row.get(1).map_err(|e| e.to_string())?;
-                users.push(TargetUser { user_id,  username  });
+                users.push(TargetUser { user_id, username });
             }
             Ok(users)
         })();
@@ -469,7 +475,9 @@ impl<'a> CommandHandlers<'a> {
         }
 
         if !filters.exclude_event_types.is_empty() {
-            let placeholders = filters.exclude_event_types.iter()
+            let placeholders = filters
+                .exclude_event_types
+                .iter()
                 .map(|_| "?")
                 .collect::<Vec<_>>()
                 .join(", ");
@@ -912,7 +920,7 @@ impl<'a> CommandHandlers<'a> {
 
         let limit_str = limit.to_string();
         let offset_str = offset.to_string();
-        
+
         // Duplicate params for both UNION queries
         let mut all_params = params.to_vec();
         all_params.extend(params.iter());
@@ -1768,7 +1776,7 @@ impl<'a> CommandHandlers<'a> {
         // 모든 테이블의 데이터 삭제
         let tables = [
             "chat_logs",
-            "event_logs", 
+            "event_logs",
             "target_users",
             "reports",
             "broadcast_sessions",
@@ -1793,12 +1801,12 @@ impl<'a> CommandHandlers<'a> {
     fn delete_channel_impl(&self, channel_id: String) -> Result<(), String> {
         // 1. 채널과 연관된 모든 broadcast_session을 조회
         let broadcast_sessions = self.get_broadcast_sessions_by_channel(&channel_id)?;
-        
+
         // 2. 각 broadcast_session을 삭제 (연관된 데이터도 함께 삭제됨)
         for session_id in broadcast_sessions {
             self.delete_broadcast_session_impl(session_id)?;
         }
-        
+
         // 3. 마지막으로 채널 삭제
         let rows_affected = self
             .conn
@@ -1820,9 +1828,7 @@ impl<'a> CommandHandlers<'a> {
             .map_err(|e| e.to_string())?;
 
         let rows = stmt
-            .query_map([channel_id], |row| {
-                row.get::<_, i64>(0)
-            })
+            .query_map([channel_id], |row| row.get::<_, i64>(0))
             .map_err(|e| e.to_string())?;
 
         let mut session_ids = Vec::new();
@@ -1874,9 +1880,7 @@ impl<'a> CommandHandlers<'a> {
             .map_err(|e| format!("Failed to prepare query: {}", e))?;
 
         let rows = stmt
-            .query_map([&user_id, &channel_id], |row| {
-                row.get::<_, String>(0)
-            })
+            .query_map([&user_id, &channel_id], |row| row.get::<_, String>(0))
             .map_err(|e| format!("Query execution failed: {}", e))?;
 
         let mut dates = Vec::new();
