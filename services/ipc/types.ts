@@ -28,6 +28,7 @@ export enum IpcRequestWithPayload {
   SearchChatLogs = "search_chat_logs",
   SearchEventLogs = "search_event_logs",
   SearchUserLogs = "search_user_logs",
+  GetUserLogDates = "get_user_log_dates",
   DeleteBroadcastSession = "delete_broadcast_session",
   GetBroadcastSession = "get_broadcast_session",
   SearchBroadcastSessions = "search_broadcast_sessions",
@@ -90,6 +91,10 @@ export interface IpcPayloadMap {
   [IpcRequestWithPayload.SearchUserLogs]: {
     filters: UserSearchFilters;
     pagination: PaginationParams;
+  };
+  [IpcRequestWithPayload.GetUserLogDates]: {
+    userId: string;
+    channelId: string;
   };
   [IpcRequestWithPayload.DeleteBroadcastSession]: {
     broadcastId: number;
@@ -157,6 +162,7 @@ export interface IpcResponseMap {
   [IpcRequestWithPayload.SearchChatLogs]: ChatSearchResult;
   [IpcRequestWithPayload.SearchEventLogs]: EventSearchResult;
   [IpcRequestWithPayload.SearchUserLogs]: UserSearchResult;
+  [IpcRequestWithPayload.GetUserLogDates]: string[];
   [IpcRequestWithPayload.DeleteBroadcastSession]: void;
   [IpcRequestWithPayload.GetBroadcastSession]: BroadcastSession | null;
   [IpcRequestWithPayload.SearchBroadcastSessions]: BroadcastSessionSearchResult;
@@ -283,7 +289,7 @@ export enum ChatLogMessageType {
 }
 
 export interface ChatLogResult {
-  id: number;
+  id: string;
   broadcastId: number;
   user: User;
   messageType: ChatLogMessageType;
@@ -296,7 +302,7 @@ export interface ChatLogResult {
 }
 
 export interface EventLogResult {
-  id: number;
+  id: string;
   broadcastId: number;
   userId?: string;
   username?: string;
@@ -308,8 +314,25 @@ export interface EventLogResult {
   broadcastTitle: string;
 }
 
+export interface SimplifiedUserLogEntry {
+  id: string;
+  user: {
+    id: string;
+    label: string;
+  };
+  timestamp: string;
+  logType: "CHAT" | "EVENT";
+  // 채팅 로그 필드
+  messageType?: ChatLogMessageType;
+  message?: string;
+  metadata?: ChatLogMetadata;
+  // 이벤트 로그 필드
+  eventType?: DomainEventType;
+  payload?: string;
+}
+
 export interface UserLogEntry {
-  id: number;
+  id: string;
   broadcastId: number;
   user: User;
   logType: "CHAT" | "EVENT";

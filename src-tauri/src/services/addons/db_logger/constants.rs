@@ -1,5 +1,5 @@
 // 배치 설정
-pub const BATCH_SIZE: usize = 100;
+pub const BATCH_SIZE: usize = 50;
 
 // 메시지 타입 상수
 pub const MESSAGE_TYPE_TEXT: &str = "TEXT";

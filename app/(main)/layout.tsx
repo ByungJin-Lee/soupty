@@ -8,7 +8,7 @@ import { GlobalNavigationBar } from "~/common/ui/global-navigation-bar";
 import { PromptModal } from "~/common/ui/prompt-modal";
 import { WindowTitlebar } from "~/common/ui/window-titlebar/window-titlebar";
 import { toastOptions } from "~/constants/toast";
-import { LiveUserHistoryModal } from "~/features/live/components/live-user-history";
+import { ChannelEditModal } from "~/features/soop/components/channel/channel-edit-modal";
 
 export default function MainLayout({
   children,
@@ -20,8 +20,8 @@ export default function MainLayout({
       <GlobalEventProvider />
       <AppTracker />
       <PromptModal />
+      <ChannelEditModal />
       <ConfirmModal />
-      <LiveUserHistoryModal />
       <VodSelectModal />
       <Toaster toastOptions={toastOptions} />
       <GlobalPopoverProvider />

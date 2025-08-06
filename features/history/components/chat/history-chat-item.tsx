@@ -9,7 +9,9 @@ type Props = {
 };
 
 export const HistoryChatItem: React.FC<Props> = ({ chatLog }) => {
-  const handleClick = useUserPopoverDispatch(chatLog.user);
+  const handleClick = useUserPopoverDispatch(chatLog.user, {
+    channelId: chatLog.channelId,
+  });
 
   return (
     <>

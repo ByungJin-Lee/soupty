@@ -34,3 +34,12 @@ pub async fn search_user_logs(
 ) -> Result<UserSearchResult, String> {
     state.db.search_user_logs(filters, pagination).await
 }
+
+#[tauri::command]
+pub async fn get_user_log_dates(
+    user_id: String,
+    channel_id: String,
+    state: State<'_, AppState>,
+) -> Result<Vec<String>, String> {
+    state.db.get_user_log_dates(user_id, channel_id).await
+}

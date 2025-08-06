@@ -47,9 +47,6 @@ const eventToHistory = (event: DomainEvent): History => ({
 });
 
 export const useLiveUserHistory = (userId: string) => {
-  useChatEventStore((v) => v.lastUpdate);
-  useOtherEventStore((v) => v.lastUpdate);
-
   const recentChats = useChatEventStore((s) => s.chatQueue)
     .getFiltered((it) => it.user.id === userId)
     .map(chatToHistory);

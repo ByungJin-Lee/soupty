@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useChatEventStore } from "~/common/stores/chat-event-store";
-import { createEmojiProcessor } from "~/features/emoji/processors/emoji-processor";
 import { mergeWithDefault } from "~/features/emoji";
+import { createEmojiProcessor } from "~/features/emoji/processors/emoji-processor";
 import { transformStreamerEmojis } from "~/features/emoji/utils";
 import { makeEmojiRegex } from "~/features/emoji/utils/converter";
 import { useChannel } from "~/features/soop/stores/channel";
@@ -21,14 +21,15 @@ export function useEmojiChatIntegration() {
     const updateProcessor = async () => {
       try {
         const emojis = await ipcService.soop.getStreamerEmoji(channel.id);
-        const emojiStatic = mergeWithDefault(transformStreamerEmojis(channel.id, emojis));
-        
+        const emojiStatic = mergeWithDefault(
+          transformStreamerEmojis(channel.id, emojis)
+        );
+
         if (Object.keys(emojiStatic).length > 0) {
           const regex = makeEmojiRegex(emojiStatic);
-          const emojiProcessor = createEmojiProcessor(emojiStatic);
           updateChatProcessor({
             regex,
-            process: emojiProcessor.process,
+            process: createEmojiProcessor(emojiStatic).process,
           });
         }
       } catch (error) {

@@ -239,6 +239,25 @@ impl DBService {
             .map_err(|_| "Failed to receive response".to_string())?
     }
 
+    pub async fn get_user_log_dates(
+        &self,
+        user_id: String,
+        channel_id: String,
+    ) -> Result<Vec<String>, String> {
+        let (tx, rx) = oneshot::channel();
+        self.sender
+            .send(DBCommand::GetUserLogDates {
+                user_id,
+                channel_id,
+                reply_to: tx,
+            })
+            .await
+            .map_err(|_| "Failed to send command".to_string())?;
+
+        rx.await
+            .map_err(|_| "Failed to receive response".to_string())?
+    }
+
     pub async fn delete_broadcast_session(&self, broadcast_id: i64) -> Result<(), String> {
         let (tx, rx) = oneshot::channel();
         self.sender

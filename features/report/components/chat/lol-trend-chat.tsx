@@ -9,13 +9,20 @@ type Props = {
   data: ReportData;
 };
 
-const MIN_THRESHOLD = 10;
+const MIN_THRESHOLD = 1;
 
 export const LOLTrendChart: React.FC<Props> = ({ data }) => {
-  const [displayThreshold, debouncedThreshold, setThreshold] = useDebounceState<number>(MIN_THRESHOLD);
+  const [displayThreshold, debouncedThreshold, setThreshold] =
+    useDebounceState<number>(
+      Math.max(...data.chunks.map((v) => v.chat.lolScore))
+    );
 
   const filteredChunks = useMemo(() => {
-    return filterChunksByLolScore(data.chunks, data.metadata, debouncedThreshold);
+    return filterChunksByLolScore(
+      data.chunks,
+      data.metadata,
+      debouncedThreshold
+    );
   }, [data.chunks, data.metadata, debouncedThreshold]);
 
   return (

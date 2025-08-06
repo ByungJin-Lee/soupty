@@ -1,5 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import { PopoverId, usePopoverStore } from "~/common/stores/popover-store";
 import {
   addTargetUser,
@@ -7,9 +8,8 @@ import {
   removeTargetUser,
 } from "~/common/utils/target-users";
 import { API_ENDPOINTS } from "~/constants";
+import { openHistoryUser } from "~/features/history-user/utils/opener";
 import { openHistory } from "~/features/history/utils/opener";
-import { useLiveUserHistoryStore } from "~/features/live/stores/live-user-history";
-import { useChannel } from "~/features/soop";
 import { UserPopoverPayload } from "../types/user";
 
 interface UserInfo {
@@ -116,19 +116,23 @@ export const useUserPopoverHandler = (
   userInfo: UserInfo,
   payload: UserPopoverPayload
 ) => {
-  const currentChannel = useChannel((v) => v.channel);
-  // 사용자 실시간 기록
-  const openLiveUserHistory = useLiveUserHistoryStore((v) => v.open).bind(
-    null,
-    userInfo.userId,
-    userInfo.label
-  );
+  const openLiveUserHistory = () => {
+    if (!payload.channelId) {
+      toast.error("채널을 선택한 후 기능을 이용해주세요.");
+      return;
+    }
+    openHistoryUser({
+      userId: userInfo.userId,
+      userLabel: userInfo.label,
+      channelId: payload.channelId,
+    });
+  };
   // 사용자 전체 기록
   const openWholeUserHistory = () => {
     openHistory({
       type: "user",
       userId: userInfo.userId,
-      channelId: currentChannel?.id,
+      channelId: payload.channelId,
       sessionId: payload.broadcastSessionId,
     });
   };

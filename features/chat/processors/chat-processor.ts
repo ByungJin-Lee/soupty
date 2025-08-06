@@ -1,5 +1,6 @@
 import { splitTextMessageParts } from "~/features/chat/utils";
 import { getNicknameColor } from "~/features/chat/utils/nickname-color";
+import { OGQ } from "~/types";
 import { Badge } from "~/types/badge";
 import {
   ChatEvent,
@@ -29,20 +30,20 @@ export class ChatProcessor {
     this.emojiProcessor = processor;
   }
 
-  makeParts(raw: RawChatEvent): MessagePart[] {
+  makeParts(comment: string, ogq?: OGQ): MessagePart[] {
     let parts: MessagePart[] = [];
 
-    if (raw.ogq) {
-      const p = raw.ogq;
+    if (ogq) {
+      const p = ogq;
       parts = [
         {
           type: MessageType.OGQ,
           value: `https://ogq-sticker-global-cdn-z01.sooplive.co.kr/sticker/${p.id}/${p.number}_80.${p.ext}?ver=${p.version}`,
         },
-        ...splitTextMessageParts(raw.comment),
+        ...splitTextMessageParts(comment),
       ];
     } else {
-      const message = raw.comment;
+      const message = comment;
       // emoji 처리기가 있고 emoji가 매치되는 경우
       if (this.emojiProcessor && message.match(this.emojiProcessor.regex)) {
         parts = this.emojiProcessor.process(message, this.emojiProcessor.regex);
@@ -88,7 +89,7 @@ export class ChatProcessor {
   processEvent(rawEvent: RawChatEvent): ChatEvent {
     const event = rawEvent as ChatEvent;
     // parts를 만듭니다.
-    event.parts = this.makeParts(rawEvent);
+    event.parts = this.makeParts(rawEvent.comment, rawEvent.ogq);
     // badge를 만듭니다.
     event.badges = this.makeBadges(rawEvent);
     // 닉네임 색상을 설정합니다.

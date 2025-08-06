@@ -1,4 +1,5 @@
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
+import { useChannel } from "~/features/soop";
 import {
   BlackEvent,
   FreezeEvent,
@@ -35,7 +36,10 @@ type SlowProps = {
 };
 
 export const KickRow: React.FC<KickProps> = ({ data }) => {
-  const handleClick = useUserPopoverDispatch(data.user);
+  const channel = useChannel((v) => v.channel);
+  const handleClick = useUserPopoverDispatch(data.user, {
+    channelId: channel?.id,
+  });
   return (
     <div className="my-1 mx-2 p-3 rounded-xl bg-gradient-to-r from-red-400 via-red-500 to-red-600 shadow-lg shadow-red-200/50 border border-red-300 transform hover:scale-[1.02] transition-all duration-200">
       <div className="flex items-center justify-between">
@@ -73,7 +77,10 @@ export const KickCancelRow: React.FC<KickCancelProps> = ({ data }) => {
 };
 
 export const MuteRow: React.FC<MuteProps> = ({ data }) => {
-  const handleClick = useUserPopoverDispatch(data.user);
+  const channel = useChannel((v) => v.channel);
+  const handleClick = useUserPopoverDispatch(data.user, {
+    channelId: channel?.id,
+  });
 
   return (
     <div className="my-1 mx-2 p-3 rounded-xl bg-gradient-to-r from-red-700 via-red-800 to-rose-800 shadow-lg shadow-red-400/30 border border-red-600 transform hover:scale-[1.02] transition-all duration-200">

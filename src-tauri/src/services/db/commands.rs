@@ -159,6 +159,13 @@ pub enum DBCommand {
         reply_to: oneshot::Sender<Result<UserSearchResult, String>>,
     },
 
+    // 사용자의 기록이 있는 날짜 목록 조회
+    GetUserLogDates {
+        user_id: String,
+        channel_id: String,
+        reply_to: oneshot::Sender<Result<Vec<String>, String>>,
+    },
+
     // 전체 데이터 초기화
     ResetAllData {
         reply_to: oneshot::Sender<Result<(), String>>,
@@ -188,6 +195,7 @@ pub struct EmoticonMetadata {
 
 #[derive(Debug, Clone)]
 pub struct ChatLogData {
+    pub id: String,
     pub broadcast_id: i64,
     pub user_id: String,
     pub username: String,
@@ -200,6 +208,7 @@ pub struct ChatLogData {
 
 #[derive(Debug, Clone)]
 pub struct EventLogData {
+    pub id: String,
     pub broadcast_id: i64,
     pub user_id: Option<String>,
     pub username: Option<String>,
@@ -326,7 +335,7 @@ pub struct BroadcastSessionResult {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatLogResult {
-    pub id: i64,
+    pub id: String,
     pub broadcast_id: i64,
     pub user: User,
     pub message_type: String,
@@ -342,7 +351,7 @@ pub struct ChatLogResult {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EventLogResult {
-    pub id: i64,
+    pub id: String,
     pub broadcast_id: i64,
     pub user: Option<User>,
     pub event_type: String,
@@ -357,7 +366,7 @@ pub struct EventLogResult {
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserLogEntry {
-    pub id: i64,
+    pub id: String,
     pub broadcast_id: i64,
     pub user: User,
     pub log_type: String, // "CHAT" | "EVENT"

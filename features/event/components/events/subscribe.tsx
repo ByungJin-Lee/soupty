@@ -1,4 +1,5 @@
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
+import { useChannel } from "~/features/soop";
 import { SubscribeEvent } from "~/types";
 
 type Props = {
@@ -6,9 +7,11 @@ type Props = {
 };
 
 export const SubscribeRow: React.FC<Props> = ({ data }) => {
+  const channel = useChannel((v) => v.channel);
   const handleClick = useUserPopoverDispatch({
     id: data.userId,
     label: data.label,
+    channelId: channel?.id,
   });
 
   return (

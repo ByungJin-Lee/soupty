@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { useChannel } from "~/features/soop/stores/channel";
 import GlobalEventManger from "~/services/manager/event-manager";
-import { DomainEventType, MetadataUpdateEvent, RawDomainEvent } from "~/types";
+import { DomainEvent, DomainEventType, MetadataUpdateEvent } from "~/types";
 import { useChatEventStore } from "./chat-event-store";
 import { useOtherEventStore } from "./other-event-store";
 import { useStatsEventStore } from "./stats-event-store";
@@ -34,7 +34,7 @@ export const useEventManagerStore = create<
           const channelHandler = useChannel.getState().handleMetadataUpdate;
           const disconnectHandler = useChannel.getState().disconnect;
 
-          const customOtherHandler = (e: RawDomainEvent) => {
+          const customOtherHandler = (e: DomainEvent) => {
             if (e.type === DomainEventType.MetadataUpdate) {
               channelHandler(e.payload as MetadataUpdateEvent);
             } else {

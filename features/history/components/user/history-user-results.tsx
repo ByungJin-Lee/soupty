@@ -44,7 +44,9 @@ const userLogToEventLog = (userLog: UserLogEntry): EventLogResult => ({
 
 // 채팅 로그를 이벤트 테이블 형태로 표시하는 컴포넌트
 const UserChatLogItem: React.FC<{ userLog: UserLogEntry }> = ({ userLog }) => {
-  const handleClick = useUserPopoverDispatch(userLog.user);
+  const handleClick = useUserPopoverDispatch(userLog.user, {
+    channelId: userLog.channelId,
+  });
   const chatLog = userLogToChatLog(userLog);
 
   return (

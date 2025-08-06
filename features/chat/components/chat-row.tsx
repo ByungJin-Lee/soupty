@@ -1,6 +1,7 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { Fragment, memo, useEffect, useRef } from "react";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
+import { useChannel } from "~/features/soop";
 import { ChatEvent, MessagePart, MessageType } from "~/types/event";
 import { ChatBadge } from "./chat-badge";
 
@@ -33,7 +34,10 @@ type HeaderProps = {
 };
 
 const Header: React.FC<HeaderProps> = memo(({ data }) => {
-  const handleClick = useUserPopoverDispatch(data.user);
+  const channel = useChannel((v) => v.channel);
+  const handleClick = useUserPopoverDispatch(data.user, {
+    channelId: channel?.id,
+  });
 
   return (
     <button
@@ -58,66 +62,69 @@ Header.displayName = "Header";
 
 type MessageProps = {
   parts: MessagePart[];
+  className?: string;
 };
 
-export const ChatMessage: React.FC<MessageProps> = memo(({ parts }) => {
-  return (
-    <div className="break-all mt-0.5">
-      {parts.map((p, i) => {
-        let content: React.ReactNode = null;
+export const ChatMessage: React.FC<MessageProps> = memo(
+  ({ parts, className = "" }) => {
+    return (
+      <div className={`break-all mt-0.5 ${className}`}>
+        {parts.map((p, i) => {
+          let content: React.ReactNode = null;
 
-        switch (p.type) {
-          case MessageType.Text:
-            content = p.value;
-            break;
-          case MessageType.URL:
-            content = (
-              <span
-                onClick={() => openUrl(p.value)}
-                className="text-blue-400 cursor-pointer underline"
-              >
-                {p.value}
-              </span>
-            );
-            break;
-          case MessageType.Emoji:
-            content = (
-              <img
-                className="inline-block mr-1"
-                title={p.value.title}
-                src={p.value.imageUrl}
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-                onLoad={(e) => {
-                  e.currentTarget.style.display = "inline-block";
-                }}
-              />
-            );
-            break;
-          case MessageType.OGQ:
-            content = (
-              <img
-                className="inline-block mr-1 h-12"
-                title="OGQ"
-                src={p.value}
-                referrerPolicy="no-referrer"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-                onLoad={(e) => {
-                  e.currentTarget.style.display = "inline-block";
-                }}
-              />
-            );
-            break;
-        }
+          switch (p.type) {
+            case MessageType.Text:
+              content = p.value;
+              break;
+            case MessageType.URL:
+              content = (
+                <span
+                  onClick={() => openUrl(p.value)}
+                  className="text-blue-400 cursor-pointer underline"
+                >
+                  {p.value}
+                </span>
+              );
+              break;
+            case MessageType.Emoji:
+              content = (
+                <img
+                  className="inline-block mr-1"
+                  title={p.value.title}
+                  src={p.value.imageUrl}
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                  onLoad={(e) => {
+                    e.currentTarget.style.display = "inline-block";
+                  }}
+                />
+              );
+              break;
+            case MessageType.OGQ:
+              content = (
+                <img
+                  className="inline-block mr-1 h-12"
+                  title="OGQ"
+                  src={p.value}
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                  onLoad={(e) => {
+                    e.currentTarget.style.display = "inline-block";
+                  }}
+                />
+              );
+              break;
+          }
 
-        return <Fragment key={i}>{content}</Fragment>;
-      })}
-    </div>
-  );
-});
+          return <Fragment key={i}>{content}</Fragment>;
+        })}
+      </div>
+    );
+  }
+);
 
 ChatMessage.displayName = "ChatMessage";

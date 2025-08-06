@@ -93,13 +93,13 @@ const UserPopoverContent: React.FC<PopoverContentProps<UserPopoverPayload>> = ({
           className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"
           onClick={hlr.openLiveUserHistory}
         >
-          라이브 기록
+          부검
         </p>
         <p
           className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"
           onClick={hlr.openWholeUserHistory}
         >
-          전체 기록
+          기록 검색
         </p>
         <p
           className="cursor-pointer py-1 px-1 text-sm text-gray-600 hover:bg-gray-200"

@@ -4,8 +4,10 @@ import { domainEventLabel, DomainEventType } from "~/types";
 
 const EVENT_TYPE_OPTIONS = [
   DomainEventType.Donation,
+  DomainEventType.Sticker,
   DomainEventType.Subscribe,
   DomainEventType.MissionDonation,
+  DomainEventType.Sticker,
   DomainEventType.Kick,
   DomainEventType.Freeze,
   DomainEventType.MissionTotal,

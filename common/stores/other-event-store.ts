@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { subscribeWithSelector } from "zustand/middleware";
 import { MAX_QUEUE_CAPACITY } from "~/constants/events";
-import { DomainEvent, RawDomainEvent } from "~/types";
+import { DomainEvent } from "~/types";
 import CircularQueue from "../utils/circular-queue";
 
 interface OtherEventState {
@@ -10,7 +10,7 @@ interface OtherEventState {
 }
 
 interface OtherEventActions {
-  handleOtherEvent(e: RawDomainEvent): void;
+  handleOtherEvent(e: DomainEvent): void;
   addEvent(event: DomainEvent): void;
   clearOthers(): void;
 }
@@ -25,15 +25,7 @@ export const useOtherEventStore = create<OtherEventState & OtherEventActions>()(
 
       handleOtherEvent(e) {
         try {
-          if (!("payload" in e)) return;
-          // Other 이벤트 처리 로직
-          const processed: DomainEvent = {
-            id: e.payload.id,
-            type: e.type,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            payload: e.payload as any,
-          };
-          get().otherQueue.push(processed);
+          get().otherQueue.push(e);
           forceUpdate();
         } catch (err) {
           console.error(e, err);
