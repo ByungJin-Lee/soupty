@@ -96,8 +96,6 @@ export default function SplashPage() {
           style={{ width: `${progress}%` }}
         />
       </div>
-
-      <div className="absolute bottom-5 text-xs opacity-70">v0.1.0</div>
     </div>
   );
 }

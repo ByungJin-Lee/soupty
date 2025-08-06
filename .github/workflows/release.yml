@@ -16,15 +16,27 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-          - os: macos-latest # Apple Silicon (ARM64)
+          # - os: macos-latest # Apple Silicon (ARM64)
+          #   args: "--target aarch64-apple-darwin"
           # - os: macos-13 # Intel (x86_64)
           - os: windows-latest # Windows (x86_64)
+            args: ""
 
     runs-on: ${{ matrix.platform.os }}
     steps:
       # 1. Checkout the repository code
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      # 0. cachem
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
       # 2. Install Node.js
       - name: Setup Node.js
@@ -33,8 +45,11 @@ jobs:
           node-version: 20
 
       # 3. Install Rust toolchain
-      - name: Install Rust stable
+      - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       # 4. Install frontend dependencies
       #    We specify the working-directory to run this command inside the 'app/' folder.
@@ -56,7 +71,7 @@ jobs:
           # This is the most important part:
           # It tells the action that your Tauri project is in the 'app/' directory.
           projectPath: ./
-
+          args: ${{ matrix.args }}
           # Config for the GitHub Release
           tagName: ${{ github.ref_name }} # Uses the tag name that triggered the workflow (e.g., v1.0.0)
           releaseName: "soupty v${{ github.ref_name }}"
