@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "soupty-ai",
+  "productName": "soupty",
   "version": "0.1.0",
-  "identifier": "kr.byungjin.soupty",
+  "identifier": "kr.byungjin.soupty.light",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
@@ -48,7 +48,8 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["dmg", "msi"],
+    "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -56,6 +57,14 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": ["ai/model.onnx", "ai/tokenizer.json", "lib/onnxruntime.dll"]
+    "resources": []
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNDNzExNEY4N0FFNjBFODYKUldTR0R1WjYrQlJ4UE45cFZjaGlwVFd1N0J4WUhaQzM1eHREWm9DbVRGUGFFQmJBYTJ5dFlnd3YK",
+      "endpoints": [
+        "https://github.com/byungjin-lee/soupty/releases/latest/download/latest.json"
+      ]
+    }
   }
 }

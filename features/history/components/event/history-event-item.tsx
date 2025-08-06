@@ -11,9 +11,10 @@ type Props = {
 
 export const HistoryEventItem: React.FC<Props> = ({ eventLog }) => {
   const domainEvent: DomainEvent = {
-    id: eventLog.payload.id,
+    id: eventLog.id,
     type: eventLog.eventType,
-    payload: eventLog.payload,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    payload: eventLog.payload as any,
   };
 
   const user = EventDisplayUtil.extractUser(domainEvent);
