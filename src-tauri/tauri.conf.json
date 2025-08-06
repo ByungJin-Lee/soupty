@@ -48,7 +48,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["dmg", "msi"],
+    "targets": ["app", "msi"],
     "createUpdaterArtifacts": true,
     "icon": [
       "icons/32x32.png",
@@ -61,9 +61,9 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDNDNzExNEY4N0FFNjBFODYKUldTR0R1WjYrQlJ4UE45cFZjaGlwVFd1N0J4WUhaQzM1eHREWm9DbVRGUGFFQmJBYTJ5dFlnd3YK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhEQUFDQTNGOEM3NkM2RkMKUldUOHhuYU1QOHFxamZycXlWKzNOOE1NeGh5VkVHS1Zib0hROUx1cmN1SnpWdjhrR3pZUS9QUGoK",
       "endpoints": [
-        "https://github.com/byungjin-lee/soupty/releases/latest/download/latest.json"
+        "https://github.com/ByungJin-Lee/soupty/releases/latest/download/latest.json"
       ]
     }
   }
