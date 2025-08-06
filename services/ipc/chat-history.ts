@@ -47,4 +47,11 @@ export const chatHistoryService = {
       pagination,
     });
   },
+
+  async getUserLogDates(userId: string, channelId: string): Promise<string[]> {
+    return await ipcClient(IpcRequestWithPayload.GetUserLogDates, {
+      userId,
+      channelId,
+    });
+  },
 };

@@ -5,6 +5,11 @@ export enum MissionType {
   Battle = "Battle",
 }
 
+export const missionTypeLabel: Record<MissionType, string> = {
+  [MissionType.Challenge]: "도전 미션",
+  [MissionType.Battle]: "배틀 미션",
+};
+
 export interface MissionDonationEvent extends BaseEvent {
   channelId: string;
   from: string;

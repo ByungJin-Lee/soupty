@@ -64,6 +64,7 @@ impl EventProcessor {
         };
 
         buffer.chat_logs.push(ChatLogData {
+            id: event.id.to_string(),
             broadcast_id,
             user_id: event.user.id.clone(),
             username: event.user.label.clone(),
@@ -80,6 +81,7 @@ impl EventProcessor {
     pub async fn process_event_log<T: serde::Serialize>(
         &self,
         ctx: &AddonContext,
+        id: &str,
         channel_id: &str,
         user_id: Option<&str>,
         username: Option<&str>,
@@ -95,6 +97,7 @@ impl EventProcessor {
             .await?;
 
         buffer.event_logs.push(EventLogData {
+            id: id.to_string(),
             broadcast_id,
             user_id: user_id.map(|s| s.to_string()),
             username: username.map(|s| s.to_string()),

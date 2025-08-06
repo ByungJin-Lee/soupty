@@ -1,4 +1,5 @@
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
+import { useChannel } from "~/features/soop";
 import {
   BattleMissionResultEvent,
   ChallengeMissionResultEvent,
@@ -26,9 +27,11 @@ type BattleMissionResultProps = {
 export const MissionDonationRow: React.FC<MissionDonationProps> = ({
   data,
 }) => {
+  const channel = useChannel((v) => v.channel);
   const handleClick = useUserPopoverDispatch({
     id: data.from,
     label: data.fromLabel,
+    channelId: channel?.id,
   });
 
   return (

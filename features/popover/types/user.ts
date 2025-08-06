@@ -7,4 +7,5 @@ export interface UserPopoverPayload {
   subscribe?: UserSubscribe;
   // user 외 broadcast payload 등
   broadcastSessionId?: number;
+  channelId?: string;
 }

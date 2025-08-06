@@ -1,4 +1,5 @@
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
+import { useChannel } from "~/features/soop";
 import { GiftEvent, giftTypeLabel, unpackGift } from "~/types";
 
 type Props = {
@@ -6,9 +7,11 @@ type Props = {
 };
 
 export const GiftRow: React.FC<Props> = ({ data }) => {
+  const channel = useChannel((v) => v.channel);
   const handleClick = useUserPopoverDispatch({
     id: data.senderId,
     label: data.senderLabel,
+    channelId: channel?.id,
   });
 
   return (

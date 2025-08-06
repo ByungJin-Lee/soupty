@@ -1,5 +1,6 @@
 import { useStatsEventStore } from "~/common/stores/stats-event-store";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
+import { useChannel } from "~/features/soop";
 import { ActiveChatterRankingItem } from "~/types/stats";
 
 export const ActiveChatterRankChart = () => {
@@ -36,7 +37,10 @@ type ItemProps = {
 };
 
 const ActiveChatterRankItem: React.FC<ItemProps> = ({ data, rank }) => {
-  const handleClick = useUserPopoverDispatch(data.user);
+  const channel = useChannel((v) => v.channel);
+  const handleClick = useUserPopoverDispatch(data.user, {
+    channelId: channel?.id,
+  });
 
   return (
     <tr

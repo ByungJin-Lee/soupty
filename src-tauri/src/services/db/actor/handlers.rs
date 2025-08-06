@@ -164,7 +164,7 @@ impl<'a> CommandHandlers<'a> {
         let result = self.conn.execute("BEGIN TRANSACTION", [])
             .and_then(|_| {
                 let mut stmt = self.conn.prepare_cached(
-                    "INSERT INTO chat_logs (broadcast_id, user_id, username, user_flag, message_type, message, metadata, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)"
+                    "INSERT INTO chat_logs (broadcast_id, user_id, username, user_flag, message_type, message, metadata, timestamp, id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)"
                 )?;
                 
                 for log in logs {
@@ -176,7 +176,8 @@ impl<'a> CommandHandlers<'a> {
                         &log.message_type,
                         &log.message,
                         &serde_json::to_string(&log.metadata).unwrap_or_default(),
-                        &log.timestamp.to_rfc3339()
+                        &log.timestamp.to_rfc3339(),
+                        &log.id
                     ])?;
                 }
                 
@@ -200,7 +201,7 @@ impl<'a> CommandHandlers<'a> {
         let result = self.conn.execute("BEGIN TRANSACTION", [])
             .and_then(|_| {
                 let mut stmt = self.conn.prepare_cached(
-                    "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)"
+                    "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp, id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)"
                 )?;
                 
                 for log in logs {
@@ -213,12 +214,13 @@ impl<'a> CommandHandlers<'a> {
                                 &user_flag.to_string(),
                                 &log.event_type,
                                 &log.payload,
-                                &log.timestamp.to_rfc3339()
+                                &log.timestamp.to_rfc3339(),
+                                &log.id
                             ])?;
                         },
                         (Some(user_id), Some(username), None) => {
                             let mut stmt_null_flag = self.conn.prepare_cached(
-                                "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp) VALUES (?1, ?2, ?3, NULL, ?4, ?5, ?6)"
+                                "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp, id) VALUES (?1, ?2, ?3, NULL, ?4, ?5, ?6, ?7)"
                             )?;
                             stmt_null_flag.execute([
                                 &log.broadcast_id.to_string(),
@@ -226,12 +228,13 @@ impl<'a> CommandHandlers<'a> {
                                 username,
                                 &log.event_type,
                                 &log.payload,
-                                &log.timestamp.to_rfc3339()
+                                &log.timestamp.to_rfc3339(),
+                                &log.id
                             ])?;
                         },
                         (Some(user_id), None, user_flag) => {
                             let mut stmt_null_username = self.conn.prepare_cached(
-                                "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp) VALUES (?1, ?2, NULL, ?3, ?4, ?5, ?6)"
+                                "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp, id) VALUES (?1, ?2, NULL, ?3, ?4, ?5, ?6, ?7)"
                             )?;
                             stmt_null_username.execute([
                                 &log.broadcast_id.to_string(),
@@ -239,18 +242,20 @@ impl<'a> CommandHandlers<'a> {
                                 &user_flag.as_ref().map(|f| f.to_string()).unwrap_or_default(),
                                 &log.event_type,
                                 &log.payload,
-                                &log.timestamp.to_rfc3339()
+                                &log.timestamp.to_rfc3339(),
+                                &log.id
                             ])?;
                         },
                         (None, _, _) => {
                             let mut stmt_null_all = self.conn.prepare_cached(
-                                "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp) VALUES (?1, NULL, NULL, NULL, ?2, ?3, ?4)"
+                                "INSERT INTO event_logs (broadcast_id, user_id, username, user_flag, event_type, payload, timestamp, id) VALUES (?1, NULL, NULL, NULL, ?2, ?3, ?4, ?5)"
                             )?;
                             stmt_null_all.execute([
                                 &log.broadcast_id.to_string(),
                                 &log.event_type,
                                 &log.payload,
-                                &log.timestamp.to_rfc3339()
+                                &log.timestamp.to_rfc3339(),
+                                &log.id
                             ])?;
                         }
                     }
@@ -1186,15 +1191,14 @@ impl<'a> CommandHandlers<'a> {
                 "
             CREATE TRIGGER IF NOT EXISTS t_chat_logs_delete AFTER DELETE ON chat_logs
             BEGIN
-                INSERT INTO chat_logs_fts(chat_logs_fts, rowid) VALUES ('delete', old.id);
+                DELETE FROM chat_logs_fts WHERE chat_log_id = old.id;
             END;
 
             CREATE TRIGGER IF NOT EXISTS t_chat_logs_update AFTER UPDATE ON chat_logs
             BEGIN
-                INSERT INTO chat_logs_fts(chat_logs_fts, rowid, message_jamo, chat_log_id)
-                VALUES ('delete', old.id, DECOMPOSE_HANGUL(old.message), old.id);
-                INSERT INTO chat_logs_fts(rowid, message_jamo, chat_log_id)
-                VALUES (new.id, DECOMPOSE_HANGUL(new.message), new.id);
+                DELETE FROM chat_logs_fts WHERE chat_log_id = old.id;
+                INSERT INTO chat_logs_fts(message_jamo, chat_log_id)
+                VALUES (DECOMPOSE_HANGUL(new.message), new.id);
             END;
             ",
             )
@@ -1827,5 +1831,59 @@ impl<'a> CommandHandlers<'a> {
         }
 
         Ok(session_ids)
+    }
+
+    pub fn handle_get_user_log_dates(
+        &self,
+        user_id: String,
+        channel_id: String,
+        reply_to: oneshot::Sender<Result<Vec<String>, String>>,
+    ) {
+        let result = self.get_user_log_dates_impl(user_id, channel_id);
+        let _ = reply_to.send(result);
+    }
+
+    fn get_user_log_dates_impl(
+        &self,
+        user_id: String,
+        channel_id: String,
+    ) -> Result<Vec<String>, String> {
+        let query = r#"
+            SELECT DISTINCT date(timestamp) as log_date
+            FROM (
+                SELECT cl.timestamp
+                FROM chat_logs cl
+                JOIN broadcast_sessions bs ON cl.broadcast_id = bs.id
+                JOIN channels c ON bs.channel_id = c.channel_id
+                WHERE cl.user_id = ?1 AND c.channel_id = ?2
+                
+                UNION ALL
+                
+                SELECT el.timestamp
+                FROM event_logs el
+                JOIN broadcast_sessions bs ON el.broadcast_id = bs.id
+                JOIN channels c ON bs.channel_id = c.channel_id
+                WHERE el.user_id = ?1 AND c.channel_id = ?2
+            ) AS combined_logs
+            ORDER BY log_date DESC
+        "#;
+
+        let mut stmt = self
+            .conn
+            .prepare_cached(query)
+            .map_err(|e| format!("Failed to prepare query: {}", e))?;
+
+        let rows = stmt
+            .query_map([&user_id, &channel_id], |row| {
+                row.get::<_, String>(0)
+            })
+            .map_err(|e| format!("Query execution failed: {}", e))?;
+
+        let mut dates = Vec::new();
+        for row in rows {
+            dates.push(row.map_err(|e| format!("Row processing failed: {}", e))?);
+        }
+
+        Ok(dates)
     }
 }

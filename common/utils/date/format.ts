@@ -1,3 +1,5 @@
+import { pad2 } from "../string";
+
 export const formatTimestamp = (timestamp: Date | string | number) => {
   return (
     timestamp instanceof Date ? timestamp : new Date(timestamp)
@@ -34,5 +36,13 @@ export const formatTimeHHMMSS = (totalSeconds: number) => {
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  return `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`;
+};
+
+export const formatHHMMSS = (timestamp: string | number) => {
+  const date = new Date(timestamp);
+
+  return `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(
+    date.getSeconds()
+  )}`;
 };

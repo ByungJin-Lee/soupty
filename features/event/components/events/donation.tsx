@@ -1,4 +1,5 @@
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
+import { useChannel } from "~/features/soop";
 import { DonationEvent, DonationType } from "~/types";
 import {
   getAmountColor,
@@ -10,10 +11,12 @@ type Props = {
 };
 
 export const DonationRow: React.FC<Props> = ({ data }) => {
+  const channel = useChannel((v) => v.channel);
   const isSpecialEvent = data.becomeTopFan || data.fanClubOrdinal > 0;
   const handleClick = useUserPopoverDispatch({
     id: data.from,
     label: data.fromLabel,
+    channelId: channel?.id,
   });
 
   return (

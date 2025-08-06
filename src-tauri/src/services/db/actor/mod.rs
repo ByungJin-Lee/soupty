@@ -99,6 +99,11 @@ impl DBActor {
                 pagination,
                 reply_to,
             } => handlers.handle_search_user_logs(filters, pagination, reply_to),
+            DBCommand::GetUserLogDates {
+                user_id,
+                channel_id,
+                reply_to,
+            } => handlers.handle_get_user_log_dates(user_id, channel_id, reply_to),
             DBCommand::DeleteBroadcastSession {
                 broadcast_id,
                 reply_to,

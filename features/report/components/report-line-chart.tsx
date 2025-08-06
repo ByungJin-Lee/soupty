@@ -1,7 +1,7 @@
 import ReactECharts from "echarts-for-react";
 import { useMemo } from "react";
 import { ReportChunk } from "~/services/ipc/types";
-import { connectGrouper } from "./fixtures";
+import { colors, connectGrouper } from "./fixtures";
 
 type Props = {
   chunks: ReportChunk[];
@@ -22,15 +22,7 @@ export const ReportLineChart: React.FC<Props> = ({
     [chunks, getter]
   );
 
-  const colorMap = useMemo(() => {
-    const colors = {
-      red: { border: "#ef4444", background: "rgba(239, 68, 68, 0.1)" },
-      green: { border: "#10b981", background: "rgba(16, 185, 129, 0.1)" },
-      blue: { border: "#3b82f6", background: "rgba(59, 130, 246, 0.1)" },
-      yellow: { border: "#f59e0b", background: "rgba(245, 158, 11, 0.1)" },
-    };
-    return colors[color];
-  }, [color]);
+  const colorMap = useMemo(() => colors[color], [color]);
 
   const stats = useMemo(() => {
     const values = chartData.map(([, value]) => value as number);

@@ -1,11 +1,12 @@
 import { listen } from "@tauri-apps/api/event";
+import { ipcListener } from "~/common/utils/ipc";
 import { ipcEvents } from "~/constants/ipc-events";
-import { RawChatEvent, RawDomainEvent } from "~/types/event";
+import { DomainEvent, RawChatEvent } from "~/types/event";
 import { Stats } from "~/types/stats";
 
 type Callbacks = {
   chat: (e: RawChatEvent) => void;
-  other: (e: RawDomainEvent) => void;
+  other: (e: DomainEvent) => void;
   stats: (e: Stats) => void;
   disconnect?: () => void;
 };
@@ -33,12 +34,9 @@ export default class GlobalEventManger {
       return;
     }
     try {
-      listen<RawChatEvent>(ipcEvents.log.chat, (e) => {
-        this.callbacks?.chat(e.payload);
-      });
-      listen<RawDomainEvent>(ipcEvents.log.event, (e) => {
-        this.callbacks?.other(e.payload);
-      });
+      ipcListener.listenChat((e) => this.callbacks?.chat(e));
+      ipcListener.listenEvent((e) => this.callbacks?.other(e));
+
       listen<Stats>(ipcEvents.log.stats, (e) => {
         this.callbacks?.stats(e.payload);
       });

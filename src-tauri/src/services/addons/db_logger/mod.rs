@@ -90,6 +90,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 Some(&event.user.id),    // user_id
                 Some(&event.user.label), // username
@@ -117,6 +118,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 Some(&event.from),       // user_id
                 Some(&event.from_label), // username
@@ -144,6 +146,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 Some(&event.sender_id),    // user_id
                 Some(&event.sender_label), // username
@@ -171,6 +174,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 Some(&event.from),       // user_id
                 Some(&event.from_label), // username
@@ -198,6 +202,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 Some(&event.user_id), // user_id
                 Some(&event.label),   // username
@@ -225,6 +230,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 Some(&event.user_id), // user_id
                 None,                 // username
@@ -252,6 +258,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 Some(&event.user.id),                // user_id
                 Some(&event.user.label),             // username
@@ -279,6 +286,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 Some(&event.user_id), // user_id
                 None,                 // username
@@ -306,6 +314,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 None, // user_id
                 None, // username
@@ -333,6 +342,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 None, // user_id
                 None, // username
@@ -360,6 +370,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 Some(&event.from),       // user_id
                 Some(&event.from_label), // username
@@ -387,6 +398,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 None, // user_id
                 None, // username
@@ -414,6 +426,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 None, // user_id
                 None, // username
@@ -445,6 +458,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 None, // user_id
                 None, // username
@@ -475,6 +489,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 None, // user_id
                 None, // username
@@ -532,6 +547,7 @@ impl Addon for DBLoggerAddon {
             .event_processor
             .process_event_log(
                 ctx,
+                &event.id.to_string(),
                 &event.channel_id,
                 None, // user_id
                 None, // username

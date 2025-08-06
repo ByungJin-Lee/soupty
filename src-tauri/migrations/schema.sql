@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS broadcast_sessions (
 -- 역할: 모든 채팅 기록을 저장하는 가장 핵심적인 테이블입니다.
 --------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS chat_logs (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    id              TEXT PRIMARY KEY,
     broadcast_id    INTEGER NOT NULL,
     user_id         TEXT NOT NULL,
     username        TEXT NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS chat_logs (
 -- 역할: 후원, 구독 등 채팅 외의 모든 이벤트를 기록합니다.
 --------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS event_logs (
-    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    id              TEXT PRIMARY KEY,
     broadcast_id    INTEGER NOT NULL,
     user_id         TEXT,          -- 이벤트 주체 (NULL 가능)
     username        TEXT,          -- 이벤트 주체 (NULL 가능)

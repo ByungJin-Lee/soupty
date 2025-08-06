@@ -12,6 +12,7 @@ export const UserHistoriesTableItem: React.FC<Props> = ({ rank, data }) => {
   const session = useBroadcastSessionContext();
   const handleUserClick = useUserPopoverDispatch(data?.user, {
     broadcastSessionId: session.id,
+    channelId: session.channelId,
   });
   const handleMuteLogClick = useMuteLogPopoverDispatch(data);
 
