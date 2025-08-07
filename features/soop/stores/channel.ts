@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { prompt } from "~/common/stores/prompt-modal-store";
 import ipcService from "~/services/ipc";
 import { StreamerLive } from "~/services/ipc/types";
 import { Channel, MetadataUpdateEvent } from "~/types";
@@ -70,6 +71,7 @@ export const useChannel = create<ChannelState>((set) => ({
   async connect(channel) {
     set({ connectStatus: ConnectStatus.CONNECTING });
     try {
+      let password = "";
       // 방송 중인지 확인
       const streamerLive = await ipcService.soop.getStreamerLive(channel.id);
       validateStreamerLive(streamerLive);
@@ -78,6 +80,15 @@ export const useChannel = create<ChannelState>((set) => ({
       // - 방송국 정보
       const station = await ipcService.soop.getStreamerStation(channel.id);
 
+      // 만약 비번방이라면 비밀번호 요구
+      if (station.isPassword) {
+        const temp = await prompt("비밀번호 입력");
+        if (!temp || temp.length === 0) {
+          throw Error("비밀번호가 필요합니다.");
+        }
+        password = temp;
+      }
+
       // 채널 업데이트
       set({
         channel,
@@ -85,7 +96,7 @@ export const useChannel = create<ChannelState>((set) => ({
       });
 
       // 채널 연결
-      await ipcService.channel.connectChannel(channel.id);
+      await ipcService.channel.connectChannel(channel.id, password);
       set({ connectStatus: ConnectStatus.CONNECTED });
     } catch (error) {
       console.error("연결 오류", error);

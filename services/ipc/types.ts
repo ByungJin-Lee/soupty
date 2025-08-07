@@ -68,6 +68,7 @@ export interface IpcPayloadMap {
   };
   [IpcRequestWithPayload.ConnectChannel]: {
     channelId: string;
+    password: string;
   };
   [IpcRequestWithPayload.UpsertChannel]: {
     channelId: string;

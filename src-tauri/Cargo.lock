@@ -92,7 +92,7 @@ checksum = "e16d2d3311acee920a9eb8d33b8cbc1787ce4a264e85f964c2404b969bdcd487"
 
 [[package]]
 name = "app"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -5031,9 +5031,9 @@ dependencies = [
 
 [[package]]
 name = "soup-sdk"
-version = "0.1.99"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35be29c615e0958f2455a4a2f9cfb6d9c8ec0d4d78f2e629c23807876d243abf"
+checksum = "ade5b7827023ee38b6fefc0be8c2bf0ed8f3d50a00511796546a32d929f1ba03"
 dependencies = [
  "anyhow",
  "chrono",

@@ -12,6 +12,7 @@ use crate::{
         system_initializer::SystemInitializer,
         task_scheduler::TaskScheduler,
     },
+    models::connect::ConnectionPayload,
     services::{addons::interface::AddonContext, db::service::DBService},
 };
 
@@ -44,13 +45,13 @@ impl MainController {
 
     pub async fn start(
         &mut self,
-        streamer_id: &str,
+        connection_payload: &ConnectionPayload,
         app_handle: AppHandle,
         db: Arc<DBService>,
     ) -> Result<()> {
         self.validate_not_running()?;
 
-        self.start_event_driven_system(streamer_id, app_handle, db)
+        self.start_event_driven_system(connection_payload, app_handle, db)
             .await?;
 
         Ok(())
@@ -58,7 +59,7 @@ impl MainController {
 
     async fn start_event_driven_system(
         &mut self,
-        streamer_id: &str,
+        connection_payload: &ConnectionPayload,
         app_handle: AppHandle,
         db: Arc<DBService>,
     ) -> Result<()> {
@@ -71,12 +72,17 @@ impl MainController {
 
         initializer.initialize_event_subscribers().await;
         let (chat_conn, ctx, event_mapper, manager) = initializer
-            .initialize_dependencies(streamer_id, app_handle.clone(), db.clone())
+            .initialize_dependencies(connection_payload, app_handle.clone(), db.clone())
             .await?;
         self.addon_manager = manager;
 
         initializer
-            .initialize_metadata_manager(&mut self.metadata_manager, streamer_id, app_handle, db)
+            .initialize_metadata_manager(
+                &mut self.metadata_manager,
+                &connection_payload.channel_id,
+                app_handle,
+                db,
+            )
             .await?;
 
         self.addon_manager.start_event_listener().await;
@@ -87,7 +93,7 @@ impl MainController {
                 event_mapper,
                 self.addon_manager.clone(),
                 ctx,
-                streamer_id,
+                &connection_payload.channel_id,
             )
             .await?;
 

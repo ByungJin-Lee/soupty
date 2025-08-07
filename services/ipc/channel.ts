@@ -3,11 +3,12 @@ import { ipcClient } from "./base";
 import { IpcRequestWithoutPayload, IpcRequestWithPayload } from "./types";
 
 /**
- * @description Channel을 생성하여 연결합니다.
+ * @description Channel을 생성하여 연결합니다. (password 생략 가능)
  */
-const connectChannel = (channelId: string) => {
+const connectChannel = (channelId: string, password = "") => {
   return ipcClient(IpcRequestWithPayload.ConnectChannel, {
     channelId,
+    password,
   });
 };
 

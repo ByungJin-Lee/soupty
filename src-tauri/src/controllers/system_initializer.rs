@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::services::event_name;
+use crate::{models::connect::ConnectionPayload, services::event_name};
 use anyhow::Result;
 use soup_sdk::{
     chat::{SoopChatConnection, SoopChatOptions},
@@ -72,7 +72,7 @@ impl SystemInitializer {
 
     pub async fn initialize_dependencies(
         &self,
-        streamer_id: &str,
+        payload: &ConnectionPayload,
         app_handle: AppHandle,
         db: Arc<DBService>,
     ) -> Result<(
@@ -86,7 +86,8 @@ impl SystemInitializer {
         let chat_conn = SoopChatConnection::new(
             Arc::new(soop_client),
             SoopChatOptions {
-                streamer_id: streamer_id.to_string(),
+                streamer_id: payload.channel_id.to_string(),
+                password: payload.password.to_string(),
             },
         )?;
 

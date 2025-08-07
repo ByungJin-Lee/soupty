@@ -1,13 +1,14 @@
 use tauri::{async_runtime::spawn, AppHandle, State};
 
 use crate::{
-    controllers::event_bus::SystemEvent, services::addons::interface::BroadcastMetadata,
-    state::AppState,
+    controllers::event_bus::SystemEvent, models::connect::ConnectionPayload,
+    services::addons::interface::BroadcastMetadata, state::AppState,
 };
 
 #[tauri::command]
 pub async fn start_main_controller(
     channel_id: String,
+    password: String,
     state: State<'_, AppState>,
     app_handle: AppHandle,
 ) -> Result<(), String> {
@@ -15,7 +16,14 @@ pub async fn start_main_controller(
     let event_bus = controller.event_bus.clone();
 
     let _ = controller
-        .start(&channel_id, app_handle.clone(), state.db.clone())
+        .start(
+            &ConnectionPayload {
+                channel_id,
+                password,
+            },
+            app_handle.clone(),
+            state.db.clone(),
+        )
         .await
         .map_err(|e| e.to_string())?;
 
