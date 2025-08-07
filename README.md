@@ -1,302 +1,104 @@
 # Soupty
 
-Soupty는 SOOP(숲) 플랫폼의 채팅과 이벤트를 실시간으로 모니터링하고 관리할 수 있는 데스크톱 애플리케이션입니다.
+<p align="center">
+  <img width="128" height="128" src="src-tauri/icons/128x128@2x.png" alt="Soupty logo">
+</p>
 
-## 주요 기능
+<h1 align="center">Soupty</h1>
 
-- 실시간 채팅 모니터링 및 표시
-- 도네이션, 구독 등 이벤트 추적
-- 이모지 처리 및 변환
-- 감정 분석 (AI 모델 활용)
-- 데이터베이스 로깅
-- FTS(Full-Text Search)를 이용한 채팅 검색
-- 사용자 정의 애드온 시스템
+<div align="center">
 
-## 기술 스택
+SOOP(숲) 플랫폼을 위한 강력한 실시간 채팅 및 이벤트 모니터링 데스크톱 애플리케이션
 
-### Frontend
-- **Next.js 15** - React 프레임워크
-- **React 19** - UI 라이브러리
-- **TypeScript** - 타입 안전성
-- **Tailwind CSS** - 스타일링
-- **Zustand** - 상태 관리
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Windows-lightgrey.svg)]()
+[![Tauri](https://img.shields.io/badge/Tauri-2.0-blue.svg)](https://tauri.app)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black.svg)](https://nextjs.org)
 
-### Backend (Tauri)
-- **Rust** - 시스템 레벨 성능
-- **Tauri** - 크로스 플랫폼 데스크톱 앱
-- **SQLite** - 로컬 데이터베이스
-- **ONNX Runtime** - AI 모델 추론
+</div>
 
-## 개발 환경 설정
+Soupty는 SOOP(숲) 플랫폼의 채팅과 이벤트를 실시간으로 모니터링하고 관리할 수 있는 데스크톱 애플리케이션입니다. 스트리머와 시청자들을 위해 강력한 분석 도구와 로깅 및 검색을 지원합니다.
 
-### 필수 요구사항
-- Node.js 18+
-- Rust 1.70+
-- Yarn 4.9.2+
+## 📥 다운로드
 
-### 설치 및 실행
+<div align="center">
 
-1. 저장소 클론
-```bash
-git clone <repository-url>
-cd soupty
-```
+[![Download](https://img.shields.io/badge/다운로드-Windows%20.msi-blue.svg?style=for-the-badge&logo=download)](https://github.com/ByungJin-Lee/soupty/releases/latest)
 
-2. 의존성 설치
-```bash
-yarn install
-```
+**최신 버전을 다운로드하여 지금 바로 사용해보세요!**
 
-3. 개발 서버 실행
-```bash
-yarn dev
-```
+</div>
 
-4. Tauri 앱 실행
-```bash
-yarn tauri dev
-```
+## ⚠️ 중요 안내
 
-5. 프로덕션 빌드
-```bash
-yarn build
-yarn tauri build
-```
+<div align="center">
 
-## 프로젝트 구조
+**📋 사용 전 반드시 읽어주세요**
 
-```
-soupty/
-├── app/                    # Next.js 앱 라우터
-├── common/                 # 공통 컴포넌트 및 유틸리티
-├── features/               # 기능별 모듈
-│   ├── chat/              # 채팅 관련 기능
-│   ├── emoji/             # 이모지 처리
-│   ├── event/             # 이벤트 관리
-│   └── soop/              # SOOP API 연동
-├── services/              # 서비스 레이어
-├── src-tauri/             # Tauri 백엔드
-│   ├── src/               # Rust 소스 코드
-│   ├── migrations/        # 데이터베이스 스키마
-│   └── ai/                # AI 모델 파일
-└── types/                 # TypeScript 타입 정의
-```
+</div>
 
-## 아키텍처
+- **🔍 데이터 수집**: 프로그램 실행 후 SOOP 플랫폼의 공개 데이터를 수집하여 로컬에 저장합니다
+- **🚫 비공식 프로그램**: 본 프로그램은 SOOP의 정식 공식 프로그램이 아닙니다
+- **🔒 접근 제한**: 일부 채널(19금 채널, 구독 전용 채널)은 접근이 불가능합니다
 
-### 전체 시스템 구조
+## ✨ 기능 요약
 
-```mermaid
-graph TB
-    SOOP[SOOP Platform<br/>WebSocket] --> Backend[Tauri Backend<br/>Rust Core]
-    APIs[External APIs<br/>REST/WS] --> Backend
-    Backend --> Frontend[Next.js Frontend<br/>React + TypeScript]
-    Frontend --> UI[User Interface<br/>Browser]
-    
-    subgraph "External Services"
-        SOOP
-        APIs
-    end
-    
-    subgraph "Desktop Application"
-        Backend
-        Frontend
-        UI
-    end
-```
+- **🔴 실시간 모니터링**: WebSocket을 통한 실시간 채팅 및 이벤트 추적
+- **💰 스마트 이벤트 분석**: 도네이션, 구독, 팔로우 등 이벤트 자동 분류
+- **🤖 AI 기반 감정 분석**: ONNX Runtime을 활용한 채팅 감정 분석 (ai 버전 설치 필요)
+- **🔍 전문 검색**: FTS(Full-Text Search)를 통한 채팅 내역 고속 검색
+- **💾 로컬 데이터베이스**: SQLite 기반 안전한 로컬 데이터 저장
+- **🔐 개인 정보**: 프로그램 사용에 로그인이 필요X
+- **💻 저사양**: 간단한 프로그램으로 저사양 컴퓨터에서 잘 동작합니다.
 
-### 백엔드 아키텍처 상세
+## 🎯 주요 기능
 
-```mermaid
-graph TD
-    subgraph "External Layer - 외부 데이터 소스"
-        WS[SOOP WebSocket<br/>실시간 채팅/이벤트 수신]
-        API[External APIs<br/>추가 데이터 소스]
-    end
-    
-    subgraph "Controllers Layer - 요청 처리 및 제어"
-        MC[Main Controller<br/>전체 앱 제어 및 조율]
-        AM[Addon Manager<br/>확장 기능 관리]
-        SC[SOOP API Controller<br/>SOOP 플랫폼 연동]
-    end
-    
-    subgraph "Services Layer - 핵심 비즈니스 로직"
-        DBS[DB Service<br/>데이터베이스 접근 서비스]
-        EM[Event Mapper<br/>이벤트 변환 및 라우팅]
-        
-        subgraph "DB Actor System - 비동기 DB 처리"
-            DBA[DB Actor<br/>DB 작업 실행자]
-            DBH[DB Handlers<br/>쿼리 처리기]
-            DBI[DB Initialization<br/>DB 초기화]
-        end
-        
-        subgraph "Event Processing - 이벤트 분석"
-            DC[Donation Correlator<br/>도네이션 연관성 분석]
-            EN[Event Name Service<br/>이벤트 분류 및 명명]
-        end
-        
-        subgraph "Addon System - 확장 기능"
-            DBL[DB Logger Addon<br/>이벤트 로깅]
-            DUI[Default UI Addon<br/>기본 UI 확장]
-            AI[Addon Interface<br/>애드온 인터페이스]
-        end
-    end
-    
-    subgraph "Data Layer - 데이터 저장소"
-        DB[(SQLite Database<br/>로컬 데이터베이스)]
-        MIG[Migrations<br/>스키마 마이그레이션]
-        SCH[Schema<br/>데이터베이스 스키마]
-    end
-    
-    subgraph "State Management - 상태 관리"
-        AS[App State<br/>앱 전역 상태]
-        SM[Session Manager<br/>세션 관리]
-        BUF[Event Buffer<br/>이벤트 버퍼링]
-    end
-    
-    %% 데이터 흐름
-    WS -->|실시간 데이터| SC
-    API -->|외부 API 호출| MC
-    
-    MC -->|이벤트 전달| EM
-    SC -->|수신 데이터 전달| EM
-    
-    EM -->|도네이션 분석| DC
-    EM -->|이벤트 분류| EN
-    
-    DC -->|처리된 이벤트| AM
-    EN -->|분류된 이벤트| AM
-    
-    AM -->|로깅 요청| DBL
-    AM -->|UI 업데이트| DUI
-    AM -->|애드온 호출| AI
-    
-    DBS -->|비동기 작업| DBA
-    DBA -->|쿼리 실행| DBH
-    DBA -->|초기화| DBI
-    
-    DBL -->|데이터 저장| DBS
-    DBL -->|버퍼 관리| BUF
-    DBL -->|세션 추적| SM
-    
-    DBA -->|데이터 저장| DB
-    DBI -->|스키마 적용| MIG
-    MIG -->|스키마 정의| SCH
-    
-    AS -->|상태 동기화| SM
-    SM -->|이벤트 버퍼링| BUF
-```
+### 📊 시청자 채팅 기록
 
-#### 아키텍처 계층 설명
+실시간으로 수신되는 모든 채팅 메시지를 체계적으로 기록하고 관리합니다. 사용자 정보, 채팅 내용, 이모지, 시간 정보 등을 포함한 상세한 채팅 로그를 제공합니다.
 
-**External Layer (외부 계층)**
-- SOOP 플랫폼으로부터 실시간 WebSocket 연결을 통해 채팅 및 이벤트 데이터를 수신
-- 필요시 추가 외부 API들과의 연동 지원
+<p align="center">
+  <img src="md/personal-history.png" alt="시청자 채팅 기록" width="600">
+</p>
 
-**Controllers Layer (제어 계층)**
-- **Main Controller**: 전체 애플리케이션의 생명주기와 주요 기능들을 조율
-- **SOOP API Controller**: SOOP 플랫폼 특화 로직 처리
-- **Addon Manager**: 확장 기능들의 등록, 실행, 관리
+### 📈 방송 보고서
 
-**Services Layer (서비스 계층)**
-- **Event Mapper**: 수신된 원시 데이터를 구조화된 이벤트로 변환 및 라우팅
-- **Event Processing**: 이벤트의 의미 분석 및 상관관계 파악
-- **DB Service**: 데이터베이스 접근을 위한 고수준 인터페이스
-- **Addon System**: 플러그인 아키텍처를 통한 기능 확장
+방송별 상세한 통계와 분석 리포트를 생성합니다. 채팅 참여도, 이벤트 발생 현황, 인기 키워드 등의 인사이트를 시각적으로 확인할 수 있습니다.
 
-**Data Layer (데이터 계층)**
-- SQLite를 사용한 로컬 데이터 저장
-- FTS5를 활용한 전문 검색 지원
-- 스키마 마이그레이션을 통한 데이터베이스 버전 관리
+<p align="center">
+  <img src="md/report.png" alt="방송 보고서" width="600">
+</p>
 
-**State Management (상태 관리)**
-- 애플리케이션 전역 상태 관리
-- 세션 기반 사용자 데이터 추적
-- 실시간 이벤트 버퍼링으로 성능 최적화
+### 🔍 기록 검색
 
-## 데이터 흐름
+FTS(Full-Text Search) 기술을 활용한 고속 검색 기능을 제공합니다. 사용자명, 채팅 내용, 날짜 범위 등 다양한 조건으로 채팅 기록을 빠르게 검색할 수 있습니다.
 
-### 실시간 채팅 처리 흐름
+<p align="center">
+  <img src="md/search.png" alt="기록 검색" width="600">
+</p>
 
-```mermaid
-flowchart TD
-    WS[SOOP WebSocket] --> Parse[Parse & Transform Message]
-    Parse --> Store[Store to Database SQLite]
-    Parse --> Emoji[Emoji Processing]
-    Parse --> Event[Event Detection]
-    
-    Store --> UI[Update Chat UI Component]
-    Emoji --> UI
-    Event --> Handler[Trigger Handlers]
-    
-    Handler --> UI
-    
-    subgraph "Processing Pipeline"
-        Parse
-        Emoji
-        Event
-        Handler
-    end
-    
-    subgraph "Storage Layer"
-        Store
-    end
-    
-    subgraph "UI Layer"
-        UI
-    end
-```
+### 🖥️ 전체 뷰 (커스터마이징 가능)
 
-### 이벤트 처리 흐름
+모든 기능을 한눈에 볼 수 있는 통합 대시보드입니다. 필요에 따라 UI 구성 요소를 조정하여 개인의 사용 패턴에 맞게 인터페이스를 최적화할 수 있습니다.
 
-```mermaid
-flowchart LR
-    subgraph "Event Sources"
-        Donation[Donation]
-        Subscribe[Subscribe]
-        Follow[Follow]
-    end
-    
-    Donation --> Classifier[Event Classifier Rules]
-    Subscribe --> Classifier
-    Follow --> Classifier
-    
-    Classifier --> Correlation[Correlation & Validation Logic]
-    Classifier --> Badge[Badge Assignment]
-    
-    Correlation --> DB[(SQLite DB)]
-    Badge --> Timer[Timer Management]
-    
-    DB --> EventUI[Event Viewer UI Update]
-    Timer --> EventUI
-```
+<p align="center">
+  <img src="md/total-view.png" alt="전체 뷰" width="600">
+</p>
 
-### 상태 관리 흐름
+## 📋 시스템 요구사항
 
-```mermaid
-flowchart TD
-    UserAction[User Action<br/>Click, Scroll] --> Store[Zustand Store Mutation]
-    Store --> React[React Component Re-render]
-    Store --> IPC[IPC Call to Backend]
-    
-    IPC --> Tauri[Tauri Command Processing]
-    Tauri --> Backend[Backend State Update]
-    Backend --> Event[Event Emission]
-    Event --> Store
-    
-    subgraph "Frontend State"
-        UserAction
-        Store
-        React
-    end
-    
-    subgraph "Backend Processing"
-        Tauri
-        Backend
-        Event
-    end
-```
+- **운영체제**: Windows 10+
+- **메모리**: 최소 1GB RAM 권장
+- **저장공간**: 최소 500MB 여유 공간
+- **네트워크**: 인터넷 연결 필요
 
-## 라이선스
+## 🤝 기여하기
 
-이 프로젝트는 개인 프로젝트입니다.
+이 프로젝트는 개인 프로젝트입니다. 자유롭게 기여해주세요!!
+버그 리포트나 기능 제안은 이슈 또는 프로그램 내 구글 폼을 통해 알려주시기 바랍니다.
+
+## 📄 라이선스
+
+MIT
+
+**Soupty**로 SOOP 스트리밍을 더 스마트하게 관리하세요! 🎯
