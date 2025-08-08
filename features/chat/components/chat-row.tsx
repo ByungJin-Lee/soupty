@@ -3,6 +3,7 @@ import { Fragment, memo, useEffect, useRef } from "react";
 import { useUserPopoverDispatch } from "~/features/popover/hooks/user-popover";
 import { useChannel } from "~/features/soop";
 import { ChatEvent, MessagePart, MessageType } from "~/types/event";
+import { useChatFontSizeStore } from "../stores/font-size";
 import { ChatBadge } from "./chat-badge";
 
 type Props = {
@@ -13,14 +14,16 @@ type Props = {
 export const ChatRow: React.FC<Props> = memo(({ data, onMeasure }) => {
   const rowRef = useRef<HTMLDivElement>(null);
 
+  const fontSize = useChatFontSizeStore((v) => v.fontSize);
+
   useEffect(() => {
     if (rowRef.current && onMeasure) {
       onMeasure(rowRef.current, data.id);
     }
-  }, [data.id, onMeasure]);
+  }, [data.id, onMeasure, fontSize]);
 
   return (
-    <div ref={rowRef} className="flex gap-1 py-1 box-border">
+    <div ref={rowRef} className="flex gap-1 chat-row py-1 box-border">
       <Header data={data} />
       <ChatMessage parts={data.parts} />
     </div>
@@ -41,7 +44,7 @@ const Header: React.FC<HeaderProps> = memo(({ data }) => {
 
   return (
     <button
-      className="min-w-[120px] max-w-[120px] inline-block text-left cursor-pointer m-0 p-0 h-fit"
+      className="chat-header inline-block text-left cursor-pointer m-0 p-0 h-fit"
       onClick={handleClick}
     >
       {data.badges.map((b) => (

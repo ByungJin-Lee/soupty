@@ -3,6 +3,7 @@
 :root {
   overflow: hidden;
   --stats-chart-size: 250px;
+  --chat-row-font-size: 14px;
 }
 
 @layer base {
@@ -145,5 +146,13 @@
 
   .user-log-table-grid > div:hover {
     background-color: #f9fafb;
+  }
+
+  .chat-row {
+    font-size: var(--chat-row-font-size);
+  }
+
+  .chat-header {
+    min-width: calc(40px + var(--chat-row-font-size) * 5.5);
   }
 }
