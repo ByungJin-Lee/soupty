@@ -14,6 +14,12 @@ export const GiftRow: React.FC<Props> = ({ data }) => {
     channelId: channel?.id,
   });
 
+  const handleReceiverClick = useUserPopoverDispatch({
+    id: data.receiverId,
+    label: data.receiverLabel,
+    channelId: channel?.id,
+  });
+
   return (
     <div className="my-1 mx-2 p-3 rounded-xl bg-gradient-to-r from-sky-500 to-blue-400 shadow-lg shadow-violet-300/60 border border-sky-300 transform hover:scale-[1.02] transition-all duration-200">
       {/* 헤더 */}
@@ -45,7 +51,10 @@ export const GiftRow: React.FC<Props> = ({ data }) => {
       <div className="flex items-center mt-1">
         <div className="flex items-center gap-2">
           <span className="text-sm text-black font-medium">수혜자:</span>
-          <span className="cursor-pointer text-black text-md bg-gray-100/40 px-2 py-0.5 rounded-lg">
+          <span
+            onClick={handleReceiverClick}
+            className="cursor-pointer text-black text-md bg-gray-100/40 px-2 py-0.5 rounded-lg"
+          >
             {data.receiverLabel}
           </span>
         </div>

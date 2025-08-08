@@ -1,3 +1,4 @@
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { mutate } from "swr";
 import { selectVod } from "~/common/stores/vod-select-modal-store";
 import { route } from "~/constants";
@@ -29,12 +30,22 @@ export const BroadcastSessionVOD: React.FC<Props> = ({ session }) => {
             allowFullScreen={true}
             allow="clipboard-write; web-share;"
           ></iframe>
-          <span
-            onClick={handleSelectVOD}
-            className="text-xs cursor-pointer text-right text-blue-400"
-          >
-            VOD 수정
-          </span>
+          <div className="flex items-center justify-between">
+            <span
+              onClick={() =>
+                openUrl(`https://vod.sooplive.co.kr/player/${session.vodId}`)
+              }
+              className="text-xs cursor-pointer text-right text-blue-400"
+            >
+              바로가기
+            </span>
+            <span
+              onClick={handleSelectVOD}
+              className="text-xs cursor-pointer text-right text-blue-400"
+            >
+              VOD 수정
+            </span>
+          </div>
         </div>
       ) : (
         <div
