@@ -11,7 +11,7 @@ interface ChatFontSizeActions {
 }
 
 const STORAGE_KEY = "soupty-chat-font-size";
-const DEFAULT_FONT_SIZE = 14;
+const DEFAULT_FONT_SIZE = 16;
 
 export const useChatFontSizeStore = create<
   ChatFontSizeState & ChatFontSizeActions

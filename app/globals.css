@@ -3,7 +3,7 @@
 :root {
   overflow: hidden;
   --stats-chart-size: 250px;
-  --chat-row-font-size: 14px;
+  --chat-row-font-size: 16px;
 }
 
 @layer base {

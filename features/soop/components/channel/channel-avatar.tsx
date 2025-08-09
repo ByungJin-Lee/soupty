@@ -3,7 +3,7 @@ import { Channel } from "~/types";
 
 interface ChannelAvatarProps {
   channel: Omit<Channel, "label">;
-  size: number;
+  size: number | string;
   className?: string;
 }
 

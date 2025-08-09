@@ -28,7 +28,7 @@ export const ReportSummary: React.FC<Props> = ({ data }) => {
           </dd>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 p-6 rounded-xl shadow-sm">
+        {/* <div className="bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 p-6 rounded-xl shadow-sm">
           <div className="flex items-center mb-2">
             <span className="text-2xl mr-2">💰</span>
             <dt className="text-sm font-semibold text-purple-700 uppercase tracking-wide">
@@ -39,7 +39,7 @@ export const ReportSummary: React.FC<Props> = ({ data }) => {
             {(data.eventAnalysis.totalDonationAmount * 100).toLocaleString()}
             <span className="text-lg font-medium text-purple-700 ml-1">원</span>
           </dd>
-        </div>
+        </div> */}
 
         <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-6 rounded-xl shadow-sm">
           <div className="flex items-center mb-2">

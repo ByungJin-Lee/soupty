@@ -4,9 +4,9 @@ import { useEffect } from "react";
 import { usePaginationContext } from "~/common/context/pagination";
 import { Pagination } from "~/common/ui/pagination";
 import { ChannelCondition, PeriodCondition } from "~/features/condition";
-import { formatTimestamp } from "~/features/history/utils/format";
 import { BroadcastSession } from "~/services/ipc/types";
 import { useBroadcastSessionSearchContext } from "../context/broadcast-session-search-context";
+import { BroadcastSessionItem } from "./broadcast-session-item";
 import {
   convertBroadcastSessionFilter,
   useBroadcastSessionFilter,
@@ -95,47 +95,11 @@ export const BroadcastSessionList: React.FC = () => {
         {!loading && result && result.broadcastSessions.length > 0 && (
           <div className="space-y-2">
             {result.broadcastSessions.map((session) => (
-              <div
+              <BroadcastSessionItem
                 key={session.id}
-                onClick={() => handleSelectSession(session)}
-                className="p-3 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 cursor-pointer transition-all duration-200 group"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="font-semibold text-gray-900 mb-1 group-hover:text-blue-700">
-                      {session.title}
-                    </div>
-                    <div className="text-sm text-gray-600 mb-1">
-                      <span className="inline-flex items-center">
-                        <span className="font-medium">채널:</span>
-                        <span className="ml-1">{session.channelName}</span>
-                      </span>
-                    </div>
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <div>
-                        <span className="font-medium">시작:</span>{" "}
-                        {formatTimestamp(session.startedAt)}
-                      </div>
-                      {session.endedAt && (
-                        <div>
-                          <span className="font-medium">종료:</span>{" "}
-                          {formatTimestamp(session.endedAt)}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="ml-4 flex flex-col items-end gap-2">
-                    {!session.endedAt && (
-                      <span className="px-3 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
-                        진행 중
-                      </span>
-                    )}
-                    <div className="text-xs text-gray-400 group-hover:text-blue-600">
-                      클릭하여 상세보기 →
-                    </div>
-                  </div>
-                </div>
-              </div>
+                session={session}
+                onSelect={handleSelectSession}
+              />
             ))}
           </div>
         )}
