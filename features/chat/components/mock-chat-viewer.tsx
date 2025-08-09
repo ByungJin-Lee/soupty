@@ -46,6 +46,7 @@ const mockUsers = [
     isManager: false,
     isFan: true,
     isTopFan: false,
+    isSubscribe: true,
   },
   {
     id: "user7",
@@ -108,6 +109,7 @@ function generateMockChatEvent(index: number): ChatEvent {
   if (user.isManager) badges.push(Badge.Manager);
   if (user.isTopFan) badges.push(Badge.TopFan);
   if (user.isFan) badges.push(Badge.Fan);
+  if (user.isSubscribe) badges.push(Badge.FollowBasic);
 
   return {
     id: `mock-chat-${index}`,
