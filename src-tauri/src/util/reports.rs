@@ -19,6 +19,8 @@ use crate::{
     },
 };
 
+pub const CHUNK_SIZE: u32 = 30;
+
 fn get_user_counts(chat_logs: &[ChatLogResult]) -> [u32; 3] {
     let mut user_set = HashSet::with_capacity(chat_logs.len());
     let mut counts = [0u32; 3]; // [subscriber, fan, normal]
@@ -213,6 +215,7 @@ fn create_chat_vital(chat_logs: &[ChatLogResult], token_analyzer: &TokenAnalyzer
 }
 
 pub fn create_report_chunk(
+    chunk_index: usize,
     timestamp: DateTime<Utc>,
     chat_logs: &[ChatLogResult],
     event_logs: &[EventLogResult],
@@ -222,6 +225,15 @@ pub fn create_report_chunk(
 
     ReportChunk {
         timestamp,
+        relative_timestamp: {
+            let total_seconds = chunk_index as u32 * CHUNK_SIZE;
+            format!(
+                "{:02}:{:02}:{:02}",
+                total_seconds / 3600,
+                (total_seconds % 3600) / 60,
+                total_seconds % 60
+            )
+        },
         user: create_user_vital(chat_logs),
         chat: create_chat_vital(chat_logs, token_analyzer),
         event: create_event_vital(event_logs),

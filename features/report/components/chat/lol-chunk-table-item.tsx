@@ -9,11 +9,10 @@ type Props = {
 
 export const LOLChunkTableItem: React.FC<Props> = ({ data }) => {
   const session = useBroadcastSessionContext();
-  const periodTimestamp = `${data.start.timestamp} ~ ${data.end.timestamp}`;
 
   const handleClick = () => {
     if (session.vodId) {
-      openUrl(transformVODURL(session.vodId, data.start.seconds));
+      openUrl(transformVODURL(session.vodId, data.seconds));
     } else {
       toast.error("VOD를 먼저 연결해주세요.");
     }
@@ -26,7 +25,7 @@ export const LOLChunkTableItem: React.FC<Props> = ({ data }) => {
           className="text-sm cursor-pointer text-blue-800"
           onClick={handleClick}
         >
-          {periodTimestamp}
+          {data.timestamp}
         </span>
       </td>
       <td className="py-2 text-center">{data.score}</td>

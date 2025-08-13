@@ -11,10 +11,8 @@ use crate::{
         db::commands::{ReportInfo, ReportStatusInfo},
     },
     state::AppState,
-    util::reports::{create_report_chunk, create_report_data},
+    util::reports::{create_report_chunk, create_report_data, CHUNK_SIZE},
 };
-
-const CHUNK_SIZE: u32 = 30;
 
 #[tauri::command]
 pub async fn create_report(broadcast_id: i64, state: State<'_, AppState>) -> Result<(), String> {
@@ -120,6 +118,7 @@ async fn generate_report_background(
             .await?;
 
         chunks.push(create_report_chunk(
+            chunk_index,
             current_time.clone(),
             &chat_logs,
             &event_logs,

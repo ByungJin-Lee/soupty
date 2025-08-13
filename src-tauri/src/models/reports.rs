@@ -63,6 +63,7 @@ pub struct ReportData {
 #[serde(rename_all = "camelCase")]
 pub struct ReportChunk {
     pub timestamp: DateTime<Utc>,
+    pub relative_timestamp: String,
     pub user: UserVital,
     pub chat: ChatVital,
     pub event: EventVital,

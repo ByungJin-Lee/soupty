@@ -1,6 +1,7 @@
 import ReactECharts from "echarts-for-react";
 import { useMemo } from "react";
 import { ReportChunk, UserAnalysis } from "~/services/ipc/types";
+import { useReportLabelContext } from "../../context/report-label-context";
 import { connectGrouper } from "../fixtures";
 
 type Props = {
@@ -13,12 +14,14 @@ export const UserDistributionChart: React.FC<Props> = ({
   chunks,
   analysis,
 }) => {
+  const getChartLabel = useReportLabelContext().getCurrentLabel;
+
   const chartData = useMemo(
     () =>
       chunks.reduce(
         (acc, chunk) => {
           acc.fan.push(chunk.user.fanCount);
-          acc.labels.push(chunk.timestamp);
+          acc.labels.push(getChartLabel(chunk));
           acc.unique.push(chunk.user.uniqueCount);
           acc.normal.push(chunk.user.normalCount);
           acc.subscriber.push(chunk.user.subscriberCount);
@@ -33,7 +36,7 @@ export const UserDistributionChart: React.FC<Props> = ({
           normal: number[];
         }
       ),
-    [chunks]
+    [chunks, getChartLabel]
   );
 
   const echartsOption = useMemo(() => {
@@ -46,7 +49,7 @@ export const UserDistributionChart: React.FC<Props> = ({
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formatter: function (params: any) {
-          const time = new Date(params[0].axisValue).toLocaleTimeString();
+          const time = params[0].axisValue;
           let result = `시간: ${time}<br/>`;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           params.forEach((param: any) => {
@@ -76,7 +79,7 @@ export const UserDistributionChart: React.FC<Props> = ({
         data: chartData.labels,
         axisLabel: {
           formatter: function (value: number) {
-            return new Date(value).toLocaleTimeString();
+            return value;
           },
         },
       },

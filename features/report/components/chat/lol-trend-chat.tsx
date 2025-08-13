@@ -18,12 +18,8 @@ export const LOLTrendChart: React.FC<Props> = ({ data }) => {
     );
 
   const filteredChunks = useMemo(() => {
-    return filterChunksByLolScore(
-      data.chunks,
-      data.metadata,
-      debouncedThreshold
-    );
-  }, [data.chunks, data.metadata, debouncedThreshold]);
+    return filterChunksByLolScore(data.chunks, debouncedThreshold);
+  }, [data.chunks, debouncedThreshold]);
 
   return (
     <div className="bg-white border overflow-hidden border-gray-200 rounded-xl  shadow-sm">

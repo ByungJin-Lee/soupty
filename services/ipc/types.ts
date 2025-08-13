@@ -448,6 +448,8 @@ export interface ReportMetadata {
 
 export interface ReportChunk {
   timestamp: string;
+  realtimeTimestamp?: string;
+  relativeTimestamp: string; // HH:mm:ss 형식
   user: UserVital;
   chat: ChatVital;
   event: EventVital;

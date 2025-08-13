@@ -1,6 +1,7 @@
 import ReactECharts from "echarts-for-react";
 import { useMemo } from "react";
 import { ReportChunk } from "~/services/ipc/types";
+import { useReportLabelContext } from "../context/report-label-context";
 import { colors, connectGrouper } from "./fixtures";
 
 type Props = {
@@ -17,9 +18,11 @@ export const ReportLineChart: React.FC<Props> = ({
   color = "green",
   hideSum = false,
 }) => {
+  const getChartLabel = useReportLabelContext().getCurrentLabel;
+
   const chartData = useMemo(
-    () => chunks.map((chunk) => [chunk.timestamp, getter(chunk)]),
-    [chunks, getter]
+    () => chunks.map((chunk) => [getChartLabel(chunk), getter(chunk)]),
+    [chunks, getter, getChartLabel]
   );
 
   const colorMap = useMemo(() => colors[color], [color]);
@@ -50,7 +53,7 @@ export const ReportLineChart: React.FC<Props> = ({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         formatter: function (params: any) {
           const param = params[0];
-          const time = new Date(param.data[0]).toLocaleTimeString();
+          const time = param.data[0];
           const value = param.data[1];
           return `시간: ${time}<br/>값: ${value.toLocaleString()}`;
         },
@@ -69,7 +72,7 @@ export const ReportLineChart: React.FC<Props> = ({
         boundaryGap: false,
         axisLabel: {
           formatter: function (value: number) {
-            return new Date(value).toLocaleTimeString();
+            return value;
           },
         },
       },
