@@ -64,13 +64,14 @@ export const PeriodCondition: React.FC<Props> = ({
       </div>
 
       {showDatePicker && (
-        <div className="absolute top-full left-0 mt-2 p-4 bg-white border rounded-lg border-gray-400/40 shadow-lg z-10 min-w-max">
-          <div className="flex flex-col gap-3">
+        <div className="absolute top-full left-0 mt-2 p-4 bg-white border rounded-lg border-gray-400/40 shadow-lg z-10 w-[340px]">
+          <div className="flex flex-col gap-2">
             <div>
               <label className="block text-sm font-medium mb-1">
                 시작 날짜
               </label>
               <DateTimePicker
+                className="border rounded border-gray-400/40 py-0.5 text-sm w-full px-2"
                 selected={startDate ? new Date(startDate) : null}
                 onChange={(date) => onStartDateChange(date?.toISOString())}
                 placeholderText="시작 날짜 시간 선택"
@@ -81,16 +82,17 @@ export const PeriodCondition: React.FC<Props> = ({
                 종료 날짜
               </label>
               <DateTimePicker
+                className="border rounded border-gray-400/40 py-0.5 text-sm w-full px-2"
                 selected={endDate ? new Date(endDate) : null}
                 onChange={(date) => onEndDateChange(date?.toISOString())}
                 placeholderText="종료 날짜 시간 선택"
                 minDate={startDate ? new Date(startDate) : undefined}
               />
             </div>
-            <div className="flex gap-2 justify-end">
+            <div className="flex justify-end">
               <button
                 onClick={() => setShowDatePicker(false)}
-                className="px-3 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300"
+                className="px-2 py-1 text-sm bg-gray-200 rounded-md hover:bg-gray-300"
               >
                 닫기
               </button>

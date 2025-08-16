@@ -13,7 +13,7 @@ type Props = {
 
 export const VODItem: React.FC<Props> = ({ data }) => {
   return (
-    <div className="group bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer">
+    <div className="group bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col h-full">
       {/* Thumbnail Container */}
       <div className="relative aspect-video bg-gray-100">
         <img
@@ -48,7 +48,7 @@ export const VODItem: React.FC<Props> = ({ data }) => {
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4 flex-1 flex flex-col justify-between">
         <h3
           title={data.title}
           className="font-medium text-gray-900 mb-2 line-clamp-2 leading-tight"

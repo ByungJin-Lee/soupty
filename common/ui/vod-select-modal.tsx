@@ -99,7 +99,7 @@ export const VodSelectModal: React.FC = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-90 overflow-y-auto p-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[70svh] overflow-y-auto p-1">
         {vods.map((vod) => (
           <div
             key={vod.id}

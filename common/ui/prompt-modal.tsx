@@ -23,6 +23,7 @@ export const PromptModal: React.FC = () => {
         value={text}
         className="bg-gray-100 rounded-md py-1 px-2 outline-none text-gray-800"
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleConfirm()}
       />
       <div className="flex justify-end gap-2 mt-2">
         <Button variant="secondary" size="sm" onClick={handleClose}>
